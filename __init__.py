@@ -1011,7 +1011,7 @@ def create_login_user():
             users_dict = db['login']
         except:
             print("Error in retrieving Users from login.db.")
-        loginuser = CreateLoginUser(create_login_user_form.username.data, create_login_user_form.phone_no.data,
+        loginuser = CreateLoginUser(create_login_user_form.username.data, create_login_user_form.phone_no.data,create_login_user_form.nric.data,
                                     create_login_user_form.password.data, create_login_user_form.address.data,
                                     create_login_user_form.role.data)
         print(create_login_user_form.username)
@@ -1053,7 +1053,7 @@ def home():
                 role = "Guest"
             else:
                 continue
-            return render_template('homenew.html', name=username, role=role)
+            return render_template('homenew.html', name=username, role=role, nric=users.get_nric())
         else:
             return '<p style="text-align:center;">Please log in first.</p>', render_template('home2.html')
 
