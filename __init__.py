@@ -29,8 +29,8 @@ from dineinForm import CreateDineInForm
 from dineinuser import dineinuser
 from loginform import CreateLoginUserForm
 from mang_dinine_form import MangDineInForm
-from mangetable import mangetable1
-from mangetableform import Createmangetable
+from managetable import mangetable1
+from managetableform import Createmangetable
 from updateOrder import Orderupdate
 from updateSupplier import updateSupplierForm
 from viewupdateforms import CreateUpdateFeedbackForm
