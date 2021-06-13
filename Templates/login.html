@@ -169,13 +169,38 @@ form .button{
     <!-- <title>Animated Login Form</title> -->
     <link rel="stylesheet" href="style.css">
     <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    <script src="https://www.google.com/recaptcha/api.js"></script>
   </head>
   <img src="{{url_for('static', filename='fairmont-singapore-asian-market-cafe.jpg')}}"  width="500" height="600" />
   <body>
+
     <div class="container">
+
       <header>Login Form</header>
+
       <form method="POST">
+          <p>
+         {% with messages = get_flashed_messages() %}
+           {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-primary">
+             <strong>{{ message }}</strong>
+           </div>
+          {% endfor %}
+           {% endif %}
+         {% endwith %}
+        </p>
+          <p>
+               {% if error %}
+            <div class="alert alert-primary">
+             <strong>{{ error }}</strong>
+           </div>
+
+           {% endif %}
+
+          </p>
         <div class="input-field">
+
           <input type="text" class='input' name="username" required>
           <label>Username</label>
         </div>
@@ -184,9 +209,13 @@ form .button{
           <span class="show">SHOW</span>
           <label>Password</label>
         </div>
+
+<div class="g-recaptcha" data-sitekey="{{ sitekey }}"></div> <br/>
+
 <div class="button">
           <div class="inner">
 </div>
+
 <button type='submit'>LOGIN</button>
         </div>
 </form>

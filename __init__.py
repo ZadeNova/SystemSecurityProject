@@ -4,7 +4,7 @@ import shelve
 import datetime
 from datetime import date
 # Bryan Import
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash ,json
 from flask import session
 from flask_uploads import UploadSet, configure_uploads, IMAGES
 
@@ -34,13 +34,18 @@ from managetableform import Createmangetable
 from updateOrder import Orderupdate
 from updateSupplier import updateSupplierForm
 from viewupdateforms import CreateUpdateFeedbackForm
-
+import requests
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Project'
 
 app.config['UPLOADED_IMAGES_DEST'] = 'uploads/FoodImages'
 images = UploadSet('images', IMAGES)
 configure_uploads(app, images)
+
+### hong ji recapcha ##
+app.config['SECRET_KEY'] = 'cairocoders-ednalan'
+
+
 
 
 @app.route('/ForgetPassword')
@@ -836,19 +841,43 @@ app.secret_key = 'somesecretkeythatonlyishouldknow'
 
 ##login ###
 # import session
+def is_human(captcha_response):
+    """ Validating recaptcha response from google server
+        Returns True captcha test passed for submitted form else returns False.
+    """
+    secret ="6LeQDi8bAAAAAIkB8_0hu3rvBirsTLkS4D6t4ztA"
+    payload = {'response': captcha_response, 'secret': secret}
+    response = requests.post("https://www.google.com/recaptcha/api/siteverify", payload)
+    response_text = json.loads(response.text)
+    return response_text['success']
+
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+
     if 'username' in session:
         username = session['username']
         return render_template('homenew.html', name=username)
 
     error = None
+    sitekey = "6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb"
     if request.method == 'POST':
         users_dict = {}
         db = shelve.open('login.db', 'r')
         users_dict = db['login']
         db.close()
         users_list = []
+        captcha_response = request.form['g-recaptcha-response']
+
+        if is_human(captcha_response):
+            # Process request here
+            status = ''
+        else:
+            # Log invalid attempts
+            status = "Sorry ! Please Check Im not a robot."
+
+        flash(status)
         for key in users_dict:
             user = users_dict.get(key)
             users_list.append(user)
@@ -856,28 +885,32 @@ def login():
             print('username', x.get_username())
             print('passs', x.get_password())
         for user in users_list:
-            if request.form['username'] == user.get_username() and request.form['password'] == user.get_password():
+            if request.form['username'] == user.get_username() and request.form['password'] == user.get_password()and status=='':
+
                 session['username'] = request.form['username']
                 print(request.form['username'])
                 session['password'] = request.form['password']
                 session["id"] = user.get_user_id()
+
                 return redirect(url_for('home'))
-            elif request.form['username'] == 'admin' and request.form['password'] == 'admin123':
+            elif request.form['username'] == 'admin' and request.form['password'] == 'admin123' and status=='':
                 session['username'] = request.form['username']
                 print(request.form['username'])
                 session['password'] = request.form['password']
                 print(request.form['password'])
+
                 return redirect(url_for('home'))
-            elif request.form['username'] == 'becca' and request.form['password'] == 'becca123':
+            elif request.form['username'] == 'becca' and request.form['password'] == 'becca123'and status=='':
                 session['username'] = request.form['username']
                 print(request.form['username'])
                 session['password'] = request.form['password']
                 session["id"] = user.get_user_id()
+
                 return redirect(url_for('home'))
             else:
                 error = 'Invalid Credentials. Please try again.'
                 print(error)
-    return render_template('login.html', error=error)
+    return render_template('login.html', sitekey=sitekey,error=error)
 
 
 @app.route('/mang_update_dinein/<int:id>/', methods=['GET', 'POST'])
