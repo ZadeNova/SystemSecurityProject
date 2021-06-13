@@ -1,12 +1,13 @@
 class CreateLoginUser:
     count_id = 0
-    def __init__(self, username,phone_no,nric,password,address,role):
+    def __init__(self, username,phone_no,nric,email,password,address,role):
         CreateLoginUser.count_id += 1
         self.__user_id = CreateLoginUser.count_id
         self.__username = username
         self.__address=address
         self.__phone_no = phone_no
         self.__nric=nric
+        self.__email=email
         self.__password=password
         self.__role=role
 
@@ -22,6 +23,10 @@ class CreateLoginUser:
         return self.__nric
     def set_nric(self,nric):
         self.__nric=nric
+    def set_email(self,email):
+        self.__email=email
+    def get_email(self):
+        return self.__email
 
 
 
