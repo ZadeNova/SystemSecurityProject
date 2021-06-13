@@ -1,0 +1,28 @@
+
+{% if role == "Staff" %}
+    {% extends "base.html" %}
+{% elif name == "admin" %}
+    {% extends "base.html" %}
+{% else %}
+    {% extends "base2.html" %}
+{% endif %}
+
+{% block title %}Library Loan System - Home{% endblock %}
+{% block content %}
+
+<style>
+    p{
+    font-size:30px;
+    }
+    b{
+    font-size:30px;
+    }
+</style>
+<h1 class="display-4">Home</h1>
+<div id="MyClockDisplay" class="clock" onload="showTime()"></div>
+<body onload="showTime()">
+<p>Hello welcomeback <b>{{ name }}</b> </p>
+<p>Your are <b>{{ role }}</b></p>
+
+
+{% endblock %}

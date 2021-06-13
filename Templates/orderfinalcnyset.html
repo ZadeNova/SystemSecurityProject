@@ -1,0 +1,30 @@
+{% extends "base2.html" %}
+{% block title %}jheb - customer {% endblock %}
+
+{% block content %}
+{% for promo in promolist %}
+
+<div class="form-check">
+    <div class="col-xs-1" align="center">
+
+        <div>
+        <h1>Choice of set</h1>
+        <input class="form-check-input" type="radio" name="flexRadioDefault" checked>
+              <label class="form-check-label" >
+                CNY Set
+              </label>
+                    <br>
+                <img src="" width="150" height="150">
+            <br>
+                    <p><mark>{{ "cnyset.jpg" }}</mark></p>
+                    <p><mark>{{ "18.65" }}</mark></p>
+    </div>
+
+        <br>
+
+
+        {% endfor %}
+        <a href="/" class="btn btn-secondary btn-lg active" role="button" >Order</a>
+    </div>
+</div>
+{% endblock %}

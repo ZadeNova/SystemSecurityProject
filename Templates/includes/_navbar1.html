@@ -1,0 +1,105 @@
+
+<style>
+.clock {
+    position: absolute;
+    top: 11%;
+    right: -10%;
+    transform: translateX(-50%) translateY(-50%);
+    color: #17D4FE;
+    font-size: 40px;
+    font-family: Orbitron;
+    letter-spacing: 10px;
+}
+
+</style>
+<script>
+  function showTime(){
+    var date = new Date();
+    var h = date.getHours(); // 0 - 23
+    var m = date.getMinutes(); // 0 - 59
+    var s = date.getSeconds(); // 0 - 59
+    var session = "AM";
+
+    if(h == 0){
+        h = 12;
+    }
+
+    if(h > 12){
+        h = h - 12;
+        session = "PM";
+    }
+
+    h = (h < 10) ? "0" + h : h;
+    m = (m < 10) ? "0" + m : m;
+    s = (s < 10) ? "0" + s : s;
+
+    var time = h + ":" + m + ":" + s + " " + session;
+    document.getElementById("MyClockDisplay").innerText = time;
+    document.getElementById("MyClockDisplay").textContent = time;
+
+    setTimeout(showTime, 1000);
+
+}
+
+showTime();
+
+</script>
+<div id="MyClockDisplay" class="clock" onload="showTime()"></div>
+
+<body onload="showTime()">
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+
+  <!-- Brand -->
+  <a class="navbar-brand" href="#">LLS</a>
+
+
+
+
+  <!-- Links -->
+  <ul class="navbar-nav">
+    <li class="nav-item">
+      <a class="nav-link" href="/">Home</a>
+    </li>
+    </li>
+      <a class="nav-link" href="/book">dine in / reservation</a>
+    </li>
+
+
+    <!-- Dropdown -->
+    <li class="nav-item dropdown">
+      <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
+        Reservation/Dine in  Details
+      </a>
+
+      <div class="dropdown-menu">
+        <a class="dropdown-item" href="/retrieveUsers">Reservation details</a>
+        <a class="dropdown-item" href="/retrieverdinein">Dine In details</a>
+      </div>
+
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="/contactUs">Contact Us</a>
+    </li>
+
+
+
+
+
+      <li class="nav-item">
+      <a class="nav-link" href="/logout">logout</a>
+    </li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  </ul>
+</nav>

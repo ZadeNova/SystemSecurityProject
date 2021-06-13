@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% block title %}JHEB - Retrieve Inventory{% endblock %}
+
+{% block content %}
+
+<style>
+/* Tooltip container */
+.tooltip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+
+  /* Position the tooltip text - see examples below! */
+  position: absolute;
+  z-index: 1;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+
+.dropdown-menu li{
+
+font-size:15px;
+
+}
+.link:hover{
+color:#FF1493;
+text-decoration:none;
+cursor:pointer;
+
+
+}
+.link{
+color:black;
+}
+.btn btn-primary btn-sm dropdown-toggle
+</style>
+
+
+
+
+
+
+
+
+
+<h1 class="display-4">Retrieve Inventory</h1>
+<div>
+  {% if Invcount == 0 %}
+  <p>There are no inventory items.</p>
+  {% elif Invcount == 1 %}
+  <p>There is 1 inventory item.</p>
+  {% else %}
+  <p>There are {{ Invcount }} inventory items.</p>
+  {% endif %}
+</div>
+<div>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+          <th>ID</th>
+        <th>Name</th>
+        <th>Unit of Measure</th>
+        <th>Threshold</th>
+        <th>Quantity</th>
+        <th>Incoming Quantity</th>
+        <th>Status</th>
+        <th>Threshold Alert</th>
+      </tr>
+    </thead>
+    <tbody>
+
+    {% for inventory in Inventory_list %}
+
+      <tr>
+        <td>{{ inventory.get_ID() }}</td>
+        <td>{{ inventory.get_Name() }}</td>
+        <td>{{ inventory.get_Unit_of_Measure() }}</td>
+        <td>{{ inventory.get_Threshold() }}</td>
+        <td>{{ inventory.get_Quantity() }}</td>
+
+        {% if inventory.get_ID() in Order_Dict %}
+
+        <td>{{ Order_Dict[inventory.get_ID()].get_Quantity() }}</td>
+
+        {% else %}
+        <td>{{ 0 }}</td>
+        {% endif %}
+
+
+
+
+        {% if inventory.get_Status() == 'Available' %}
+        <td><button class = "btn btn-success"><i class="far fa-check-circle"></i></button></td>
+            {% if inventory.get_Quantity() > inventory.get_Threshold()  %}
+             <td></td>
+             <td><a href="/UpdateInventory/{{inventory.get_ID()}}" class="btn btn-warning"><i class="fas fa-edit"></i></a></td>
+             <td></td>
+            {% else %}
+             <td><button class = "btn btn-danger" title="Order Inventory Item Now!"><i class="fas fa-exclamation-triangle"></i></button></td>
+             <td><a href="/UpdateInventory/{{inventory.get_ID()}}" class="btn btn-warning"><i class="fas fa-edit"></i></a></td>
+              {% if OngoingOrders_Dict[inventory.get_ID()] == True %}
+                      <td>
+                      <div class="dropdown">
+              <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-toggle="dropdown">Order
+              <span class="caret"></span></button>
+              <ul class="dropdown-menu">
+                <li><a href="/UpdateOrders/{{inventory.get_ID()}}" class="link">Edit Order</a></li>
+                <li><a href="/CancelOrder/{{inventory.get_ID()}}" class="link">Cancel Order</a></li>
+                <li><a href="/Deliver/{{inventory.get_ID()}}" class="link">Deliver Order</a></li>
+
+              </ul>
+            </div>
+                    </td>
+                    <td></td>
+        {% else %}
+        <td>
+          <div class="dropdown">
+  <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-toggle="dropdown">Order
+  <span class="caret"></span></button>
+  <ul class="dropdown-menu">
+    <li><a href="/Orders/{{inventory.get_ID()}}" class="link">Place Order</a></li>
+
+  </ul>
+</div>
+        </td>
+        <td></td>
+        {% endif %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            {% endif %}
+        {% else %}
+        <td><button class = "btn btn-danger"><i class="far fa-times-circle"></i></button></td>
+        <td></td>
+        <td><a href="/UpdateInventory/{{inventory.get_ID()}}" class="btn btn-warning"><i class="fas fa-edit"></i></a></td>
+        <td></td>
+        {% endif %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

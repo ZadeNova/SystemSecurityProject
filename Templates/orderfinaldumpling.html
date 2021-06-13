@@ -1,0 +1,67 @@
+{% extends "base2.html" %}
+{% block title %}jheb - customer {% endblock %}
+
+{% block content %}
+{% for sidedish in sidedishlist %}
+
+<div class="form-check">
+    <div class="col-xs-1" align="center">
+
+
+{% if sidedish.get_food_name() == 'Dumplings' %}
+
+    <h1>Choice of Dish</h1>
+    <input class="form-check-input" type="radio" name="flexRadioDefault" checked>
+          <label class="form-check-label" >
+            Pork Dumplings
+          </label>
+                <br>
+            <img src="" width="150" height="150">
+        <br>
+                <p><mark>{{ "dumplings.jpg" }}</mark></p>
+                <p><mark>{{ "4.40" }}</mark></p>
+
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="flexRadioDefault">
+          <label class="form-check-label" >
+            Beef Dumplings
+          </label>
+            <br>
+            <img src="" width="150" height="150">
+        <br>
+            <p><mark>{{ "beefdumplings.jpg" }}</mark></p>
+            <p><mark>{{ "4.40" }}</mark></p>
+        </div>
+
+        <h1>Additional Add-ons</h1>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" value="" id="flex1">
+          <label class="form-check-label" >
+              +4 Dumplings
+          </label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" value="" id="flex2">
+          <label class="form-check-label">
+            +8 Dumplings
+          </label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" value="" id="flex3">
+          <label class="form-check-label">
+            Chilli Sauce
+          </label>
+        </div><div class="form-check">
+          <input class="form-check-input" type="checkbox" value="" id="flex4">
+          <label class="form-check-label">
+            Roasted Sesame
+          </label>
+        </div>
+
+        {% endif %}
+        {% endfor %}
+        <a href="/" class="btn btn-secondary btn-lg active" role="button" >Order</a>
+    </div>
+</div>
+
+{% endblock %}

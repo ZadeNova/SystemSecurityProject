@@ -1,0 +1,34 @@
+{% extends "base3.html" %}
+
+{% block content %}
+{% from "includes/_formsHelper.html" import render_field %}
+
+
+<h1 class="display-4">Create new account</h1>
+
+<form method="POST" action="">
+  <div class="form-group">
+    {{ render_field(form.username, class="form-control") }}
+  </div>
+
+  <div class="form-group">
+    {{ render_field(form.phone_no, class="form-control")  }}
+  </div>
+    <div class="form-group">
+    {{ render_field(form.password, class="form-control")  }}
+  </div>
+  <div id="prof">
+    <div class="form-group">
+      {{ render_field(form.address, class="form-control") }}
+    </div>
+  </div>
+  <div class="form-group">
+    {{ render_field(form.role, class="form-control")  }}
+  </div>
+   <input type="submit" value="Submit" class="btn btn-primary"/>
+  <td><a href="/login" class="btn btn-warning">Return</a></td>
+   </div>
+
+
+</form>
+{% endblock %}

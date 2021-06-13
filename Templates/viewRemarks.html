@@ -1,0 +1,25 @@
+{% extends "bryanbase.html" %}
+{% block title %}Library Loan System - View Feedbacks{% endblock %}
+
+{% block content %}
+<h1 class="display-4">View Feedbacks</h1>
+<div>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Feedback Id</th>
+        <th>Remarks</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for feedback in feedbacks_list %}
+      <tr>
+        <td>{{ feedback.get_no_of_feedbacks() }}</td>
+        <td>{{ feedback.get_remarks() }}</td>
+      </tr>
+     {% endfor %}
+    </tbody>
+
+  </table>
+</div>
+{% endblock %}

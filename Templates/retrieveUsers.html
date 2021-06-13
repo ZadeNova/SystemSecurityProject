@@ -1,0 +1,94 @@
+ {% extends "base2.html" %}
+{% block title %}Library Loan System - Retrieve Users{% endblock %}
+
+{% block content %}
+
+<h1 class="display-4"><b>{{name1}}</b> Reservation details </h1>
+<div>
+  {% if count == 0 %}
+  <p>There are no reservation detail.</p>
+  {% elif count == 1 %}
+  <p>There is 1 reservation details.</p>
+    {% else %}
+  <p>There are {{ count }} users.</p>
+  {% endif %}
+</div>
+<div>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>User ID</th>
+        <th>Username</th>
+        <th>Dates of reservation</th>
+        <th>Number of People</th>
+        <th>Phone Number</th>
+        <th>Table Number</th>
+        <th>Booking Time</th>
+        <th>status of this form</th>
+        <th>Remarks</th>
+
+
+        <th></th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for user in users_list %}
+      <tr>
+        <td>{{ user.get_user_id() }}</td>
+        <td>{{ user.get_username() }}</td>
+        <td>{{ user.get_date() }}</td>
+        <td>{{ user.get_no_ppl() }}</td>
+        <td>{{ user.get_phone_no() }}</td>
+        <td>{{ user.get_table_no() }}</td>
+        <td>{{ user.get_booking_time() }}</td>
+        <td>{{user.get_status()}}</td>
+        <td>{{ user.get_remarks() }}</td>
+
+
+
+
+        <td><a href="/updateUser/{{user.get_user_id()}}" class="btn btn-warning">Update</a></td>
+        <td>
+          <form action="{{url_for('delete_user', id=user.get_user_id())}}" method="POST">
+              <!--       <input type="submit" value="Delete" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete {#user.get_first_name()#} {#user.get_last_name()#}?');">-->
+              <!-- Button to Open the Modal -->
+
+<button type="button" class="btn btn-danger" data-toggle="modal" data-target="#myModal_{{user.get_user_id()}}">
+  Cancellation
+</button>
+
+<!-- The Modal -->
+<div class="modal" id="myModal_{{user.get_user_id()}}">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h4 class="modal-title">Cancellation Confirmation</h4>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+
+      <!-- Modal body -->
+      <div class="modal-body">
+          Are you sure you want to cancel {{user.get_username()}}?
+      </div>
+
+      <!-- Modal footer -->
+      <div class="modal-footer">
+          <input type="submit" value="Yes" class="btn btn-danger">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+          </form>
+        </td>
+          </tr>
+    {% endfor %}
+
+    </tbody>
+  </table>
+</div>
+{% endblock %}

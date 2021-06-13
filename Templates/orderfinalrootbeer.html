@@ -1,0 +1,42 @@
+{% extends "base2.html" %}
+{% block title %}jheb - customer {% endblock %}
+
+{% block content %}
+{% for drinks in drinklist %}
+
+<div class="form-check">
+    <div class="col-xs-1" align="center">
+
+
+{% if drinks.get_food_name() == 'Root Beer Float' %}
+
+    <input class="form-check-input" type="radio" name="flexRadioDefault" checked>
+          <label class="form-check-label" >
+           Root Beer Float
+          </label>
+                <br>
+            <img src="" width="150" height="150">
+        <br>
+                <p><mark>{{ "rootbeerfloat.jpg" }}</mark></p>
+                <p><mark>{{ "1.50" }}</mark></p>
+
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="flexRadioDefault1">
+          <label class="form-check-label" >
+            Upsize
+          </label>
+            <br>
+            <input class="form-check-input" type="radio" name="flexRadioDefault1" >
+          <label class="form-check-label" >
+            Add Scoop of Icecream
+          </label>
+                <br>
+        <br>
+        </div>
+        {% endif %}
+        {% endfor %}
+        <a href="/" class="btn btn-secondary btn-lg active" role="button" >"Order"</a>
+    </div>
+</div>
+
+{% endblock %}

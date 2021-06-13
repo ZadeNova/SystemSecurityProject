@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Library Loan System - Retrieve Inventory{% endblock %}
+
+{% block content %}
+<h1 class="display-4">View Orders</h1>
+<div>
+  {% if OrderCount == 0 %}
+  <p>There are no Order items.</p>
+  {% elif OrderCount == 1 %}
+  <p>There is 1 Order item.</p>
+  {% else %}
+  <p>There are {{ OrderCount }} Order items.</p>
+  {% endif %}
+</div>
+<div>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+          <th>ID</th>
+        <th>Quantity</th>
+        <th>Date</th>
+        <th>Expected Delivery Date</th>
+        <th>Supplier</th>
+        <th>Status</th>
+
+      </tr>
+    </thead>
+    <tbody>
+    {% for order in Order_List %}
+      <tr>
+        <td>{{ order.get_ID() }}</td>
+        <td>{{ order.get_Quantity() }}</td>
+        <td>{{ order.get_Date() }}</td>
+        <td>{{ order.get_ExpectedDeliveryDate() }}</td>
+        <td>{{ order.get_Supplier() }}</td>
+         {% if order.get_Quantity() == 0 %}
+        <td><button class="btn btn-success"><i class="fas fa-truck"></i></button></td>
+         {% else %}
+        <td><button class="btn btn-primary"><i class="far fa-clock"></i></button></td>
+         {% endif %}
+
+
+
+
+
+
+
+    </div>
+
+
+          </form>
+        </td>
+          </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+

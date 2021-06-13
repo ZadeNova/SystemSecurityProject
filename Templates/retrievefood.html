@@ -1,0 +1,56 @@
+  {% extends "base.html" %}
+  {% block title %}jheb - retrieve food{% endblock %}
+
+  {% block content %}
+  <h1 class="display-4">Retrieve menu</h1>
+  <div>
+
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Food name</th>
+          <th>Image</th>
+          <th>Category</th>
+          <th>Status</th>
+          <th>Price</th>
+          <th>Ingredients</th>
+          <th>Extra remarks</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for food in foods_list %}
+        <tr>
+          <td>{{ food.get_food_name() }}</td>
+          <td>{{ food.get_image() }}</td>
+          <td>{{ food.get_category() }}</td>
+
+          {% if food.get_status() == 'Available' %}
+          <td>
+               <button class = "btn btn-outline-success">{{ food.get_status() }}
+             </button>
+             </td>
+             {% else %}
+
+             <td>
+               <button class = "btn btn-outline-danger">{{ food.get_status() }}
+               </button>
+             </td>
+             {% endif %}
+          <td>{{food.get_price() }} </td>
+          <td>{{food.get_ingredients() }} </td>
+          <td>{{food.get_extra_remarks() }}</td>
+          <td>
+            <a href="/updateFood/{{food.get_id()}}" class="btn btn-warning"> Update </a>
+          </td>
+        </tr>
+
+      {% endfor %}
+      </tbody>
+
+    </table>
+
+    <div class="text-right">
+      <a href="/createfood" class="btn btn-outline-primary" role="button">Add Food Item</a>
+    </div>
+  </div>
+  {% endblock %}

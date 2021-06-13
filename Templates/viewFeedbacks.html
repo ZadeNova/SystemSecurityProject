@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+{% block title %}View Feedbacks{% endblock %}
+
+{% block content %}
+<h1 class="display-4">View Feedbacks</h1>
+<!-- Nav tabs -->
+<ul class="nav nav-tabs">
+  <li class="nav-item">
+    <a class="nav-link active" data-toggle="tab" href="#All">All</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" data-toggle="tab" href="#Food">Food</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" data-toggle="tab" href="#Service">Service</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" data-toggle="tab" href="#Hygiene">Hygiene</a>
+  </li>
+   <li class="nav-item">
+    <a class="nav-link" data-toggle="tab" href="#Ambience">Ambience</a>
+  </li>
+   <li class="nav-item">
+    <a class="nav-link" data-toggle="tab" href="#Delivery">Delivery</a>
+  </li>
+</ul>
+<div>
+    {% if count == 0 %}
+  <p>There are no feedbacks.</p>
+  {% elif count == 1 %}
+  <p>There is 1 feedback.</p>
+  {% else %}
+  <p>There are {{ count }} feedbacks.</p>
+  {% endif %}
+</div>
+
+<!-- Tab panes -->
+<div class="tab-content">
+  <div class="tab-pane container-fluid active" id="All">
+<br>
+    <h2>All</h2>
+    <br>
+<table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Feedback Id</th>
+          <th>Category</th>
+          <th>Rating</th>
+           <th>Contact</th>
+          <th>Remarks</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for feedback in feedbacks_list %}
+        <tr>
+          <td>{{ feedback.get_no_of_feedbacks() }}</td>
+           {% if feedback.get_category() == "F" %}
+        <td>Food</td>
+        {% elif feedback.get_category() == "S" %}
+        <td>Service</td>
+        {% elif feedback.get_category() == "H" %}
+        <td>Hygiene</td>
+        {% elif feedback.get_category() == "A" %}
+        <td>Ambience</td>
+        {% elif feedback.get_category() == "D" %}
+        <td>Delivery</td>
+        {% endif %}
+        {% if feedback.get_rating() == "1" %}
+        <td><span style="color:red">{{ feedback.get_rating() }}</span> </td>
+        {% elif feedback.get_rating() =="2" %}
+         <td><span style="color:red">{{ feedback.get_rating() }}</span> </td>
+        {% elif feedback.get_rating() =="3" %}
+         <td><span style="color:#FF8C00">{{ feedback.get_rating() }}</span> </td>
+        {% elif feedback.get_rating() =="4" %}
+         <td><span style="color:ForestGreen">{{ feedback.get_rating() }}</span> </td>
+        {% elif feedback.get_rating() =="5" %}
+         <td><span style="color:ForestGreen">{{ feedback.get_rating() }}</span> </td>
+        {% endif %}
+        <td>{{ feedback.get_contact() }}</td>
+        <td><a href="/viewRemarks/" class="btn btn-outline-info">View Remarks</a></td>
+    {% if feedback.get_status() == 'Open' %}
+           <td><button class = "btn btn-success">{{ feedback.get_status() }}</button></td>
+           <td><a href="/updateFeedback/{{feedback.get_no_of_feedbacks()}}" class="btn btn-outline-warning">Update</a></td>
+           {% else %}
+           <td><button class = "btn btn-danger">{{ feedback.get_status() }}</button></td>
+           {% endif %}
+           <td>{{ feedback.get_date() }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+      </table>
+  </div>
+    <div class="tab-pane container-fluid fade" id="Food">
+      <br>
+    <h2>Food</h2>
+    <br>
+      <table class="table table-striped">
+      <thead>
+        {% for feedback in feedbacks_list %}
+        <tbody>
+        <tr>
+
+        {% if feedback.get_category() == "F" %}
+        <td>{{ feedback.get_no_of_feedbacks() }}</td>
+        <td>Food</td>
+        {% if feedback.get_rating() == "1" %}
+        <td><span style="color:red">{{ feedback.get_rating() }}</span> </td>
+        {% elif feedback.get_rating() =="2" %}
+         <td><span style="color:red">{{ feedback.get_rating() }}</span> </td>
+        {% elif feedback.get_rating() =="3" %}
+         <td><span style="color:#FF8C00">{{ feedback.get_rating() }}</span> </td>
+        {% elif feedback.get_rating() =="4" %}
+         <td><span style="color:ForestGreen">{{ feedback.get_rating() }}</span> </td>
+        {% elif feedback.get_rating() =="5" %}
+         <td><span style="color:ForestGreen">{{ feedback.get_rating() }}</span> </td>
+        {% endif %}
+        <td>{{ feedback.get_contact() }}</td>
+        <td><a href="/viewRemarks/" class="btn btn-outline-info">View Remarks</a></td>
+    {% if feedback.get_status() == 'Open' %}
+           <td><button class = "btn btn-success">{{ feedback.get_status() }}</button></td>
+           <td><a href="/updateFeedback/{{feedback.get_no_of_feedbacks()}}" class="btn btn-outline-warning">Update</a></td>
+           {% else %}
+           <td><button class = "btn btn-danger">{{ feedback.get_status() }}</button></td>
+           {% endif %}
+            {% endif %}
+
+      </tr>
+       {% endfor %}
+    </tbody>
+  </table>
+</div>
+ <div class="tab-pane container-fluid fade" id="Service">
+      <br>
+    <h2>Service</h2>
+    <br>
+      <table class="table table-striped">
+      <thead>
+        {% for feedback in feedbacks_list %}
+        <tbody>
+        <tr>
+
+        {% if feedback.get_category() == "S" %}
+        <td>{{ feedback.get_no_of_feedbacks() }}</td>
+        <td>Service</td>
+        {% if feedback.get_rating() == "1" %}
+        <td><span style="color:red">{{ feedback.get_rating() }}</span> </td>
+        {% elif feedback.get_rating() =="2" %}
+         <td><span style="color:red">{{ feedback.get_rating() }}</span> </td>
+        {% elif feedback.get_rating() =="3" %}
+         <td><span style="color:#FF8C00">{{ feedback.get_rating() }}</span> </td>
+        {% elif feedback.get_rating() =="4" %}
+         <td><span style="color:ForestGreen">{{ feedback.get_rating() }}</span> </td>
+        {% elif feedback.get_rating() =="5" %}
+         <td><span style="color:ForestGreen">{{ feedback.get_rating() }}</span> </td>
+        {% endif %}
+        <td>{{ feedback.get_contact() }}</td>
+        <td><a href="/viewRemarks/" class="btn btn-outline-info">View Remarks</a></td>
+    {% if feedback.get_status() == 'Open' %}
+           <td><button class = "btn btn-success">{{ feedback.get_status() }}</button></td>
+           <td><a href="/updateFeedback/{{feedback.get_no_of_feedbacks()}}" class="btn btn-outline-warning">Update</a></td>
+           {% else %}
+           <td><button class = "btn btn-danger">{{ feedback.get_status() }}</button></td>
+           {% endif %}
+            {% endif %}
+
+      </tr>
+       {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+ <div class="tab-pane container-fluid fade" id="Hygiene">
+      <br>
+    <h2>Hygiene</h2>
+    <br>
+      <table class="table table-striped">
+      <thead>
+        {% for feedback in feedbacks_list %}
+        <tbody>
+        <tr>
+
+        {% if feedback.get_category() == "H" %}
+        <td>{{ feedback.get_no_of_feedbacks() }}</td>
+        <td>Hygiene</td>
+        {% if feedback.get_rating() == "1" %}
+        <td><span style="color:red">{{ feedback.get_rating() }}</span> </td>
+        {% elif feedback.get_rating() =="2" %}
+         <td><span style="color:red">{{ feedback.get_rating() }}</span> </td>
+        {% elif feedback.get_rating() =="3" %}
+         <td><span style="color:#FF8C00">{{ feedback.get_rating() }}</span> </td>
+        {% elif feedback.get_rating() =="4" %}
+         <td><span style="color:ForestGreen">{{ feedback.get_rating() }}</span> </td>
+        {% elif feedback.get_rating() =="5" %}
+         <td><span style="color:ForestGreen">{{ feedback.get_rating() }}</span> </td>
+        {% endif %}
+        <td>{{ feedback.get_contact() }}</td>
+        <td><a href="/viewRemarks/" class="btn btn-outline-info">View Remarks</a></td>
+    {% if feedback.get_status() == 'Open' %}
+           <td><button class = "btn btn-success">{{ feedback.get_status() }}</button></td>
+           <td><a href="/updateFeedback/{{feedback.get_no_of_feedbacks()}}" class="btn btn-outline-warning">Update</a></td>
+           {% else %}
+           <td><button class = "btn btn-danger">{{ feedback.get_status() }}</button></td>
+           {% endif %}
+            {% endif %}
+
+      </tr>
+       {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+ <div class="tab-pane container-fluid fade" id="Ambience">
+      <br>
+    <h2>Ambience</h2>
+    <br>
+      <table class="table table-striped">
+      <thead>
+        {% for feedback in feedbacks_list %}
+        <tbody>
+        <tr>
+
+        {% if feedback.get_category() == "A" %}
+        <td>{{ feedback.get_no_of_feedbacks() }}</td>
+        <td>Ambience</td>
+        {% if feedback.get_rating() == "1" %}
+        <td><span style="color:red">{{ feedback.get_rating() }}</span> </td>
+        {% elif feedback.get_rating() =="2" %}
+         <td><span style="color:red">{{ feedback.get_rating() }}</span> </td>
+        {% elif feedback.get_rating() =="3" %}
+         <td><span style="color:#FF8C00">{{ feedback.get_rating() }}</span> </td>
+        {% elif feedback.get_rating() =="4" %}
+         <td><span style="color:ForestGreen">{{ feedback.get_rating() }}</span> </td>
+        {% elif feedback.get_rating() =="5" %}
+         <td><span style="color:ForestGreen">{{ feedback.get_rating() }}</span> </td>
+        {% endif %}
+        <td>{{ feedback.get_contact() }}</td>
+        <td><a href="/viewRemarks/" class="btn btn-outline-info">View Remarks</a></td>
+    {% if feedback.get_status() == 'Open' %}
+           <td><button class = "btn btn-success">{{ feedback.get_status() }}</button></td>
+           <td><a href="/updateFeedback/{{feedback.get_no_of_feedbacks()}}" class="btn btn-outline-warning">Update</a></td>
+           {% else %}
+           <td><button class = "btn btn-danger">{{ feedback.get_status() }}</button></td>
+           {% endif %}
+            {% endif %}
+
+      </tr>
+       {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+ <div class="tab-pane container-fluid fade" id="Delivery">
+      <br>
+    <h2>Delivery</h2>
+    <br>
+      <table class="table table-striped">
+      <thead>
+        {% for feedback in feedbacks_list %}
+        <tbody>
+        <tr>
+
+        {% if feedback.get_category() == "D" %}
+        <td>{{ feedback.get_no_of_feedbacks() }}</td>
+        <td>Delivery</td>
+        {% if feedback.get_rating() == "1" %}
+        <td><span style="color:red">{{ feedback.get_rating() }}</span> </td>
+        {% elif feedback.get_rating() =="2" %}
+         <td><span style="color:red">{{ feedback.get_rating() }}</span> </td>
+        {% elif feedback.get_rating() =="3" %}
+         <td><span style="color:#FF8C00">{{ feedback.get_rating() }}</span> </td>
+        {% elif feedback.get_rating() =="4" %}
+         <td><span style="color:ForestGreen">{{ feedback.get_rating() }}</span> </td>
+        {% elif feedback.get_rating() =="5" %}
+         <td><span style="color:ForestGreen">{{ feedback.get_rating() }}</span> </td>
+        {% endif %}
+        <td>{{ feedback.get_contact() }}</td>
+        <td><a href="/viewRemarks/" class="btn btn-outline-info">View Remarks</a></td>
+    {% if feedback.get_status() == 'Open' %}
+           <td><button class = "btn btn-success">{{ feedback.get_status() }}</button></td>
+           <td><a href="/updateFeedback/{{feedback.get_no_of_feedbacks()}}" class="btn btn-outline-warning">Update</a></td>
+           {% else %}
+           <td><button class = "btn btn-danger">{{ feedback.get_status() }}</button></td>
+           {% endif %}
+            {% endif %}
+
+      </tr>
+       {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+
+
+
+</div>
+
+{% endblock %}

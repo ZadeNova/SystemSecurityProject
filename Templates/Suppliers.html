@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Library Loan System - InventoryAdd{% endblock %}
+
+{% block content %}
+{% from "includes/_formsHelper.html" import render_field %}
+<h1  class="display-4">CreateSupplier</h1>
+
+<form method="POST" action="">
+  <div class="form-group">
+    {{ render_field(form.ID, class="form-control") }}
+  </div>
+  <div class="form-group">
+    {{ render_field(form.BusinessName, class="form-control") }}
+  </div>
+  <div class="form-group">
+    {{ render_field(form.Address, class="form-control") }}
+  </div>
+  <div class="form-group">
+    {{ render_field(form.PostalCode, class="form-control") }}
+  </div>
+  <div id="prof">
+    <div class="form-group">
+
+
+      {{ render_field(form.Handphone, class="form-control") }}
+
+    </div>
+  </div>
+  <div>
+    <div class = "form-group">
+      {{ render_field(form.Details, class="form-control") }}
+    </div>
+  </div>
+  <div>
+    <div class = "form-group">
+      {{ render_field(form.Meat, class="form-control") }}
+    </div>
+  </div>
+  <div>
+    <div class = "form-group">
+      {{ render_field(form.Fruits, class="form-control") }}
+    </div>
+  </div>
+  <div>
+    <div class = "form-group">
+      {{ render_field(form.Dairy, class="form-control") }}
+    </div>
+  </div>
+  <div>
+    <div class = "form-group">
+      {{ render_field(form.Condiments, class="form-control") }}
+    </div>
+  </div>
+  <div>
+    <div class = "form-group">
+      {{ render_field(form.Necessities, class="form-control") }}
+    </div>
+  </div>
+  <input type="submit" value="Submit" class="btn btn-primary"/>
+   </form>
+
+
+
+{% endblock %}

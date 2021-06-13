@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Library Loan System - Retrieve Inventory{% endblock %}
+
+{% block content %}
+<h1 class="display-4">View Suppliers</h1>
+<div>
+  {% if SupplierCount == 0 %}
+  <p>There are no Supplier items.</p>
+  {% elif SupplierCount == 1 %}
+  <p>There is 1 Supplier item.</p>
+  {% else %}
+  <p>There are {{ SupplierCount }} Supplier items.</p>
+  {% endif %}
+</div>
+<div>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+          <th>ID</th>
+        <th>BusinessName</th>
+        <th>Address</th>
+        <th>PostalCode</th>
+        <th>Handphone</th>
+        <th>Details</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for supplier in Supplier_List %}
+      <tr>
+        <td>{{ supplier.get_ID() }}</td>
+        <td>{{ supplier.get_BusinessName() }}</td>
+        <td>{{ supplier.get_Address() }}</td>
+        <td>{{ supplier.get_PostalCode() }}</td>
+        <td>{{ supplier.get_HandPhone() }}</td>
+        <td>{{ supplier.get_Details() }}</td>
+
+
+        <td><a href="/UpdateSupplier/{{supplier.get_ID()}}" class="btn btn-warning"><i class="fas fa-edit"></a></td>
+
+
+          </form>
+        </td>
+          </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+

@@ -1,0 +1,38 @@
+ {% extends "base2.html" %}
+{% block title %}Library Loan System - create book{% endblock %}
+
+
+{% block content %}
+<style>
+    h2 {
+        text-align:center;
+        }
+    .center {
+         display: block;
+         color: white;
+         font-size: 50px;
+         cursor: pointer;
+         text-align: center;
+      }
+</style>
+<h1 class="display-4">Dine in / reservation </h1>
+
+
+
+<h2>Welcome to lls restaurant  </h2>
+      <h2 style="font-size:30px">we provide dine in  or reservation services , please click the button bellow : </h2>
+    <div class="center">
+        <a href="create_dinein_user">
+        <input type="submit" value="dine in" class="btn btn-primary"style="font-size:30px"/>
+        </a>
+        <a href="createUser">
+        <input type="submit" value="reservation " class="btn btn-primary"style="font-size:30px"/>
+        </a>
+
+    </div>
+
+
+
+
+
+{% endblock %}

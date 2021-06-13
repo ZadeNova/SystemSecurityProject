@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Library Loan System - InventoryAdd{% endblock %}
+
+{% block content %}
+{% from "includes/_formsHelper.html" import render_field %}
+<h1  class="display-4">Inventory Update</h1>
+
+<form method="POST" action="">
+  <div class="form-group">
+    {{ render_field(form.Name, class="form-control") }}
+  </div>
+  <div class="form-group">
+    {{ render_field(form.Unit_of_Measure, class="form-control") }}
+  </div>
+  <div class="form-group">
+    {{ render_field(form.Category, class="form-check", style="list-style-type:none") }}
+  </div>
+  <div id="prof">
+    <div class="form-group">
+      {{ render_field(form.Threshold, class="form-control") }}
+    </div>
+  </div>
+  <div>
+    <div class = "form-group">
+      {{ render_field(form.Quantity, class="form-control") }}
+    </div>
+  </div>
+  <div>
+    <div class = "form-group">
+      {{ render_field(form.Status, class="form-control") }}
+    </div>
+  </div>
+  <div>
+
+  <input type="submit" value="Submit" class="btn btn-primary"/>
+</form>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% endblock %}

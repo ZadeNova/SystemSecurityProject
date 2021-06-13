@@ -1,0 +1,163 @@
+{% extends "base2.html" %}
+{% block title %}jheb - customer {% endblock %}
+
+{% block content %}
+<div class="col-xs-1" align="center">
+    <h1 class="display-4">Menu</h1>
+    <p>Start ordering !</p>
+
+
+
+<div>
+    <a href="/" class="btn btn-outline-primary"  role="button">Home</a>
+</div>
+
+
+
+    <h1>Main Dishes</h1>
+
+    <div>
+        {% for food in maindishlist %}
+        <br>
+
+            {% if food.get_status() == 'Available' %}
+            <a href="" class="btn btn-secondary btn-lg active" role="button" >{{food.get_food_name() }}</a>
+        {% if food.get_food_name() == "Ban Mian" %}
+        <a href="/orderfinalbanmian" class="btn btn-success" role="button" >Add</a>
+        {% elif food.get_food_name() == "Porridge" %}
+        <a href="/orderfinalporridge" class="btn btn-success" role="button" >Add</a>
+        {% endif %}
+            {% else %}
+            <a href="" class="btn btn-secondary btn-lg disabled" role="button" aria-disabled="true">{{food.get_food_name() }}</a>
+        {% if food.get_food_name() == "Ban Mian" %}
+        <a href="/orderfinalbanmian" class="btn btn-secondary btn-lg disabled" role="button" >Add</a>
+        {% elif food.get_food_name() == "Porridge" %}
+        <a href="/orderfinalporridge" class="btn btn-secondary btn-lg disabled" role="button" >Add</a>
+        {% endif %}
+            {% endif %}
+        <br>
+            <img src="" width="150" height="150">
+        <br>
+
+        <p>{{ food.get_image() }}</p>
+        <p><mark>{{ food.get_price() }}</mark></p>
+        <p><mark>{{ food.get_ingredients() }}</mark></p>
+        {% endfor %}
+    </div>
+
+    <h1>Side Dishes</h1>
+    <div>
+        {% for sidedish in sidedishlist %}
+            {% if sidedish.get_status() == 'Available' %}
+            <a href="" class="btn btn-secondary btn-lg active" role="button" >{{ sidedish.get_food_name() }}</a>
+        {% if sidedish.get_food_name() == "Chicken Wings" %}
+        <a href="/orderfinalchicken" class="btn btn-success" role="button" >Add</a>
+        {% elif sidedish.get_food_name() == "Dumplings" %}
+        <a href="/orderfinaldumpling" class="btn btn-success" role="button" >Add</a>
+        {% endif %}
+            {% else %}
+            <a href="" class="btn btn-secondary btn-lg disabled" role="button" aria-disabled="true">{{ sidedish.get_food_name() }}</a>
+        {% if sidedish.get_food_name() == "Chicken Wings" %}
+        <a href="/orderfinalchicken" class="btn btn-secondary btn-lg disabled" role="button" >Add</a>
+        {% elif sidedish.get_food_name() == "Dumplings" %}
+        <a href="/orderfinaldumpling" class="btn btn-secondary btn-lg disabled" role="button" >Add</a>
+        {% endif %}
+            {% endif %}
+        <br>
+            <img src="" width="150" height="150">
+        <br>
+        <p>{{ sidedish.get_image() }}</p>
+        <p><mark>{{ sidedish.get_price() }}</mark></p>
+        <p><mark>{{ sidedish.get_ingredients() }}</mark></p>
+        {% endfor %}
+    </div>
+
+    <h1>Drinks</h1>
+    <div>
+
+        {% for drinks in drinklist %}
+
+        {% if drinks.get_status() == 'Available' %}
+            <a href="" class="btn btn-secondary btn-lg active" role="button" >{{drinks.get_food_name() }}</a>
+        {% if drinks.get_food_name() == "Milk Tea" %}
+        <a href="/orderfinalmilktea" class="btn btn-success" role="button" >Add</a>
+        {% else %}
+        <a href="/orderfinalrootbeer" class="btn btn-success" role="button" >Add</a>
+        {% endif %}
+            {% else %}
+            <a href="" class="btn btn-secondary btn-lg disabled" role="button" aria-disabled="true">{{drinks.get_food_name() }}</a>
+        {% if drinks.get_food_name() == "Milk Tea" %}
+        <a href="/orderfinalmilktea" class="btn btn-secondary btn-lg disabled" role="button" >Add</a>
+        {% else %}
+        <a href="/orderfinalrootbeer" class="btn btn-secondary btn-lg disabled" role="button" >Add</a>
+        {% endif %}
+            {% endif %}
+        <br>
+            <img src="" width="150" height="150">
+        <br>
+        <p>{{ drinks.get_image() }}</p>
+        <p><mark>{{ drinks.get_price() }}</mark></p>
+        <p><mark>{{ drinks.get_ingredients() }}</mark></p>
+        {% endfor %}
+
+    </div>
+    <h1>On promos!</h1>
+    <div>
+        {% for promo in promolist %}
+        {% if promo.get_status() == 'Available' %}
+            <a href="" class="btn btn-secondary btn-lg active" role="button" >{{promo.get_food_name() }}</a>
+        {% if promo.get_food_name() == 'CNY Set' %}
+        <a href="/orderfinalcnyset" class="btn btn-success" role="button" >Add</a>
+        {% endif %}
+            {% else %}
+            <a href="" class="btn btn-secondary btn-lg disabled" role="button" aria-disabled="true">{{promo.get_food_name() }}</a>
+         {% if promo.get_food_name() == 'CNY Set' %}
+        <a href="/orderfinalcnyset" class="btn btn-secondary btn-lg disabled" role="button" >Add</a>
+        {% endif %}
+            {% endif %}
+        <br>
+            <img src="" width="150" height="150">
+        <br>
+        <p>{{ promo.get_image() }}</p>
+        <p><mark>{{ promo.get_price() }}</mark></p>
+        <p><mark>{{ promo.get_ingredients() }}</mark></p>
+        {% endfor %}
+
+    </div>
+    <h1>Kids Meal</h1>
+    <div>
+    {% for kids in kidsmeallist %}
+
+
+    {% if kids.get_status() == 'Available' %}
+        <a href="" class="btn btn-secondary btn-lg active" role="button" >{{kids.get_food_name() }}</a>
+        {% if kids.get_food_name() == 'Kids Set 1' %}
+        <a href="/orderfinalkid1" class="btn btn-success" role="button" >Add</a>
+        {% endif %}
+        {% else %}
+        <a href="" class="btn btn-secondary btn-lg disabled" role="button" aria-disabled="true">{{kids.get_food_name() }}</a>
+        {% if kids.get_food_name() == 'Kids Set 1' %}
+        <a href="/orderfinalkid1" class="btn btn-secondary btn-lg disabled" role="button" >Add</a>
+        {% endif %}
+        {% endif %}
+        <br>
+        <br>
+            <img src="" width="150" height="150">
+        <br>
+    <p>{{ kids.get_image() }}</p>
+    <p><mark>{{ kids.get_price() }}</mark></p>
+    <p><mark>{{ kids.get_ingredients() }}</mark></p>
+    {% endfor %}
+    </div>
+
+
+
+
+</div>
+
+
+    <style type="text/css">
+
+    </style>
+
+    {% endblock %}

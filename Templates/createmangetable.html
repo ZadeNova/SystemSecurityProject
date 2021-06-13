@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+{% from "includes/_formsHelper.html" import render_field %}
+
+<h1 class="display-4">Create table</h1>
+
+<form method="POST" action="">
+
+
+  <div class="form-group">
+    {{ render_field(form.table_no, class="form-control") }}
+  </div>
+  <div id="prof">
+    <div class="form-group">
+          {{ render_field(form.remarks, class="form-control") }}
+    </div>
+  </div>
+  <input type="submit" value="Submit" class="btn btn-primary"/>
+</form>
+{% endblock %}
