@@ -43,6 +43,12 @@ images = UploadSet('images', IMAGES)
 configure_uploads(app, images)
 
 
+@app.route('/ForgetPassword')
+def ForgetPassword():
+
+    return render_template("ForgetPassword.html")
+
+
 @app.route('/Inventory')
 def InventoryPage():
     try:
@@ -82,14 +88,6 @@ def InventoryPage():
             c = OngoingOrders_Dict.get(i)
             OngoingOrders_List.append(c)
         print(OngoingOrders_List)
-
-
-
-
-
-
-
-
     except:
         print("hello")
 
@@ -2885,9 +2883,9 @@ def page_not_found(e):
     return render_template('error500.html'), 500
 
 
-@app.errorhandler(404)
-def page_not_found(e):
-    return render_template('error404.html'), 404
+#@app.errorhandler(404)
+#def page_not_found(e):
+    #return render_template('error404.html'), 404
 
 
 if __name__ == '__main__':
