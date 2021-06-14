@@ -1043,7 +1043,7 @@ def create_login_user():
         except:
             print("Error in retrieving Users from login.db.")
         loginuser = CreateLoginUser(create_login_user_form.username.data, create_login_user_form.phone_no.data,create_login_user_form.nric.data,
-                                    create_login_user_form.email.data,create_login_user_form.password.data, create_login_user_form.address.data,
+                                    create_login_user_form.email.data,create_login_user_form.security_questions.data,create_login_user_form.answer.data,create_login_user_form.password.data, create_login_user_form.address.data,
                                     create_login_user_form.role.data)
         print(create_login_user_form.username)
         print(create_login_user_form.password)
@@ -1084,7 +1084,7 @@ def home():
                 role = "Guest"
             else:
                 continue
-            return render_template('homenew.html', name=username, role=role, nric=users.get_nric(), email=users.get_email())
+            return render_template('homenew.html', name=username, role=role, nric=users.get_nric(), email=users.get_email(), security_question=users.get_security_questions(), answer=users.get_answer())
         else:
             return '<p style="text-align:center;">Please log in first.</p>', render_template('home2.html')
 
