@@ -35,9 +35,28 @@ from updateOrder import Orderupdate
 from updateSupplier import updateSupplierForm
 from viewupdateforms import CreateUpdateFeedbackForm
 import requests
+
+#SQL stuff
+from flask_mysqldb import MySQL
+import MySQLdb.cursors
+import re
+
+
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Project'
 
+
+#Database connection
+try:
+    app.config['MYSQL_HOST'] = 'localhost'
+    app.config['MYSQL_USER'] = 'root'
+    app.config['MYSQL_PASSWORD'] = 'ZadePrimeSQL69420'
+    app.config['MYSQL_DB'] = 'SystemSecurityProject'
+except:
+    print("MYSQL root is not found?")
+
+mysql = MySQL(app)
 app.config['UPLOADED_IMAGES_DEST'] = 'uploads/FoodImages'
 images = UploadSet('images', IMAGES)
 configure_uploads(app, images)
@@ -852,7 +871,7 @@ def is_human(captcha_response):
     return response_text['success']
 
 
-
+# Edit this - Zade
 @app.route('/login', methods=['GET', 'POST'])
 def login():
 
