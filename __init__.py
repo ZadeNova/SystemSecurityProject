@@ -34,6 +34,8 @@ from managetableform import Createmangetable
 from updateOrder import Orderupdate
 from updateSupplier import updateSupplierForm
 from viewupdateforms import CreateUpdateFeedbackForm
+from flask_mail import Mail, Message
+from random import randint
 import requests
 
 #SQL stuff
@@ -66,6 +68,85 @@ app.config['SECRET_KEY'] = 'cairocoders-ednalan'
 
 
 
+@app.route('/userprofile')
+def Userprofile():
+    users_dict = {}
+    db = shelve.open('login.db', 'r')
+    users_dict = db['login']
+    db.close()
+    users_list = []
+    for key in users_dict:
+        user = users_dict.get(key)
+        users_list.append(user)
+    for users in users_list:
+        if 'username' in session:
+            username = session['username']
+            if username == users.get_username():
+                role = users.get_role()
+                email=users.get_email()
+                nric=users.get_nric()
+                sq=users.get_security_questions()
+                ans=users.get_answer()
+                phn=users.get_phone_no()
+                add=users.get_address()
+                passw=users.get_password()
+                print(role)
+            elif username == "admin":
+                role = "Staff"
+
+            elif username == "becca":
+                role = "Guest"
+                email=''
+                nric=''
+                sq=''
+                ans=''
+                phn=''
+                add=''
+                passw= session['password']
+    return render_template('userprofile.html',role=role,name=username,email=email,nric=nric,phn=phn,add=add,passw=passw,sq=sq,ans=ans)
+
+@app.route('/managerprofile')
+def Managerprofile():
+    users_dict = {}
+    db = shelve.open('login.db', 'r')
+    users_dict = db['login']
+    db.close()
+    users_list = []
+    for key in users_dict:
+        user = users_dict.get(key)
+        users_list.append(user)
+    for users in users_list:
+        if 'username' in session:
+            username = session['username']
+            if username == users.get_username():
+                role = users.get_role()
+                email=users.get_email()
+                nric=users.get_nric()
+                sq=users.get_security_questions()
+                ans=users.get_answer()
+                phn=users.get_phone_no()
+                add=users.get_address()
+                passw=users.get_password()
+                print(role)
+            elif username == "admin":
+                role = "Staff"
+                email = ''
+                nric = ''
+                sq = ''
+                ans = ''
+                phn = ''
+                add = ''
+                passw = session['password']
+            elif username == "becca":
+                role = "Guest"
+                email=''
+                nric=''
+                sq=''
+                ans=''
+                phn=''
+                add=''
+                passw = session['password']
+    return render_template('userprofile.html',role=role,name=username,email=email,nric=nric,phn=phn,add=add,passw=passw,sq=sq,ans=ans)
 
 @app.route('/ForgetPassword')
 def ForgetPassword():
@@ -1103,7 +1184,8 @@ def home():
                 role = "Guest"
             else:
                 continue
-            return render_template('homenew.html', name=username, role=role, nric=users.get_nric(), email=users.get_email(), security_question=users.get_security_questions(), answer=users.get_answer())
+            return render_template('homenew.html', name=username, role=role)
+        #, nric=users.get_nric(), email=users.get_email(), security_question=users.get_security_questions(), answer=users.get_answer()
         else:
             return '<p style="text-align:center;">Please log in first.</p>', render_template('home2.html')
 
