@@ -4,7 +4,7 @@ import shelve
 import datetime
 from datetime import date
 # Bryan Import
-from flask import Flask, render_template, request, redirect, url_for, flash ,json
+from flask import Flask, render_template, request, redirect, url_for, flash, json
 from flask import session
 from flask_uploads import UploadSet, configure_uploads, IMAGES
 
@@ -38,18 +38,15 @@ from flask_mail import Mail, Message
 from random import randint
 import requests
 
-#SQL stuff
+# SQL stuff
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
 import re
 
-
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Project'
 
-
-#Database connection
+# Database connection
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
@@ -67,91 +64,89 @@ configure_uploads(app, images)
 app.config['SECRET_KEY'] = 'cairocoders-ednalan'
 
 
-
 @app.route('/userprofile')
 def Userprofile():
-    users_dict = {}
-    db = shelve.open('login.db', 'r')
-    users_dict = db['login']
-    db.close()
-    users_list = []
-    for key in users_dict:
-        user = users_dict.get(key)
-        users_list.append(user)
-    for users in users_list:
-        if 'username' in session:
-            username = session['username']
-            if username == users.get_username():
-                role = users.get_role()
-                email=users.get_email()
-                nric=users.get_nric()
-                sq=users.get_security_questions()
-                ans=users.get_answer()
-                phn=users.get_phone_no()
-                add=users.get_address()
-                passw=users.get_password()
-                print(role)
-            elif username == "admin":
-                role = "Staff"
+    print(session)
+    if 'loggedin' in session:
+        # We need all the account info for the user so we can display it on the profile page
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+        account = cursor.fetchone()
+        # Show the profile page with account info
+        return render_template('userprofile.html', account=account)
+        # User is not loggedin redirect to login page
+    return redirect(url_for('login'))
 
-            elif username == "becca":
-                role = "Guest"
-                email=''
-                nric=''
-                sq=''
-                ans=''
-                phn=''
-                add=''
-                passw= session['password']
-    return render_template('userprofile.html',role=role,name=username,email=email,nric=nric,phn=phn,add=add,passw=passw,sq=sq,ans=ans)
+
+
+
 
 @app.route('/managerprofile')
 def Managerprofile():
-    users_dict = {}
-    db = shelve.open('login.db', 'r')
-    users_dict = db['login']
-    db.close()
-    users_list = []
-    for key in users_dict:
-        user = users_dict.get(key)
-        users_list.append(user)
-    for users in users_list:
-        if 'username' in session:
-            username = session['username']
-            if username == users.get_username():
-                role = users.get_role()
-                email=users.get_email()
-                nric=users.get_nric()
-                sq=users.get_security_questions()
-                ans=users.get_answer()
-                phn=users.get_phone_no()
-                add=users.get_address()
-                passw=users.get_password()
-                print(role)
-            elif username == "admin":
-                role = "Staff"
-                email = ''
-                nric = ''
-                sq = ''
-                ans = ''
-                phn = ''
-                add = ''
-                passw = session['password']
-            elif username == "becca":
-                role = "Guest"
-                email=''
-                nric=''
-                sq=''
-                ans=''
-                phn=''
-                add=''
-                passw = session['password']
-    return render_template('userprofile.html',role=role,name=username,email=email,nric=nric,phn=phn,add=add,passw=passw,sq=sq,ans=ans)
+    try:
+        if 'loggedin' in session:
+            # We need all the account info for the user so we can display it on the profile page
+            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+            account = cursor.fetchone()
+            # Show the profile page with account info
+            return render_template('userprofile.html', account=account)
+            # User is not loggedin redirect to login page
+        return redirect(url_for('login'))
+    except:
+        return render_template("error404.html")
 
-@app.route('/ForgetPassword')
-def ForgetPassword():
 
-    return render_template("ForgetPassword.html")
+
+    #users_dict = {}
+    #db = shelve.open('login.db', 'r')
+    #users_dict = db['login']
+    #db.close()
+    #users_list = []
+    #for key in users_dict:
+    #    user = users_dict.get(key)
+    #    users_list.append(user)
+    #for users in users_list:
+    #    if 'username' in session:
+    #        username = session['username']
+    #        if username == users.get_username():
+    #            role = users.get_role()
+    #            email = users.get_email()
+    #            nric = users.get_nric()
+    #            sq = users.get_security_questions()
+    #            ans = users.get_answer()
+    #            phn = users.get_phone_no()
+    #            add = users.get_address()
+    #            passw = users.get_password()
+    #            print(role)
+    #        elif username == "admin":
+    #            role = "Staff"
+    #            email = ''
+    #            nric = ''
+    #            sq = ''
+    #            ans = ''
+    #            phn = ''
+    #            add = ''
+    #            passw = session['password']
+    #        elif username == "becca":
+    #            role = "Guest"
+    #            email = ''
+    #            nric = ''
+    #            sq = ''
+    #            ans = ''
+    #            phn = ''
+    #            add = ''
+    #            passw = session['password']
+    #return render_template('userprofile.html', role=role, name=username, email=email, nric=nric, phn=phn, add=add,
+    #                       passw=passw, sq=sq, ans=ans)
+
+
+@app.route('/AuditLog')
+def Audit():
+    try:
+        return render_template('AuditLog.html')
+    except:
+        return render_template('error404.html')
 
 
 @app.route('/Inventory')
@@ -608,7 +603,6 @@ def Cancel_OF_Order(id):
         OngoingOrders = InvDataBase['OngoingOrders']
         order = Order_Dict.get(id)
 
-
         OrderCancel.Quantity.data = order.get_Quantity()
         OrderCancel.Date.data = order.get_Date()
         OrderCancel.ExpectedDeliveryDate.data = order.get_ExpectedDeliveryDate()
@@ -870,7 +864,6 @@ def DeliverOrder(id):
                 InvDataBase['Orders'] = Order_Dict
                 OngoingOrders_Dict[id] = False
 
-
                 InvDataBase['OngoingOrders'] = OngoingOrders_Dict
 
                 return redirect(url_for('InventoryPage'))
@@ -945,73 +938,114 @@ def is_human(captcha_response):
     """ Validating recaptcha response from google server
         Returns True captcha test passed for submitted form else returns False.
     """
-    secret ="6LeQDi8bAAAAAIkB8_0hu3rvBirsTLkS4D6t4ztA"
+    secret = "6LeQDi8bAAAAAIkB8_0hu3rvBirsTLkS4D6t4ztA"
     payload = {'response': captcha_response, 'secret': secret}
     response = requests.post("https://www.google.com/recaptcha/api/siteverify", payload)
     response_text = json.loads(response.text)
     return response_text['success']
 
 
-# Edit this - Zade
+# Edit this - Zadesqlstuff
+
+
+@app.route('/ForgetPassword', methods=['GET', 'POST'])
+def ForgottenPassword():
+    try:
+
+        return render_template('ForgetPassword.html')
+    except:
+        return render_template('error404.html')
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
 
-    if 'username' in session:
-        username = session['username']
-        return render_template('homenew.html', name=username)
-
-    error = None
-    sitekey = "6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb"
-    if request.method == 'POST':
-        users_dict = {}
-        db = shelve.open('login.db', 'r')
-        users_dict = db['login']
-        db.close()
-        users_list = []
-        captcha_response = request.form['g-recaptcha-response']
-
-        if is_human(captcha_response):
-            # Process request here
-            status = ''
+    if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
+        username = request.form['username']
+        password = request.form['password']
+        # Check if account exists in MYSQL
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM accounts WHERE username = %s AND password = %s', (username, password))
+        # Fetch one record and return result
+        account = cursor.fetchone()
+        print(account)
+        if account:
+            session['loggedin'] = True
+            session['ID'] = account['ID']
+            session['Username'] = account['Username']
+            session['password'] = account['Password']
+            return render_template('userprofile.html', account= account,name = account['Username'])
         else:
-            # Log invalid attempts
-            status = "Sorry ! Please Check Im not a robot."
+            msg = 'Incorrect Username/Password'
+            return render_template('login.html',msg = msg)
+    return render_template('login.html')
 
-        flash(status)
-        for key in users_dict:
-            user = users_dict.get(key)
-            users_list.append(user)
-        for x in users_list:
-            print('username', x.get_username())
-            print('passs', x.get_password())
-        for user in users_list:
-            if request.form['username'] == user.get_username() and request.form['password'] == user.get_password()and status=='':
+    #if 'username' in session:
+    #    username = session['username']
+    #    return render_template('homenew.html', name=username)
+#
+    #error = None
+    #sitekey = "6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb"
+    #if request.method == 'POST':
+    #    users_dict = {}
+    #    db = shelve.open('login.db', 'r')
+    #    users_dict = db['login']
+    #    db.close()
+    #    users_list = []
+    #    captcha_response = request.form['g-recaptcha-response']
+#
+    #    if is_human(captcha_response):
+    #        # Process request here
+    #        status = ''
+    #    else:
+    #        # Log invalid attempts
+    #        status = "Sorry ! Please Check Im not a robot."
+#
+    #    flash(status)
+    #    for key in users_dict:
+    #        user = users_dict.get(key)
+    #        users_list.append(user)
+    #    for x in users_list:
+    #        print('username', x.get_username())
+    #        print('passs', x.get_password())
+    #    for user in users_list:
+    #        if request.form['username'] == user.get_username() and request.form[
+    #            'password'] == user.get_password() and status == '':
+#
+    #            session['username'] = request.form['username']
+    #            print(request.form['username'])
+    #            session['password'] = request.form['password']
+    #            session["id"] = user.get_user_id()
+#
+    #            return redirect(url_for('home'))
+    #        elif request.form['username'] == 'admin' and request.form['password'] == 'admin123' and status == '':
+    #            session['username'] = request.form['username']
+    #            print(request.form['username'])
+    #            session['password'] = request.form['password']
+    #            print(request.form['password'])
+#
+    #            return redirect(url_for('home'))
+    #        elif request.form['username'] == 'becca' and request.form['password'] == 'becca123' and status == '':
+    #            session['username'] = request.form['username']
+    #            print(request.form['username'])
+    #            session['password'] = request.form['password']
+    #            session["id"] = user.get_user_id()
+#
+    #            return redirect(url_for('home'))
+    #        else:
+    #            error = 'Invalid Credentials. Please try again.'
+    #            print(error)
+    #return render_template('login.html', sitekey=sitekey, error=error)
 
-                session['username'] = request.form['username']
-                print(request.form['username'])
-                session['password'] = request.form['password']
-                session["id"] = user.get_user_id()
-
-                return redirect(url_for('home'))
-            elif request.form['username'] == 'admin' and request.form['password'] == 'admin123' and status=='':
-                session['username'] = request.form['username']
-                print(request.form['username'])
-                session['password'] = request.form['password']
-                print(request.form['password'])
-
-                return redirect(url_for('home'))
-            elif request.form['username'] == 'becca' and request.form['password'] == 'becca123'and status=='':
-                session['username'] = request.form['username']
-                print(request.form['username'])
-                session['password'] = request.form['password']
-                session["id"] = user.get_user_id()
-
-                return redirect(url_for('home'))
-            else:
-                error = 'Invalid Credentials. Please try again.'
-                print(error)
-    return render_template('login.html', sitekey=sitekey,error=error)
-
+@app.route('/logout')
+def logout():
+    try:
+        session.pop('loggedin', None)
+        session.pop('Username', None)
+        session.pop('ID', None)
+        return redirect(url_for('login'))
+    except:
+        return render_template('error404.html')
 
 @app.route('/mang_update_dinein/<int:id>/', methods=['GET', 'POST'])
 def mang_update_dinein(id):
@@ -1122,73 +1156,120 @@ def mang_update_dinein(id):
         return render_template('error404.html')
 
 
-@app.route('/logout')
-def logout():
-    if 'username' in session:
-        session.pop('username', None)
-        return render_template('home3.html')
-    else:
-        return '<p>user already logged out</p>' and render_template('home3.html')
+
 
 
 @app.route('/Createloginuser', methods=['GET', 'POST'])
 def create_login_user():
+    # Output message if something goes wrong...
     create_login_user_form = CreateLoginUserForm(request.form)
+    msg = ''
+    # Check if "username", "password" and "email" POST requests exist (user submitted form)
+    if request.method == 'POST' and 'Username' in request.form and 'Password' in request.form and 'Email' in request.form:
+        # Create variables for easy access
+        print("is the form even working")
+        print(request.form)
+        username = request.form['Username']
+        phone_no = request.form['Phone_Number']
+        NRIC = request.form['NRIC']
+        email = request.form['Email']
+        security_questions = request.form['Security_Questions']
+        answer = request.form['Answers']
+        password = request.form['Password']
+        address = request.form['Address']
+        role = request.form['role']
+        # Check if account exists using MySQL
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        print(username,phone_no,NRIC,email,security_questions,answer,password,address,role)
+        sqlcode = 'SELECT * FROM accounts WHERE Username = %s'
+        adr = (username,)
+        cursor.execute(sqlcode,adr)
+        account = cursor.fetchone()
+        # If account exists show error and validation checks(do this at the form for this function)
+        if account:
+            msg = 'Account already exists!'
+        elif not username or not password or not email:
+            print("3")
+            msg = 'Please fill out the form!'
+        else:
+            # Account doesnt exists and the form data is valid, now insert new account into accounts table
+            cursor.execute('INSERT INTO accounts VALUES (NULL, %s, %s, %s, %s, %s, %s, %s, %s, %s)', (username,NRIC ,phone_no,email,security_questions, answer,password,address,role))
+            mysql.connection.commit()
+            msg = 'You have successfully registered!'
+            print("working")
+            return redirect('login')
+    elif request.method == 'POST':
+        # Form is empty... (no POST data)
+        print("not working")
+        print(request.form)
+        msg = 'Please fill out the form!'
+    # Show registration form with message (if any)
+    return render_template('create_login_user_form.html', msg=msg,form=create_login_user_form)
 
-    if request.method == 'POST' and create_login_user_form.validate():
-        users_dict = {}
-        db = shelve.open('login.db', 'c')
-        try:
-            users_dict = db['login']
-        except:
-            print("Error in retrieving Users from login.db.")
-        loginuser = CreateLoginUser(create_login_user_form.username.data, create_login_user_form.phone_no.data,create_login_user_form.nric.data,
-                                    create_login_user_form.email.data,create_login_user_form.security_questions.data,create_login_user_form.answer.data,create_login_user_form.password.data, create_login_user_form.address.data,
-                                    create_login_user_form.role.data)
-        print(create_login_user_form.username)
-        print(create_login_user_form.password)
-        print(create_login_user_form.address)
-        print(create_login_user_form.phone_no)
-        users_dict[loginuser.get_user_id()] = loginuser
-        db['login'] = users_dict
-        print(users_dict)
-        user = users_dict.get(1)
-        print(user.get_username())
-        print(user.get_user_id())
-        db.close()
-        return redirect(url_for('login'))
-    return render_template('create_login_user_form.html', form=create_login_user_form)
+
+
+
+
+    #create_login_user_form = CreateLoginUserForm(request.form)
+    #print("Hello this works")
+#
+    #if request.method == 'POST' and create_login_user_form.validate():
+    #    users_dict = {}
+    #    db = shelve.open('login.db', 'c')
+    #    try:
+    #        users_dict = db['login']
+    #    except:
+    #        print("Error in retrieving Users from login.db.")
+    #    loginuser = CreateLoginUser(create_login_user_form.username.data, create_login_user_form.phone_no.data,
+    #                                create_login_user_form.nric.data,
+    #                                create_login_user_form.email.data, create_login_user_form.security_questions.data,
+    #                                create_login_user_form.answer.data, create_login_user_form.password.data,
+    #                                create_login_user_form.address.data,
+    #                                create_login_user_form.role.data)
+    #    print(create_login_user_form.username)
+    #    print(create_login_user_form.password)
+    #    print(create_login_user_form.address)
+    #    print(create_login_user_form.phone_no)
+    #    users_dict[loginuser.get_user_id()] = loginuser
+    #    db['login'] = users_dict
+    #    print(users_dict)
+    #    user = users_dict.get(1)
+    #    print(user.get_username())
+    #    print(user.get_user_id())
+    #    db.close()
+    #    return redirect(url_for('login'))
+    #return render_template('create_login_user_form.html', form=create_login_user_form)
 
 
 @app.route('/')  # declarator
 # tie to map a web application function to an url
 def home():
-    global role
-    users_dict = {}
-    db = shelve.open('login.db', 'r')
-    users_dict = db['login']
-    db.close()
-    users_list = []
-    for key in users_dict:
-        user = users_dict.get(key)
-        users_list.append(user)
-    for users in users_list:
-        if 'username' in session:
-            username = session['username']
-            if username == users.get_username():
-                role = users.get_role()
-                print(role)
-            elif username == "admin":
-                role = "Staff"
-            elif username == "becca":
-                role = "Guest"
-            else:
-                continue
-            return render_template('homenew.html', name=username, role=role)
-        #, nric=users.get_nric(), email=users.get_email(), security_question=users.get_security_questions(), answer=users.get_answer()
-        else:
-            return '<p style="text-align:center;">Please log in first.</p>', render_template('home2.html')
-
+    #global role
+    #users_dict = {}
+    #db = shelve.open('login.db', 'r')
+    #users_dict = db['login']
+    #db.close()
+    #users_list = []
+    #for key in users_dict:
+    #    user = users_dict.get(key)
+    #    users_list.append(user)
+    #for users in users_list:
+    #    if 'username' in session:
+    #        username = session['username']
+    #        if username == users.get_username():
+    #            role = users.get_role()
+    #            print(role)
+    #        elif username == "admin":
+    #            role = "Staff"
+    #        elif username == "becca":
+    #            role = "Guest"
+    #        else:
+    #            continue
+    #        return render_template('homenew.html', name=username, role=role)
+    #    # , nric=users.get_nric(), email=users.get_email(), security_question=users.get_security_questions(), answer=users.get_answer()
+    #    else:
+    #        return '<p style="text-align:center;">Please log in first.</p>', render_template('home2.html')
+    return render_template('home2.html')
 
 ####end of login code lolllll ############################################################
 
@@ -3017,9 +3098,9 @@ def page_not_found(e):
     return render_template('error500.html'), 500
 
 
-#@app.errorhandler(404)
-#def page_not_found(e):
-    #return render_template('error404.html'), 404
+# @app.errorhandler(404)
+# def page_not_found(e):
+# return render_template('error404.html'), 404
 
 
 if __name__ == '__main__':

@@ -8,35 +8,36 @@
 
 <form method="POST" action="">
   <div class="form-group">
-    {{ render_field(form.username, class="form-control") }}
+    {{ render_field(form.Username, class="form-control") }}
   </div>
 
   <div class="form-group">
-    {{ render_field(form.phone_no, class="form-control")  }}
+    {{ render_field(form.Phone_Number, class="form-control")  }}
   </div>
   <div class="form-group">
-    {{ render_field(form.nric, class="form-control")  }}
+    {{ render_field(form.NRIC, class="form-control")  }}
   </div>
   <div class="form-group">
-    {{ render_field(form.email, class="form-control")  }}
+    {{ render_field(form.Email, class="form-control")  }}
   </div>
   <div class="form-group">
-    {{ render_field(form.security_questions, class="form-control")  }}
+    {{ render_field(form.Security_Questions, class="form-control")  }}
   </div>
   <div class="form-group">
-    {{ render_field(form.answer, class="form-control")  }}
+    {{ render_field(form.Answers, class="form-control")  }}
   </div>
     <div class="form-group">
-    {{ render_field(form.password, class="form-control")  }}
+    {{ render_field(form.Password, class="form-control")  }}
   </div>
   <div id="prof">
     <div class="form-group">
-      {{ render_field(form.address, class="form-control") }}
+      {{ render_field(form.Address, class="form-control") }}
     </div>
   </div>
   <div class="form-group">
     {{ render_field(form.role, class="form-control")  }}
   </div>
+  <div class = "msg">{{ msg }}</div>
    <input type="submit" value="Submit" class="btn btn-primary"/>
   <td><a href="/login" class="btn btn-warning">Return</a></td>
    </div>

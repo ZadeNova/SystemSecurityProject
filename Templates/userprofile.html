@@ -157,7 +157,7 @@ h6 {
                         <div class="col-sm-4 bg-c-lite-green user-profile">
                             <div class="card-block text-center text-white">
                                 <div class="m-b-25"> <img src="https://img.icons8.com/bubbles/100/000000/user.png" class="img-radius" alt="User-Profile-Image"> </div>
-                                <h6 class="f-w-600"><b>{{ name }}</b> </h6>
+                                <h6 class="f-w-600"><b>{{ account['Username'] }}</b> </h6>
                                 <p><b>{{ role }}</b></p> <i class=" mdi mdi-square-edit-outline feather icon-edit m-t-10 f-16"></i>
                             </div>
                         </div>
@@ -167,37 +167,37 @@ h6 {
                                 <div class="row">
                                     <div class="col-sm-6">
                                         <p class="m-b-10 f-w-600">Email</p>
-                                        <h6 class="text-muted f-w-400"><b>{{ email }}</b></h6>
+                                        <h6 class="text-muted f-w-400"><b>{{ account['Email'] }}</b></h6>
                                     </div>
                                     <div class="col-sm-6">
                                         <p class="m-b-10 f-w-600">Phone</p>
-                                        <h6 class="text-muted f-w-400"><b>{{phn}}</b></h6>
+                                        <h6 class="text-muted f-w-400"><b>{{ account['Phone_Number'] }}</b></h6>
                                     </div>
 
                                     <div class="col-sm-6">
                                         <p class="m-b-10 f-w-600">Address</p>
-                                        <h6 class="text-muted f-w-400"><b>{{add}}</b></h6>
+                                        <h6 class="text-muted f-w-400"><b>{{ account['Address'] }}</b></h6>
                                     </div>
 
                                     <div class="col-sm-6">
                                         <p class="m-b-10 f-w-600">Nric</p>
-                                        <h6 class="text-muted f-w-400"><b>{{nric}}</b></h6>
+                                        <h6 class="text-muted f-w-400"><b>{{ account['NRIC'] }}</b></h6>
                                     </div>
 
                                     <div class="col-sm-6">
                                         <p class="m-b-10 f-w-600">Password</p>
-                                        <h6 class="text-muted f-w-400"><b>{{passw}}</b></h6>
+                                        <h6 class="text-muted f-w-400"><b>{{ account['Password'] }}</b></h6>
                                     </div>
                                 </div>
 
                                     <div class="col-sm-6">
                                         <p class="m-b-10 f-w-600">Security Question</p>
-                                        <h6 class="text-muted f-w-400"><b>{{sq}}</b></h6>
+                                        <h6 class="text-muted f-w-400"><b>{{ account['Security_Questions'] }}</b></h6>
                                     </div>
 
                                     <div class="col-sm-6">
                                         <p class="m-b-10 f-w-600">Answer</p>
-                                        <h6 class="text-muted f-w-400"><b>{{ans}}</b></h6>
+                                        <h6 class="text-muted f-w-400"><b>{{ account['Answers'] }}</b></h6>
                                     </div>
 
 
