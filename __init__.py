@@ -42,7 +42,9 @@ import requests
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
 import re
-
+import bcrypt
+from cryptography.fernet import Fernet
+import jwt
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Project'
 
@@ -78,7 +80,9 @@ def Userprofile():
     return redirect(url_for('login'))
 
 
-
+@app.route('/Settings')
+def Changesettings():
+    return render_template('Settings.html')
 
 
 @app.route('/managerprofile')
@@ -89,6 +93,9 @@ def Managerprofile():
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
             account = cursor.fetchone()
+            if account is None:
+                #Account does not exist.
+                return False
             # Show the profile page with account info
             return render_template('userprofile.html', account=account)
             # User is not loggedin redirect to login page
@@ -948,6 +955,27 @@ def is_human(captcha_response):
 # Edit this - Zadesqlstuff
 
 
+@app.route('/TwoFactorAuthentication',methods=['GET','POST'])
+def TWOFA():
+    try:
+
+        return render_template('UpdateAccountDetails.html')
+
+    except:
+
+        return render_template('error404.html')
+
+
+
+
+@app.route('/UpdateAccount',methods=['GET','POST'])
+def updateaccount():
+    try:
+        return render_template('UpdateAccountDetails.html')
+    except:
+        return render_template('error404.html')
+
+
 @app.route('/ForgetPassword', methods=['GET', 'POST'])
 def ForgottenPassword():
     try:
@@ -965,7 +993,7 @@ def login():
         password = request.form['password']
         # Check if account exists in MYSQL
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute('SELECT * FROM accounts WHERE username = %s AND password = %s', (username, password))
+        cursor.execute("SELECT * FROM accounts WHERE username = %(username)s AND password = %(password)s", {'username':username,'password':password})
         # Fetch one record and return result
         account = cursor.fetchone()
         print(account)
@@ -1181,9 +1209,8 @@ def create_login_user():
         # Check if account exists using MySQL
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         print(username,phone_no,NRIC,email,security_questions,answer,password,address,role)
-        sqlcode = 'SELECT * FROM accounts WHERE Username = %s'
-        adr = (username,)
-        cursor.execute(sqlcode,adr)
+        sqlcode = "SELECT * FROM accounts WHERE Username = %(username)s",{'username':username}
+        cursor.execute(sqlcode)
         account = cursor.fetchone()
         # If account exists show error and validation checks(do this at the form for this function)
         if account:

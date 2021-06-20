@@ -13,208 +13,151 @@
 
 
 <style>
-  body {
-    background-color: #f9f9fa
+  body{
+    color: #8e9194;
+    background-color: #f4f6f9;
 }
-
-.padding {
-    padding: 3rem !important
+.avatar-xl img {
+    width: 110px;
 }
-
-.user-card-full {
-    overflow: hidden
+.rounded-circle {
+    border-radius: 50% !important;
 }
-
-.card {
-    border-radius: 5px;
-    -webkit-box-shadow: 0 1px 20px 0 rgba(69, 90, 100, 0.08);
-    box-shadow: 0 1px 20px 0 rgba(69, 90, 100, 0.08);
-    border: none;
-    margin-bottom: 30px
+img {
+    vertical-align: middle;
+    border-style: none;
 }
-
-.m-r-0 {
-    margin-right: 0px
-}
-
-.m-l-0 {
-    margin-left: 0px
-}
-
-.user-card-full .user-profile {
-    border-radius: 5px 0 0 5px
-}
-
-.bg-c-lite-green {
-    background: -webkit-gradient(linear, left top, right top, from(#f29263), to(#ee5a6f));
-    background: linear-gradient(to right, #ee5a6f, #f29263)
-}
-
-.user-profile {
-    padding: 20px 0
-}
-
-.card-block {
-    padding: 1.25rem
-}
-
-.m-b-25 {
-    margin-bottom: 25px
-}
-
-.img-radius {
-    border-radius: 5px
-}
-
-h6 {
-    font-size: 14px
-}
-
-.card .card-block p {
-    line-height: 25px
-}
-
-@media only screen and (min-width: 1400px) {
-    p {
-        font-size: 14px
-    }
-}
-
-.card-block {
-    padding: 1.25rem
-}
-
-.b-b-default {
-    border-bottom: 1px solid #e0e0e0
-}
-
-.m-b-20 {
-    margin-bottom: 20px
-}
-
-.p-b-5 {
-    padding-bottom: 5px !important
-}
-
-.card .card-block p {
-    line-height: 25px
-}
-
-.m-b-10 {
-    margin-bottom: 10px
-}
-
 .text-muted {
-    color: #919aa3 !important
+    color: #aeb0b4 !important;
 }
-
-.b-b-default {
-    border-bottom: 1px solid #e0e0e0
+.text-muted {
+    font-weight: 300;
 }
-
-.f-w-600 {
-    font-weight: 600
+.form-control {
+    display: block;
+    width: 100%;
+    height: calc(1.5em + 0.75rem + 2px);
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #4d5154;
+    background-color: #ffffff;
+    background-clip: padding-box;
+    border: 1px solid #eef0f3;
+    border-radius: 0.25rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
-
-.m-b-20 {
-    margin-bottom: 20px
+span.show{
+  right: 20px;
+  color: #111;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  user-select: none;
+  visibility: hidden;
+  font-family: 'Open Sans', sans-serif;
 }
-
-.m-t-40 {
-    margin-top: 20px
-}
-
-.p-b-5 {
-    padding-bottom: 5px !important
-}
-
-.m-b-10 {
-    margin-bottom: 10px
-}
-
-.m-t-40 {
-    margin-top: 20px
-}
-
-.user-card-full .social-link li {
-    display: inline-block
-}
-
-.user-card-full .social-link li a {
-    font-size: 20px;
-    margin: 0 10px 0 0;
-    -webkit-transition: all 0.3s ease-in-out;
-    transition: all 0.3s ease-in-out
+input:valid ~ span.show{
+  visibility: visible;
 }
 </style>
-
-<div class="page-content page-container" id="page-content">
-    <div class="padding">
-        <div class="row container d-flex justify-content-center">
-            <div class="col-xl-6 col-md-12">
-                <div class="card user-card-full">
-                    <div class="row m-l-0 m-r-0">
-                        <div class="col-sm-4 bg-c-lite-green user-profile">
-                            <div class="card-block text-center text-white">
-                                <div class="m-b-25"> <img src="https://img.icons8.com/bubbles/100/000000/user.png" class="img-radius" alt="User-Profile-Image"> </div>
-                                <h6 class="f-w-600"><b>{{ account['Username'] }}</b> </h6>
-                                <p><b>{{ role }}</b></p> <i class=" mdi mdi-square-edit-outline feather icon-edit m-t-10 f-16"></i>
+<div class="container">
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-10 col-xl-8 mx-auto">
+        <h2 class="h3 mb-4 page-title">Profile</h2>
+        <div class="my-4">
+            <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="false">Profile</a>
+                </li>
+            </ul>
+            <form>
+                <div class="row mt-5 align-items-center">
+                    <div class="col-md-3 text-center mb-5">
+                        <div class="avatar avatar-xl">
+                            <img src="https://i.pinimg.com/236x/b6/37/84/b6378469afedad98bc33cd85ad60099d.jpg" alt="..." class="avatar-img rounded-circle" />
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="row align-items-center">
+                            <div class="col-md-7">
+                                <h4 class="mb-1">{{ account['Username'] }}</h4>
+                                <p class="small mb-3"><span class="badge badge-dark">New York, USA</span></p>
                             </div>
                         </div>
-                        <div class="col-sm-8">
-                            <div class="card-block">
-                                <h6 class="m-b-20 p-b-5 b-b-default f-w-600">Information</h6>
-                                <div class="row">
-                                    <div class="col-sm-6">
-                                        <p class="m-b-10 f-w-600">Email</p>
-                                        <h6 class="text-muted f-w-400"><b>{{ account['Email'] }}</b></h6>
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <p class="m-b-10 f-w-600">Phone</p>
-                                        <h6 class="text-muted f-w-400"><b>{{ account['Phone_Number'] }}</b></h6>
-                                    </div>
+                        <div class="row mb-4">
+                            <div class="col-md-7">
+                                <p class="text-muted">
+                                    this is the bio.u can considered adding something.To be developed?
+                                </p>
+                            </div>
+                            <div class="col">
+                                <p class="small mb-0 text-muted">Address</p>
+                                <p class="small mb-0 text-muted">{{ account['Address'] }}</p>
 
-                                    <div class="col-sm-6">
-                                        <p class="m-b-10 f-w-600">Address</p>
-                                        <h6 class="text-muted f-w-400"><b>{{ account['Address'] }}</b></h6>
-                                    </div>
-
-                                    <div class="col-sm-6">
-                                        <p class="m-b-10 f-w-600">Nric</p>
-                                        <h6 class="text-muted f-w-400"><b>{{ account['NRIC'] }}</b></h6>
-                                    </div>
-
-                                    <div class="col-sm-6">
-                                        <p class="m-b-10 f-w-600">Password</p>
-                                        <h6 class="text-muted f-w-400"><b>{{ account['Password'] }}</b></h6>
-                                    </div>
-                                </div>
-
-                                    <div class="col-sm-6">
-                                        <p class="m-b-10 f-w-600">Security Question</p>
-                                        <h6 class="text-muted f-w-400"><b>{{ account['Security_Questions'] }}</b></h6>
-                                    </div>
-
-                                    <div class="col-sm-6">
-                                        <p class="m-b-10 f-w-600">Answer</p>
-                                        <h6 class="text-muted f-w-400"><b>{{ account['Answers'] }}</b></h6>
-                                    </div>
-
-
-                                <ul class="social-link list-unstyled m-t-40 m-b-10">
-                                    <li><a href="#!" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="facebook" data-abc="true"><i class="mdi mdi-facebook feather icon-facebook facebook" aria-hidden="true"></i></a></li>
-                                    <li><a href="#!" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="twitter" data-abc="true"><i class="mdi mdi-twitter feather icon-twitter twitter" aria-hidden="true"></i></a></li>
-                                    <li><a href="#!" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="instagram" data-abc="true"><i class="mdi mdi-instagram feather icon-instagram instagram" aria-hidden="true"></i></a></li>
-                                </ul>
-                                <td><a href="#" class="btn btn-warning">Update</a></td>
-                                <td><a href="/" class="btn btn-primary">Return</a></td>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+                <hr class="my-4" />
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="firstname">Username</label>
+                        <input type="text" id="firstname" class="form-control" value="{{ account['Username'] }}" readonly/>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="NRIC">NRIC</label>
+                        <input type="text" id="NRIC" class="form-control" value = "{{ account['NRIC'] }}" readonly/>
+                    </div>
+                     <div class="form-group col-md-6">
+                        <label for="Phone Number">Phone Number</label>
+                        <input type="text" id="Phone Number" class="form-control" value = "{{ account['Phone_Number'] }}" readonly/>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="Security Question">Security Question</label>
+                        <input type="text" id="Security Question" class="form-control" value = "{{ account['Security_Questions'] }}" readonly/>
+                    </div>
+                    <div class="form-group col-md-6">
+                    <label for="inputEmail4">Email</label>
+                    <input type="email" class="form-control" id="inputEmail4" value="{{ account['Email'] }}" readonly/>
+
+                     </div>
+                    <div class="form-group col-md-6">
+                    <label for="Answer">Answer</label>
+                    <input type="email" class="form-control" id="Answer" value="{{ account['Answers'] }}" readonly/>
+
+                     </div>
+
+                </div>
+
+                <div class="form-group">
+                    <label for="inputAddress5">Address</label>
+                    <input type="text" class="form-control" id="inputAddress5" value = "{{ account['Address'] }}" readonly/>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="inputCompany5">Company</label>
+                        <input type="text" class="form-control" id="inputCompany5" placeholder="Nec Urna Suscipit Ltd" readonly/>
+                    </div>
+
+                </div>
+                <hr class="my-4" />
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="inputPassword6">Password</label>
+                            <input type="password" class="form-control" id="inputPassword6" value="{{ account['Password'] }}" readonly/>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" href="/Settings">Update</button>
+
+
+            </form>
         </div>
     </div>
 </div>
 
+</div>
 {% endblock %}
