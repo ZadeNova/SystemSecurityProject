@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Library Loan System - Manager profile{% endblock %}
+
+{% block content %}
+{% from "includes/_formsHelper.html" import render_field %}
+
+
+<style>
+  body{
+    color: #8e9194;
+    background-color: #f4f6f9;
+}
+.avatar-xl img {
+    width: 110px;
+}
+.rounded-circle {
+    border-radius: 50% !important;
+}
+img {
+    vertical-align: middle;
+    border-style: none;
+}
+.text-muted {
+    color: #aeb0b4 !important;
+}
+.text-muted {
+    font-weight: 300;
+}
+.form-control {
+    display: block;
+    width: 100%;
+    height: calc(1.5em + 0.75rem + 2px);
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #4d5154;
+    background-color: #ffffff;
+    background-clip: padding-box;
+    border: 1px solid #eef0f3;
+    border-radius: 0.25rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+span.show{
+  right: 20px;
+  color: #111;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  user-select: none;
+  visibility: hidden;
+  font-family: 'Open Sans', sans-serif;
+}
+input:valid ~ span.show{
+  visibility: visible;
+}
+</style>
+<div class="container">
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-10 col-xl-8 mx-auto">
+        <h2 class="h3 mb-4 page-title">Profile</h2>
+        <div class="my-4">
+            <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="false">Profile</a>
+                </li>
+            </ul>
+            <form>
+                <div class="row mt-5 align-items-center">
+                    <div class="col-md-3 text-center mb-5">
+                        <div class="avatar avatar-xl">
+                            <img src="https://i.pinimg.com/236x/b6/37/84/b6378469afedad98bc33cd85ad60099d.jpg" alt="..." class="avatar-img rounded-circle" />
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="row align-items-center">
+                            <div class="col-md-7">
+                                <h4 class="mb-1">{{ account['Username'] }}</h4>
+                                <p class="small mb-3"><span class="badge badge-dark">New York, USA</span></p>
+                            </div>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-md-7">
+                                <p class="text-muted">
+                                    this is the bio.u can considered adding something.To be developed?
+                                </p>
+                            </div>
+                            <div class="col">
+                                <p class="small mb-0 text-muted">Address</p>
+                                <p class="small mb-0 text-muted">{{ account['Address'] }}</p>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr class="my-4" />
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="firstname">Username</label>
+                        <input type="text" id="firstname" class="form-control" value="{{ account['Username'] }}" readonly/>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="NRIC">NRIC</label>
+                        <input type="text" id="NRIC" class="form-control" value = "{{ account['NRIC'] }}" readonly/>
+                    </div>
+                     <div class="form-group col-md-6">
+                        <label for="Phone Number">Phone Number</label>
+                        <input type="text" id="Phone Number" class="form-control" value = "{{ account['Phone_Number'] }}" readonly/>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="Security Question">Security Question</label>
+                        <input type="text" id="Security Question" class="form-control" value = "{{ account['Security_Questions'] }}" readonly/>
+                    </div>
+                    <div class="form-group col-md-6">
+                    <label for="inputEmail4">Email</label>
+                    <input type="email" class="form-control" id="inputEmail4" value="{{ account['Email'] }}" readonly/>
+
+                     </div>
+                    <div class="form-group col-md-6">
+                    <label for="Answer">Answer</label>
+                    <input type="email" class="form-control" id="Answer" value="{{ account['Answers'] }}" readonly/>
+
+                     </div>
+
+                </div>
+
+                <div class="form-group">
+                    <label for="inputAddress5">Address</label>
+                    <input type="text" class="form-control" id="inputAddress5" value = "{{ account['Address'] }}" readonly/>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="inputCompany5">Company</label>
+                        <input type="text" class="form-control" id="inputCompany5" placeholder="Nec Urna Suscipit Ltd" readonly/>
+                    </div>
+
+                </div>
+                <hr class="my-4" />
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="inputPassword6">Password</label>
+                            <input type="password" class="form-control" id="inputPassword6" value="{{ account['Password'] }}" readonly/>
+                        </div>
+                    </div>
+                </div>
+                <form method="GET" action="/Settings">
+                <button type="submit" class="btn btn-primary">Update</button>
+                    </form>
+                <form method="GET" action="/EmailTest">
+                <button type="submit" class="btn btn-warning">Emailtest</button>
+                    </form>
+
+
+            </form>
+        </div>
+    </div>
+</div>
+
+</div>
+
+{% endblock %}
