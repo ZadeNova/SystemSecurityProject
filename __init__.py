@@ -98,9 +98,12 @@ def is_human(captcha_response):
 #Hong ji this email shit is yours
 @app.route('/EmailTest')
 def sendemail():
-    msg = Message("Hello there!",recipients=['pewaw91875@0ranges.com'])
+    msg = Message("Hello there!",recipients=['limojo8042@awinceo.com'])
     mail.send(msg)
-    return render_template("AuditLog.html")
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+    account = cursor.fetchone()
+    return render_template("AuditLog.html", account=account)
 
 #ALL THE NEW PYTHON CODE PUT HERE SO THAT ITS EASIER FOR EVERYONE TO ACCESS
 
