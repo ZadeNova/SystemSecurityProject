@@ -7,7 +7,7 @@ from datetime import date
 from flask import Flask, render_template, request, redirect, url_for, flash, json
 from flask import session
 from flask_uploads import UploadSet, configure_uploads, IMAGES
-
+import requests
 import CreatingSupplier
 # Jolene Import#
 import Food
@@ -39,6 +39,10 @@ from random import randint
 import requests
 
 # SQL stuff
+###line 43 , 44 for hong ji only , the others just # this 2 line
+import pymysql
+pymysql.install_as_MySQLdb()
+#### line 43 , 44 for hong ji only , the others just # this 2 line  as hong ji pc have bug cant use the sql
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
 import re
@@ -69,7 +73,7 @@ mail = Mail(app)
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'ZadePrimeSQL69420'
+    app.config['MYSQL_PASSWORD'] = '1234'
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -81,6 +85,16 @@ configure_uploads(app, images)
 
 ### hong ji recapcha ##
 app.config['SECRET_KEY'] = 'cairocoders-ednalan'
+def is_human(captcha_response):
+    """ Validating recaptcha response from google server
+        Returns True captcha test passed for submitted form else returns False.
+    """
+    secret ="6LeQDi8bAAAAAIkB8_0hu3rvBirsTLkS4D6t4ztA"
+    payload = {'response': captcha_response, 'secret': secret}
+    response = requests.post("https://www.google.com/recaptcha/api/siteverify", payload)
+    response_text = json.loads(response.text)
+    return response_text['success']
+
 #Hong ji this email shit is yours
 @app.route('/EmailTest')
 def sendemail():
@@ -176,29 +190,44 @@ def ForgottenPassword():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    captcha_response = request.form.get('g-recaptcha-response')
 
-    if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
-        username = request.form['username']
-        password = request.form['password']
-        # Check if account exists in MYSQL
-        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute("SELECT * FROM accounts WHERE username = %(username)s AND password = %(password)s", {'username':username,'password':password})
-        # Fetch one record and return result
-        account = cursor.fetchone()
-        print(account)
-        if account:
-            session['loggedin'] = True
-            session['ID'] = account['ID']
-            session['Username'] = account['Username']
-            session['password'] = account['Password']
-            if account['Username'] == 'admin':
-                return redirect(url_for('Managerprofile'))
+
+
+    if request.method == 'POST' and 'username' in request.form and 'password' in request.form :
+        if is_human(captcha_response):
+            # Process request here
+            status = ''
+            username = request.form['username']
+            password = request.form['password']
+            # Check if account exists in MYSQL
+            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute("SELECT * FROM accounts WHERE username = %(username)s AND password = %(password)s",
+                           {'username': username, 'password': password})
+            # Fetch one record and return result
+            account = cursor.fetchone()
+            print(account)
+            if account:
+
+                session['loggedin'] = True
+                session['ID'] = account['ID']
+                session['Username'] = account['Username']
+                session['password'] = account['Password']
+
+                if account['Username'] == 'admin':
+                    return redirect(url_for('Managerprofile'))
+                else:
+                    return redirect(url_for('Userprofile'))
             else:
-                return redirect(url_for('Userprofile'))
+                msg = 'Incorrect Username/Password'
+                return render_template('login.html', msg=msg, sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
         else:
-            msg = 'Incorrect Username/Password'
-            return render_template('login.html',msg = msg)
-    return render_template('login.html')
+            # Log invalid attempts
+            status = "Sorry ! Please Check Im not a robot."
+
+        flash(status)
+
+    return render_template('login.html',sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
 
 @app.route('/logout')
 def logout():
@@ -1042,16 +1071,6 @@ app.secret_key = 'somesecretkeythatonlyishouldknow'
 
 ##login ###
 # import session
-def is_human(captcha_response):
-    """ Validating recaptcha response from google server
-        Returns True captcha test passed for submitted form else returns False.
-    """
-    secret = "6LeQDi8bAAAAAIkB8_0hu3rvBirsTLkS4D6t4ztA"
-    payload = {'response': captcha_response, 'secret': secret}
-    response = requests.post("https://www.google.com/recaptcha/api/siteverify", payload)
-    response_text = json.loads(response.text)
-    return response_text['success']
-
 
 # Edit this - Zadesqlstuff
 

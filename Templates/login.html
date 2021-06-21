@@ -198,6 +198,9 @@ form .button{
           {% endif %}
 
           </p>
+          <div class="msg">
+              {{ msg }}
+          </div>
           <div class="input-field">
 
               <input type="text" class='input' name="username" required>
@@ -211,9 +214,8 @@ form .button{
 
 
           <div class="g-recaptcha" data-sitekey="{{ sitekey }}"></div> <br/>
-          <div class="msg">
-              {{ msg }}
-          </div>
+
+
           <div class="button">
               <div class="inner">
               </div>
