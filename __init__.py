@@ -147,7 +147,10 @@ def Managerprofile():
 
 @app.route('/IPmap')
 def Ipmap():
-    return render_template("IPmap.html")
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+    account = cursor.fetchone()
+    return render_template("IPmap.html", account=account)
 
 
 
