@@ -40,8 +40,8 @@ import requests
 
 # SQL stuff
 ###line 43 , 44 for hong ji only , the others just # this 2 line
-import pymysql
-pymysql.install_as_MySQLdb()
+# import pymysql
+# pymysql.install_as_MySQLdb()
 #### line 43 , 44 for hong ji only , the others just # this 2 line  as hong ji pc have bug cant use the sql
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
@@ -53,9 +53,9 @@ import jwt
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Project'
 
-#Flask-Mail
+# Flask-Mail
 # These are default values dont anyhow change
-app.config['MAIL_SERVER']  = 'smtp.gmail.com'
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
@@ -73,7 +73,7 @@ mail = Mail(app)
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = '1234'
+    app.config['MYSQL_PASSWORD'] = 'ZadePrimeSQL69420'
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -85,27 +85,31 @@ configure_uploads(app, images)
 
 ### hong ji recapcha ##
 app.config['SECRET_KEY'] = 'cairocoders-ednalan'
+
+
 def is_human(captcha_response):
     """ Validating recaptcha response from google server
         Returns True captcha test passed for submitted form else returns False.
     """
-    secret ="6LeQDi8bAAAAAIkB8_0hu3rvBirsTLkS4D6t4ztA"
+    secret = "6LeQDi8bAAAAAIkB8_0hu3rvBirsTLkS4D6t4ztA"
     payload = {'response': captcha_response, 'secret': secret}
     response = requests.post("https://www.google.com/recaptcha/api/siteverify", payload)
     response_text = json.loads(response.text)
     return response_text['success']
 
-#Hong ji this email shit is yours
+
+# Hong ji this email shit is yours
 @app.route('/EmailTest')
 def sendemail():
-    msg = Message("Hello there!",recipients=['limojo8042@awinceo.com'])
+    msg = Message("Hello there!", recipients=['limojo8042@awinceo.com'])
     mail.send(msg)
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
     account = cursor.fetchone()
     return render_template("AuditLog.html", account=account)
 
-#ALL THE NEW PYTHON CODE PUT HERE SO THAT ITS EASIER FOR EVERYONE TO ACCESS
+
+# ALL THE NEW PYTHON CODE PUT HERE SO THAT ITS EASIER FOR EVERYONE TO ACCESS
 
 
 @app.route('/userprofile')
@@ -128,24 +132,23 @@ def Changesettings():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
     account = cursor.fetchone()
-    return render_template('Settings.html',account=account)
+    return render_template('Settings.html', account=account)
 
 
 @app.route('/managerprofile')
 def Managerprofile():
-
-        if 'loggedin' in session:
-            # We need all the account info for the user so we can display it on the profile page
-            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-            cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
-            account = cursor.fetchone()
-            if account is None:
-                #Account does not exist.
-                return False
-            # Show the profile page with account info
-            return render_template('AdminProfile.html', account=account)
-            # User is not loggedin redirect to login page
-        return redirect(url_for('login'))
+    if 'loggedin' in session:
+        # We need all the account info for the user so we can display it on the profile page
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+        account = cursor.fetchone()
+        if account is None:
+            # Account does not exist.
+            return False
+        # Show the profile page with account info
+        return render_template('AdminProfile.html', account=account)
+        # User is not loggedin redirect to login page
+    return redirect(url_for('login'))
 
 
 @app.route('/IPmap')
@@ -156,7 +159,6 @@ def Ipmap():
     return render_template("IPmap.html", account=account)
 
 
-
 @app.route('/AuditLog')
 def Audit():
     try:
@@ -164,10 +166,11 @@ def Audit():
     except:
         return render_template('error404.html')
 
+
 # Edit this - Zadesqlstuff
 
 
-@app.route('/TwoFactorAuthentication',methods=['GET','POST'])
+@app.route('/TwoFactorAuthentication', methods=['GET', 'POST'])
 def TWOFA():
     try:
 
@@ -178,9 +181,7 @@ def TWOFA():
         return render_template('error404.html')
 
 
-
-
-@app.route('/UpdateAccount',methods=['GET','POST'])
+@app.route('/UpdateAccount', methods=['GET', 'POST'])
 def updateaccount():
     try:
         return render_template('UpdateAccountDetails.html')
@@ -192,8 +193,35 @@ def updateaccount():
 def ForgottenPassword():
     try:
 
+        # Check if email exist in sql database
+
+        print(request.form)
+
+        email = request.form['email']
+
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+        cursor.execute("SELECT * FROM accounts WHERE Email = %(email)s", {'email': email})
+
+        account = cursor.fetchone()
+
+        if account:
+
+            print("It exists")
+
+            msg = Message("Forget Password Link", recipients=['novaseraphzade@gmail.com'])
+
+            msg.html = render_template('forgotpasswordemail.html')
+            mail.send(msg)
+
+        else:
+
+            print("Its does not exist!")
+
         return render_template('ForgetPassword.html')
+
     except:
+
         return render_template('error404.html')
 
 
@@ -201,9 +229,7 @@ def ForgottenPassword():
 def login():
     captcha_response = request.form.get('g-recaptcha-response')
 
-
-
-    if request.method == 'POST' and 'username' in request.form and 'password' in request.form :
+    if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
         if is_human(captcha_response):
             # Process request here
             status = ''
@@ -236,7 +262,8 @@ def login():
 
         flash(status)
 
-    return render_template('login.html',sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
+    return render_template('login.html', sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
+
 
 @app.route('/logout')
 def logout():
@@ -270,8 +297,8 @@ def create_login_user():
         role = request.form['role']
         # Check if account exists using MySQL
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        print(username,phone_no,NRIC,email,security_questions,answer,password,address,role)
-        sqlcode = "SELECT * FROM accounts WHERE Username = %(username)s",{'username':username}
+        print(username, phone_no, NRIC, email, security_questions, answer, password, address, role)
+        sqlcode = "SELECT * FROM accounts WHERE Username = %(username)s", {'username': username}
         cursor.execute(sqlcode)
         account = cursor.fetchone()
         # If account exists show error and validation checks(do this at the form for this function)
@@ -282,7 +309,8 @@ def create_login_user():
             msg = 'Please fill out the form!'
         else:
             # Account doesnt exists and the form data is valid, now insert new account into accounts table
-            cursor.execute('INSERT INTO accounts VALUES (NULL, %s, %s, %s, %s, %s, %s, %s, %s, %s)', (username,NRIC ,phone_no,email,security_questions, answer,password,address,role))
+            cursor.execute('INSERT INTO accounts VALUES (NULL, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
+                           (username, NRIC, phone_no, email, security_questions, answer, password, address, role))
             mysql.connection.commit()
             msg = 'You have successfully registered!'
             print("working")
@@ -293,7 +321,9 @@ def create_login_user():
         print(request.form)
         msg = 'Please fill out the form!'
     # Show registration form with message (if any)
-    return render_template('create_login_user_form.html', msg=msg,form=create_login_user_form)
+    return render_template('create_login_user_form.html', msg=msg, form=create_login_user_form)
+
+
 # End of new stuff
 @app.route('/Inventory')
 def InventoryPage():
@@ -1084,7 +1114,6 @@ app.secret_key = 'somesecretkeythatonlyishouldknow'
 # Edit this - Zadesqlstuff
 
 
-
 @app.route('/mang_update_dinein/<int:id>/', methods=['GET', 'POST'])
 def mang_update_dinein(id):
     try:
@@ -1193,19 +1222,20 @@ def mang_update_dinein(id):
     except:
         return render_template('error404.html')
 
+
 @app.route('/')  # declarator
 # tie to map a web application function to an url
 def home():
-    #global role
-    #users_dict = {}
-    #db = shelve.open('login.db', 'r')
-    #users_dict = db['login']
-    #db.close()
-    #users_list = []
-    #for key in users_dict:
+    # global role
+    # users_dict = {}
+    # db = shelve.open('login.db', 'r')
+    # users_dict = db['login']
+    # db.close()
+    # users_list = []
+    # for key in users_dict:
     #    user = users_dict.get(key)
     #    users_list.append(user)
-    #for users in users_list:
+    # for users in users_list:
     #    if 'username' in session:
     #        username = session['username']
     #        if username == users.get_username():
@@ -1222,6 +1252,7 @@ def home():
     #    else:
     #        return '<p style="text-align:center;">Please log in first.</p>', render_template('home2.html')
     return render_template('home2.html')
+
 
 ####end of login code lolllll ############################################################
 
