@@ -125,7 +125,10 @@ def Userprofile():
 
 @app.route('/Settings')
 def Changesettings():
-    return render_template('Settings.html')
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+    account = cursor.fetchone()
+    return render_template('Settings.html',account=account)
 
 
 @app.route('/managerprofile')
