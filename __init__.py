@@ -73,7 +73,7 @@ mail = Mail(app)
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'ZadePrimeSQL69420'
+    app.config['MYSQL_PASSWORD'] = 'Dragonnight1002'
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -101,7 +101,8 @@ def is_human(captcha_response):
 # Hong ji this email shit is yours
 @app.route('/EmailTest')
 def sendemail():
-    msg = Message("Hello there!", recipients=['limojo8042@awinceo.com'])
+    # vkpzaslrlfjcokkpaj@mhzayt.online
+    msg = Message("Hello there!", recipients=['vkpzaslrlfjcokkpaj@mhzayt.online'])
     mail.send(msg)
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
