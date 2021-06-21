@@ -295,7 +295,7 @@ def create_login_user():
         answer = request.form['Answers']
         password = request.form['Password']
         address = request.form['Address']
-        role = request.form['role']
+        role = 'Guest'
         # Check if account exists using MySQL
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         print(username, phone_no, NRIC, email, security_questions, answer, password, address, role)
