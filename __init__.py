@@ -268,9 +268,10 @@ def login():
 @app.route('/logout')
 def logout():
     try:
-        session.pop('loggedin', None)
-        session.pop('Username', None)
-        session.pop('ID', None)
+        print(session)
+        session.clear()
+        print(session)
+
         return redirect(url_for('login'))
     except:
         return render_template('error404.html')
@@ -298,8 +299,7 @@ def create_login_user():
         # Check if account exists using MySQL
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         print(username, phone_no, NRIC, email, security_questions, answer, password, address, role)
-        sqlcode = "SELECT * FROM accounts WHERE Username = %(username)s", {'username': username}
-        cursor.execute(sqlcode)
+        cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': username})
         account = cursor.fetchone()
         # If account exists show error and validation checks(do this at the form for this function)
         if account:
@@ -1226,6 +1226,7 @@ def mang_update_dinein(id):
 @app.route('/')  # declarator
 # tie to map a web application function to an url
 def home():
+    print(session)
     # global role
     # users_dict = {}
     # db = shelve.open('login.db', 'r')
@@ -1251,7 +1252,7 @@ def home():
     #    # , nric=users.get_nric(), email=users.get_email(), security_question=users.get_security_questions(), answer=users.get_answer()
     #    else:
     #        return '<p style="text-align:center;">Please log in first.</p>', render_template('home2.html')
-    return render_template('home2.html')
+    return redirect(url_for('login'))
 
 
 ####end of login code lolllll ############################################################
