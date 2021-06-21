@@ -40,8 +40,8 @@ import requests
 
 # SQL stuff
 ###line 43 , 44 for hong ji only , the others just # this 2 line
-# import pymysql
-# pymysql.install_as_MySQLdb()
+import pymysql
+pymysql.install_as_MySQLdb()
 #### line 43 , 44 for hong ji only , the others just # this 2 line  as hong ji pc have bug cant use the sql
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
@@ -73,7 +73,7 @@ mail = Mail(app)
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'Dragonnight1002'
+    app.config['MYSQL_PASSWORD'] = '1234' # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -101,8 +101,7 @@ def is_human(captcha_response):
 # Hong ji this email shit is yours
 @app.route('/EmailTest')
 def sendemail():
-    # vkpzaslrlfjcokkpaj@mhzayt.online
-    msg = Message("Hello there!", recipients=['vkpzaslrlfjcokkpaj@mhzayt.online'])
+    msg = Message("Hello there!", recipients=['limojo8042@awinceo.com'])
     mail.send(msg)
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
@@ -1223,7 +1222,12 @@ def mang_update_dinein(id):
     except:
         return render_template('error404.html')
 
-
+@app.route('/homepage')
+def homepage():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+    account = cursor.fetchone()
+    return render_template('homenew.html',account=account)
 @app.route('/')  # declarator
 # tie to map a web application function to an url
 def home():
