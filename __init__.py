@@ -40,8 +40,8 @@ import requests
 
 # SQL stuff
 ###line 43 , 44 for hong ji only , the others just # this 2 line
-import pymysql
-pymysql.install_as_MySQLdb()
+#import pymysql
+#pymysql.install_as_MySQLdb()
 #### line 43 , 44 for hong ji only , the others just # this 2 line  as hong ji pc have bug cant use the sql
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
@@ -73,7 +73,7 @@ mail = Mail(app)
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = '1234' # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = 'Dragonnight1002' # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
