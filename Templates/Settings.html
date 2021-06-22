@@ -78,7 +78,7 @@ body{
       <!-- Breadcrumb -->
       <nav aria-label="breadcrumb" class="main-breadcrumb">
         <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+          <li class="breadcrumb-item"><a href="/homepage">Home</a></li>
           <li class="breadcrumb-item"><a href="javascript:void(0)">User</a></li>
           <li class="breadcrumb-item active" aria-current="page">Profile Settings</li>
         </ol>
@@ -243,8 +243,54 @@ body{
                 <form>
                   <div class="form-group">
                     <label class="d-block">Two Factor Authentication</label>
-                    <button class="btn btn-info" type="button" class="collapsible">Enable two-factor authentication</button>
                     <p class="small text-muted mt-2">Two-factor authentication adds an additional layer of security to your account by requiring more than just a password to log in.</p>
+                    <ul class="list-group list-group-sm">
+                      <li class="list-group-item has-icon">
+                        Text Message
+                        <div class="custom-control custom-control-nolabel custom-switch ml-auto">
+                          <input type="checkbox" class="custom-control-input" id="customSwitch6" checked="">
+                          <label class="custom-control-label" for="customSwitch6"></label>
+                          <button class="btn btn-light btn-sm ml-auto" type="button"><a href="/EmailOtpCheck">Edit</a></button>
+
+                        </div>
+                      </li>
+                      <li class="list-group-item has-icon">
+                        Authenticator App
+                        <div class="custom-control custom-control-nolabel custom-switch ml-auto">
+                          <input type="checkbox" class="custom-control-input" id="customSwitch7">
+                          <label class="custom-control-label" for="customSwitch7"></label>
+                          <button class="btn btn-light btn-sm ml-auto" type="button"><a href="/login/2fa/">Edit</a></button>
+
+                        </div>
+                      </li>
+                      <li class="list-group-item has-icon">
+                        Push-based
+                        <div class="custom-control custom-control-nolabel custom-switch ml-auto">
+                          <input type="checkbox" class="custom-control-input" id="customSwitch8" checked="">
+                          <label class="custom-control-label" for="customSwitch8"></label>
+                          <button class="btn btn-light btn-sm ml-auto" type="button"><a href="/login/2fa/">Edit</a></button>
+
+                        </div>
+                      </li>
+                      <li class="list-group-item has-icon">
+                        FIDO U2F / Security Keys
+                        <div class="custom-control custom-control-nolabel custom-switch ml-auto">
+                          <input type="checkbox" class="custom-control-input" id="customSwitch9" checked="">
+                          <label class="custom-control-label" for="customSwitch9"></label>
+                          <button class="btn btn-light btn-sm ml-auto" type="button"><a href="/login/2fa/">Edit</a></button>
+
+                        </div>
+                      </li>
+                      <li class="list-group-item has-icon">
+                        Backup Codes
+                        <div class="custom-control custom-control-nolabel custom-switch ml-auto">
+                          <input type="checkbox" class="custom-control-input" id="customSwitch10">
+                          <label class="custom-control-label" for="customSwitch10"></label>
+                          <button class="btn btn-light btn-sm ml-auto" type="button"><a href="/login/2fa/">Edit</a></button>
+
+                        </div>
+                      </li>
+                    </ul>
                   </div>
                 </form>
                 <hr>

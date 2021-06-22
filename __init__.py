@@ -37,12 +37,15 @@ from viewupdateforms import CreateUpdateFeedbackForm
 from flask_mail import Mail, Message
 from random import randint
 import requests
+from random import randint ###### email otp ####
+
 
 # SQL stuff
 ###line 43 , 44 for hong ji only , the others just # this 2 line
-#import pymysql
-#pymysql.install_as_MySQLdb()
+import pymysql
+pymysql.install_as_MySQLdb()
 #### line 43 , 44 for hong ji only , the others just # this 2 line  as hong ji pc have bug cant use the sql
+import pyotp
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
 import re
@@ -66,14 +69,14 @@ app.config['MAIL_DEFAULT_SENDER'] = 'Projectsec6@gmail.com'
 app.config['MAIL_MAX_EMAILS'] = None
 app.config['MAIL_SUPPRESS_SEND'] = False
 app.config['MAIL_ASCII_ATTACHMENTS'] = False
-
 mail = Mail(app)
+otp=randint(000000,999999) #email otp
 
 # Database connection MYSQL
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'Dragonnight1002' # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = '1234' # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -108,9 +111,117 @@ def sendemail():
     account = cursor.fetchone()
     return render_template("AuditLog.html", account=account)
 
+## hong ji text message done ??? #####
+@app.route('/EmailOtpCheck')
+def EmailOtpCheck():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+    account = cursor.fetchone()
+    email=account['Email']
+    msg=Message(subject='OTP',recipients=[email])
+    msg.body=str(otp)
+    mail.send(msg)
 
-# ALL THE NEW PYTHON CODE PUT HERE SO THAT ITS EASIER FOR EVERYONE TO ACCESS
+    return render_template('EmailOtpCheck.html',account=account)
 
+@app.route('/validate', methods=['GET', 'POST'])
+def validate():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+    account = cursor.fetchone()
+    user_otp=request.form['otp']
+    if otp==int(user_otp):
+        return render_template('successful.html', account=account)
+    return render_template('Fail.html', account=account)
+
+## login using email
+@app.route('/EmailLogin',methods=['GET', 'POST'])
+def EmailLogin():
+    return render_template('Email_Login.html')
+
+
+@app.route('/verify',methods=["POST"])
+def verify():
+    email=request.form['email']
+    msg=Message(subject='OTP',recipients=[email])
+    msg.body=str(otp)
+    mail.send(msg)
+    return render_template('verity.html')
+
+@app.route('/EmailLoginValidate',methods=['POST'])
+def EmailLoginValidate():
+    user_otp=request.form['otp']
+    print(user_otp)
+    print(otp)
+    if otp==int(user_otp):
+        if request.method == 'POST' and 'Email' in request.form:
+            email = request.form['Email']
+            print(email)
+            # Check if account exists in MYSQL
+            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute("SELECT * FROM accounts WHERE email = %(email)s ",
+                           {'email': email})
+            # Fetch one record and return result
+            account = cursor.fetchone()
+            print(account)
+            if account:
+                session['loggedin'] = True
+                session['email'] = account['Email']
+                print(session['email'])
+                print(account('Email'))
+                if account['Username'] == 'admin':
+                    return redirect(url_for('Managerprofile'))
+                else:
+                    return redirect(url_for('Userprofile'))
+            else:
+                msg = 'Invalid Email'
+                return render_template('Email_Login.html', msg=msg)
+        else:
+            # Log invalid attempts
+            status = ""
+
+        flash(status)
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM accounts WHERE Email = %s', [session['email']])
+        account = cursor.fetchone()
+
+        return render_template('Email_login.html')
+    else:
+        status = "Wrong Otp!."
+        return render_template('verity.html',msg=status)
+### hong ji text message end ####
+
+# 2FA form route
+# 2FA page route
+
+@app.route("/login/2fa/")
+def login_2fa():
+    # generating random secret key for authentication
+    secret = pyotp.random_base32()
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+    account = cursor.fetchone()
+    return render_template("login_2fa.html", secret=secret,account=account)
+@app.route("/login/2fa/", methods=["POST"])
+def login_2fa_form():
+
+    # getting secret key used by user
+    secret = request.form.get("secret")
+    # getting OTP provided by user
+    otp = int(request.form.get("otp"))
+
+    # verifying submitted OTP with PyOTP
+    if pyotp.TOTP(secret).verify(otp):
+        # inform users if OTP is valid
+        flash("The TOTP 2FA token is valid", "success")
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+        account = cursor.fetchone()
+        return redirect(url_for("Userprofile"))
+    else:
+        # inform users if OTP is invalid
+        flash("You have supplied an invalid 2FA token!", "danger")
+        return redirect(url_for("login_2fa"))
 
 @app.route('/userprofile')
 def Userprofile():
@@ -243,7 +354,6 @@ def login():
             account = cursor.fetchone()
             print(account)
             if account:
-
                 session['loggedin'] = True
                 session['ID'] = account['ID']
                 session['Username'] = account['Username']
