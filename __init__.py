@@ -400,6 +400,8 @@ def create_login_user():
         username = request.form['Username']
         phone_no = request.form['Phone_Number']
         NRIC = request.form['NRIC']
+        DOB = request.form['DOB']
+        gender = request.form['Gender']
         email = request.form['Email']
         security_questions = request.form['Security_Questions']
         answer = request.form['Answers']
@@ -408,7 +410,7 @@ def create_login_user():
         role = 'Guest'
         # Check if account exists using MySQL
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        print(username, phone_no, NRIC, email, security_questions, answer, password, address, role)
+        print(username, phone_no, NRIC, DOB, gender, email, security_questions, answer, password, address, role)
         cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': username})
         account = cursor.fetchone()
         # If account exists show error and validation checks(do this at the form for this function)
@@ -419,8 +421,8 @@ def create_login_user():
             msg = 'Please fill out the form!'
         else:
             # Account doesnt exists and the form data is valid, now insert new account into accounts table
-            cursor.execute('INSERT INTO accounts VALUES (NULL, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
-                           (username, NRIC, phone_no, email, security_questions, answer, password, address, role))
+            cursor.execute('INSERT INTO accounts VALUES (NULL, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
+                           (username, NRIC, DOB, gender, phone_no, email, security_questions, answer, password, address, role))
             mysql.connection.commit()
             msg = 'You have successfully registered!'
             print("working")

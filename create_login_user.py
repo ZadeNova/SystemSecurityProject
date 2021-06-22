@@ -1,12 +1,14 @@
 class CreateLoginUser:
     count_id = 0
-    def __init__(self, username,phone_no,nric,email,security_questions,answer,password,address,role):
+    def __init__(self, username,phone_no,nric,dob,gender,email,security_questions,answer,password,address,role):
         CreateLoginUser.count_id += 1
         self.__user_id = CreateLoginUser.count_id
         self.__username = username
         self.__address=address
         self.__phone_no = phone_no
         self.__nric=nric
+        self.__dob=dob
+        self.__gender=gender
         self.__email=email
         self.__security_questions=security_questions
         self.__answer=answer
@@ -17,22 +19,37 @@ class CreateLoginUser:
         self.__password=password
     def get_password(self):
         return self.__password
+
     def set_role(self,role):
         self.role=role
     def get_role(self):
         return self.__role
+
     def get_nric(self):
         return self.__nric
     def set_nric(self,nric):
         self.__nric=nric
+
+    def set_dob(self,dob):
+        self.__dob=dob
+    def get_dob(self):
+        return self.__dob
+
+    def set_gender(self,gender):
+        self.__gender=gender
+    def get_gender(self):
+        return self.__gender
+
     def set_email(self,email):
         self.__email=email
     def get_email(self):
         return self.__email
+
     def set_security_questions(self,security_questions):
         self.__security_questions=security_questions
     def get_security_questions(self):
         return self.__security_questions
+
     def set_answer(self,answer):
         self.__answer=answer
     def get_answer(self):
