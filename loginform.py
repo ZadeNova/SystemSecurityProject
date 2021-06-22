@@ -5,9 +5,10 @@ class CreateLoginUserForm(Form):
 
 
     Username = StringField('Username:', [validators.Length(min=1, max=150), validators.DataRequired()])
+    NRIC=StringField('NRIC: ',[validators.DataRequired()])
+    DOB = StringField('Date of Birth: ',[validators.DataRequired()])
     Password = PasswordField('Account Password:', [validators.DataRequired()])
     Phone_Number = StringField('Phone Number:', [validators.DataRequired(),validators.Regexp(regex='\d{4}[-.\s]?\d{4}$',message='phone number can only have 8 digit !'),validators.Regexp(regex='[0-9]',message='Only numeric number')])
-    NRIC=StringField('NRIC: ',[validators.DataRequired()])
     Email=StringField('Email Address: ',[validators.DataRequired()])
     Security_Questions = SelectField('Security Questions:', [validators.DataRequired()],
                            choices=[('', 'Question 1 (Select One)'), ('Where were you when you had your first kiss? ', 'Where were you when you had your first kiss?'),
