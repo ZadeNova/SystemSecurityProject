@@ -1,4 +1,4 @@
-from wtforms import Form, StringField, TextAreaField, validators,SelectField,PasswordField
+from wtforms import Form, StringField, TextAreaField, validators,SelectField,PasswordField,RadioField
 import shelve
 from wtforms.validators import ValidationError
 class CreateLoginUserForm(Form):
@@ -7,6 +7,7 @@ class CreateLoginUserForm(Form):
     Username = StringField('Username:', [validators.Length(min=1, max=150), validators.DataRequired()])
     NRIC=StringField('NRIC: ',[validators.DataRequired()])
     DOB = StringField('Date of Birth: ',[validators.DataRequired()])
+    Gender = RadioField('Gender', choices=[('Male', 'Male'), ('Female', 'Female')], default='')
     Password = PasswordField('Account Password:', [validators.DataRequired()])
     Phone_Number = StringField('Phone Number:', [validators.DataRequired(),validators.Regexp(regex='\d{4}[-.\s]?\d{4}$',message='phone number can only have 8 digit !'),validators.Regexp(regex='[0-9]',message='Only numeric number')])
     Email=StringField('Email Address: ',[validators.DataRequired()])
