@@ -345,7 +345,8 @@ def ForgottenPassword():
                 print('sended')
             else:
                 print('It doesnt exit')
-            return redirect(url_for('login'))
+            flash('If your email matches an existing account we will send a password reset email within a few minutes.')
+            return render_template('ForgetPassword.html')
         else:
             return render_template('ForgetPassword.html')
     except:
