@@ -78,7 +78,7 @@ otp=randint(000000,999999) #email otp
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'N0passwordatall' # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = '1234' # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -113,7 +113,6 @@ def sendemail():
     account = cursor.fetchone()
     return render_template("AuditLog.html", account=account)
 
-
 ## hong ji text message done ??? #####
 @app.route('/EmailOtpCheck')
 def EmailOtpCheck():
@@ -124,9 +123,7 @@ def EmailOtpCheck():
     msg=Message('This is your OTP',recipients=[email])
     msg.body='Your OTP is :\n'+'\t\t\t'+str(otp) +'\nPlease do not show this to anyone ! Thank you :)'
     mail.send(msg)
-
     return render_template('EmailOtpCheck.html',account=account)
-
 
 @app.route('/validate', methods=['GET', 'POST'])
 def validate():
@@ -138,21 +135,33 @@ def validate():
         return render_template('successful.html', account=account)
     return render_template('Fail.html', account=account)
 
-
 ## login using email
 @app.route('/EmailLogin',methods=['GET', 'POST'])
 def EmailLogin():
-    return render_template('Email_Login.html')
+    if request.method == 'POST' and 'email' in request.form:
+        email = request.form['email']
+        print(email)
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute("SELECT * FROM accounts WHERE Email = %(email)s", {'email': email})
+        account = cursor.fetchone()
+        print(account)
+        if account:
+            email = request.form['email']
+            msg = Message('This is your OTP', recipients=[email])
+            msg.body = 'Your OTP is :\n' + '\t\t\t' + str(otp) + '\nPlease do not show this to anyone ! Thank you :)'
+            mail.send(msg)
+            print('sended')
+            ms1='Opt send! Please check your email'
+            flash(ms1)
+            return render_template('verity.html')
 
-
-@app.route('/verify',methods=["POST"])
-def verify():
-    email=request.form['email']
-    msg=Message(subject='OTP',recipients=[email])
-    msg.body=str(otp)
-    mail.send(msg)
-    return render_template('verity.html')
-
+        else:
+            ms1='Invalid email ! Please try again '
+            flash(ms1)
+            print('It doesnt exit')
+        return redirect(url_for('login'))
+    else:
+        return render_template('Email_login.html')
 
 @app.route('/EmailLoginValidate',methods=['POST'])
 def EmailLoginValidate():
@@ -161,10 +170,8 @@ def EmailLoginValidate():
     print(user_otp)
     print(otp)
     if otp==int(user_otp):
-        if request.method == 'POST' and 'Email' in request.form:
-            email = request.form['Email']
-            print(email)
-            # Check if account exists in MYSQL
+        if request.method == 'POST' and 'email' in request.form:
+            email = request.form['email']
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute("SELECT * FROM accounts WHERE email = %(email)s ",
                            {'email': email})
@@ -173,34 +180,32 @@ def EmailLoginValidate():
             print(account)
             if account:
                 session['loggedin'] = True
-                session['email'] = account['Email']
-                print(session['email'])
-                print(account('Email'))
+                session['email']=account['Email']
+                session['ID'] = account['ID']
+                session['Username'] = account['Username']
+                session['password'] = account['Password']
+
                 if account['Username'] == 'admin':
                     return redirect(url_for('Managerprofile'))
                 else:
                     return redirect(url_for('Userprofile'))
             else:
-                msg = 'Invalid Email'
-                return render_template('Email_Login.html', msg=msg)
+                msg = 'Incorrect Username/Password'
+                return render_template('login.html', msg=msg)
         else:
             # Log invalid attempts
-            status = ""
-
+            status = "Wrong Opt."
         flash(status)
-        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute('SELECT * FROM accounts WHERE Email = %s', [session['email']])
-        account = cursor.fetchone()
-
-        return render_template('Email_login.html')
+        return render_template('Email_Login.html')
     else:
-        status = "Wrong Otp!."
-        return render_template('verity.html',msg=status)
+        status='Wrong Opt'
+        flash(status)
+        return render_template('verity.html')
+
 ### hong ji text message end ####
 
 # 2FA form route
 # 2FA page route
-
 
 @app.route("/login/2fa/")
 def login_2fa():
@@ -209,9 +214,9 @@ def login_2fa():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
     account = cursor.fetchone()
+    img=qrcode.make(secret)
+    img.save('bit.jpg')
     return render_template("login_2fa.html", secret=secret,account=account)
-
-
 @app.route("/login/2fa/", methods=["POST"])
 def login_2fa_form():
 
@@ -232,8 +237,6 @@ def login_2fa_form():
         # inform users if OTP is invalid
         flash("You have supplied an invalid 2FA token!", "danger")
         return redirect(url_for("login_2fa"))
-
-
 # email test
 @app.route('/userprofile')
 def Userprofile():
@@ -352,7 +355,6 @@ def ForgottenPassword():
         print('error')
         return render_template('error404.html')
 
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     captcha_response = request.form.get('g-recaptcha-response')
@@ -446,8 +448,8 @@ def create_login_user():
         else:
             # Account doesnt exists and the form data is valid, now insert new account into accounts table
             cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-                           , (username, NRIC, DOB, password, gender, phone_no, email, security_questions_1,
-                              security_questions_2, answer_1, answer_2, address, role, account_creation_time))
+                           ,(username,NRIC,DOB,password,gender,phone_no,email,security_questions_1,security_questions_2,answer_1,answer_2,address,role,account_creation_time))
+
             mysql.connection.commit()
             msg = 'You have successfully registered! '
             print("working")
