@@ -115,8 +115,8 @@ input:valid ~ span.show{
                         <input type="text" id="Phone Number" class="form-control" value = "{{ account['Phone_Number'] }}" readonly/>
                     </div>
                     <div class="form-group col-md-6">
-                        <label for="Security Question">Security Question</label>
-                        <input type="text" id="Security Question" class="form-control" value = "{{ account['Security_Questions'] }}" readonly/>
+                        <label for="Security Question">Security Question 1</label>
+                        <input type="text" id="Security Question" class="form-control" value = "{{ account['Security_Question_1'] }}" readonly/>
                     </div>
                     <div class="form-group col-md-6">
                     <label for="inputEmail4">Email</label>
@@ -124,10 +124,31 @@ input:valid ~ span.show{
 
                      </div>
                     <div class="form-group col-md-6">
-                    <label for="Answer">Answer</label>
-                    <input type="email" class="form-control" id="Answer" value="{{ account['Answers'] }}" readonly/>
+                    <label for="Answer_1">Answer for Security Question 1</label>
+                    <input type="email" class="form-control" id="Answer_1" value="{{ account['Answer_1'] }}" readonly/>
 
                      </div>
+                    <div class="form-group col-md-6">
+                    <label for="DOB">Date of Birth</label>
+                    <input type="email" class="form-control" id="DOB" value="{{ account['Date_of_Birth'] }}" readonly/>
+
+                     </div>
+                    <div class="form-group col-md-6">
+                    <label for="Security Question 2">Security Question</label>
+                    <input type="email" class="form-control" id="Security Question 2" value="{{ account['Security_Question_2'] }}" readonly/>
+
+                     </div>
+                     <div class="form-group col-md-6">
+                    <label for="Gender">Gender</label>
+                    <input type="email" class="form-control" id="Gender" value="{{ account['Gender'] }}" readonly/>
+
+                     </div>
+                     <div class="form-group col-md-6">
+                    <label for="Security Question 2">Answer for Security Question 2</label>
+                    <input type="email" class="form-control" id="Answer_2" value="{{ account['Answer_2'] }}" readonly/>
+
+                     </div>
+
 
                 </div>
 

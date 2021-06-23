@@ -1,3 +1,5 @@
+import pyotp
+
 import Feedback as F
 import datetime
 import shelve
@@ -39,13 +41,14 @@ from random import randint
 import requests
 from random import randint ###### email otp ####
 
+from UpdateUserAccount import UpdateUserForm
 
 # SQL stuff
 ###line 43 , 44 for hong ji only , the others just # this 2 line
-import pymysql
-pymysql.install_as_MySQLdb()
+#import pymysql
+#pymysql.install_as_MySQLdb()
 #### line 43 , 44 for hong ji only , the others just # this 2 line  as hong ji pc have bug cant use the sql
-import pyotp
+#import pyotp
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
 import re
@@ -69,6 +72,7 @@ app.config['MAIL_DEFAULT_SENDER'] = 'Projectsec6@gmail.com'
 app.config['MAIL_MAX_EMAILS'] = None
 app.config['MAIL_SUPPRESS_SEND'] = False
 app.config['MAIL_ASCII_ATTACHMENTS'] = False
+
 mail = Mail(app)
 otp=randint(000000,999999) #email otp
 
@@ -76,7 +80,7 @@ otp=randint(000000,999999) #email otp
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = '1234' # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = 'ZadePrimeSQL69420' # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -239,12 +243,19 @@ def Userprofile():
     return redirect(url_for('login'))
 
 
-@app.route('/Settings')
+@app.route('/Settings',methods=['GET', 'POST'])
 def Changesettings():
+    formupdateuser = CreateLoginUserForm(request.form)
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
     account = cursor.fetchone()
-    return render_template('Settings.html', account=account)
+    if request.method == 'POST':
+        print('It posted')
+        print(request.form)
+
+
+        return redirect(url_for('accountupdatefunc',data = 1))
+    return render_template('Settings.html', account=account,form=formupdateuser)
 
 
 @app.route('/managerprofile')
@@ -254,6 +265,11 @@ def Managerprofile():
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
         account = cursor.fetchone()
+        print(account)
+        print(account['Security_Question_1'])
+        print(account['Security_Question_2'])
+        print(account['Answer_1'])
+        print(account['Answer_2'])
         if account is None:
             # Account does not exist.
             return False
@@ -293,10 +309,13 @@ def TWOFA():
         return render_template('error404.html')
 
 
-@app.route('/UpdateAccount', methods=['GET', 'POST'])
-def updateaccount():
+@app.route('/UpdateAccount/<data>', methods=['GET', 'POST'])
+def accountupdatefunc(data):
     try:
-        return render_template('UpdateAccountDetails.html')
+        print("It upate")
+        print(data)
+
+        return 'something'
     except:
         return render_template('error404.html')
 
@@ -356,6 +375,7 @@ def login():
             account = cursor.fetchone()
             print(account)
             if account:
+
                 session['loggedin'] = True
                 session['ID'] = account['ID']
                 session['Username'] = account['Username']
@@ -395,24 +415,29 @@ def create_login_user():
     create_login_user_form = CreateLoginUserForm(request.form)
     msg = ''
     # Check if "username", "password" and "email" POST requests exist (user submitted form)
-    if request.method == 'POST' and 'Username' in request.form and 'Password' in request.form and 'Email' in request.form:
+    if request.method == 'POST' and 'Username' in request.form and 'Password' in request.form and 'Email' in request.form and create_login_user_form.validate():
         # Create variables for easy access
         print("is the form even working")
         print(request.form)
         username = request.form['Username']
-        phone_no = request.form['Phone_Number']
         NRIC = request.form['NRIC']
         DOB = request.form['DOB']
         gender = request.form['Gender']
+        password = request.form['Password']
+        phone_no = request.form['Phone_Number']
         email = request.form['Email']
-        security_questions = request.form['Security_Questions']
-        answer = request.form['Answers']
+        security_questions_1 = request.form['Security_Questions_1']
+        answer_1 = request.form['Answers_1']
+        security_questions_2 = request.form['Security_Questions_2']
+        answer_2 = request.form['Answers_2']
         password = request.form['Password']
         address = request.form['Address']
         role = 'Guest'
+        now = datetime.datetime.now()
+        account_creation_time = now.strftime("%Y-%m-%d %H:%M:%S")
         # Check if account exists using MySQL
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        print(username, phone_no, NRIC, DOB, gender, email, security_questions, answer, password, address, role)
+        print(username, phone_no, NRIC, DOB, gender, email, password, address, role)
         cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': username})
         account = cursor.fetchone()
         # If account exists show error and validation checks(do this at the form for this function)
@@ -423,8 +448,9 @@ def create_login_user():
             msg = 'Please fill out the form!'
         else:
             # Account doesnt exists and the form data is valid, now insert new account into accounts table
-            cursor.execute('INSERT INTO accounts VALUES (NULL, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
-                           (username, NRIC, DOB, gender, phone_no, email, security_questions, answer, password, address, role))
+            cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                           ,(username,NRIC,DOB,password,gender,phone_no,email,security_questions_1,security_questions_2,answer_1,answer_2,address,role,account_creation_time))
+
             mysql.connection.commit()
             msg = 'You have successfully registered!'
             print("working")

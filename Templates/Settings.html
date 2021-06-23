@@ -134,81 +134,68 @@ body{
               <div class="tab-pane active" id="profile">
                 <h6>YOUR PROFILE INFORMATION</h6>
                 <hr>
-                <form>
-                  <div class="form-group">
-                    <label for="fullName">Username</label>
-                    <input type="text" class="form-control" id="fullName" aria-describedby="fullNameHelp" placeholder="Enter your fullname" value="{{ account['Username'] }}">
-                    <small id="fullNameHelp" class="form-text text-muted">Your name may appear around here where you are mentioned. You can change or remove it at any time.</small>
-                  </div>
-                  <div class="form-group">
-                    <label for="nric">NRIC</label>
-                    <input type="text" class="form-control" id="NRIC" aria-describedby="NRICHELP" placeholder="Enter your fullname" value="{{ account['NRIC'] }}">
-                    <small id="NRICHELP" class="form-text text-muted">NRIC STUFF</small>
-                  </div>
-                  <div class="form-group">
-                    <label for="Phone Number">Phone Number</label>
-                    <input type="text" class="form-control" id="Phone Number" aria-describedby="Phone Number Help" placeholder="Enter your fullname" value="{{ account['Phone_Number'] }}">
-                    <small id="Phone Number Help" class="form-text text-muted">Phone Number stuff</small>
-                  </div>
-                   <div class="form-group">
-                    <label for="Email">Email</label>
-                    <input type="text" class="form-control" id="Email" aria-describedby="EmailHelp" placeholder="Enter your fullname" value="{{ account['Email'] }}">
-                    <small id="EmailHelp" class="form-text text-muted">Email stuff</small>
-                  </div>
-                   <div class="form-group">
-                    <label for="Security Questions">Security Question 1</label>
-                    <input type="text" class="form-control" id="Security Questions" aria-describedby="Security_QuestionsHelp" placeholder="Enter your fullname" value="{{ account['Security_Questions'] }}">
-                    <small id="Security_QuestionsHelp" class="form-text text-muted">Security_Questions stuff</small>
-                  </div>
-                  <div class="form-group">
-                    <label for="Answer 1">Answer</label>
-                    <input type="text" class="form-control" id="Answer 1" aria-describedby="Answerhelp" placeholder="Enter your fullname" value="{{ account['Answers'] }}">
-                    <small id="Answerhelp" class="form-text text-muted">Answer stuff</small>
-                  </div>
-                   <div class="form-group">
-                    <label for="Password">Password</label>
-                    <input type="text" class="form-control" id="Password" aria-describedby="PasswordHelp" placeholder="Enter your fullname" value="{{ account['Password'] }}">
-                    <small id="PasswordHelp" class="form-text text-muted">Answer stuff</small>
-                  </div>
-                   <div class="form-group">
-                    <label for="cfmpass">Confirm Password</label>
-                    <input type="text" class="form-control" id="cfmpass" aria-describedby="cfmpasshelp" placeholder="Enter your fullname" value="{{ account['Password'] }}">
-                    <small id="cfmpasshelp" class="form-text text-muted">Answer stuff</small>
-                  </div>
-                   <div class="form-group">
-                    <label for="Address">Address</label>
-                    <input type="text" class="form-control" id="Address" aria-describedby="AddressHelp" placeholder="Enter your fullname" value="{{ account['Address'] }}">
-                    <small id="AddressHelp" class="form-text text-muted">Answer stuff</small>
-                  </div>
+
+                  <form method="POST" action="" enctype="multipart/form-data">
+
+                    <div class="form-group">
+                      {{ render_field(form.Username, class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                      {{ render_field(form.NRIC, class="form-check", style="list-style-type:none") }}
+                    </div>
+                    <div class="form-group">
+                      {{ render_field(form.DOB, class="form-check", style="list-style-type:none") }}
+                    </div>
+                      <div class="form-group">
+                      {{ render_field(form.Gender, class="form-check", style="list-style-type:none") }}
+                    </div>
+                    <div class="form-group">
+                      {{ render_field(form.Phone_Number, class="form-control") }}
+                    </div>
 
 
 
-                  <div class="form-group">
-                    <label for="role">Role</label>
-                    <input type="text" class="form-control" id="role" aria-describedby="roleHelp" placeholder="Enter your fullname" value="{{ account['role'] }}">
-                    <small id="rolehelp" class="form-text text-muted">Answer stuff</small>
-                  </div>
+                    <div id="prof">
+                      <div class="form-group">
+                        {{ render_field(form.Email, class="form-control") }}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div class = "form-group">
+                        {{ render_field(form.Security_Questions_1, class="form-control") }}
+                      </div>
+                    </div>
+                    <div>
+                      <div class = "form-group">
+                        {{ render_field(form.Answers_1, class="form-control") }}
+                      </div>
+                    </div>
+                    <div>
+                      <div class = "form-group">
+                        {{ render_field(form.Security_Questions_2, class="form-control") }}
+                      </div>
+                    </div>
+                    <div>
+                      <div class = "form-group">
+                        {{ render_field(form.Answers_2, class="form-control") }}
+                      </div>
+                    </div>
+                    <div>
+                      <div class = "form-group">
+                        {{ render_field(form.Address, class="form-control") }}
+                      </div>
+                    </div>
+                    <div>
 
 
 
 
-                  <div class="form-group">
-                    <label for="bio">Your Bio</label>
-                    <textarea class="form-control autosize" id="bio" placeholder="Write something about you" style="overflow: hidden; overflow-wrap: break-word; resize: none; height: 62px;">A front-end developer that focus more on user interface design, a web interface wizard, a connector of awesomeness.</textarea>
-                  </div>
-                  <div class="form-group">
-                    <label for="url">URL</label>
-                    <input type="text" class="form-control" id="url" placeholder="Enter your website address" value="http://benije.ke/pozzivkij">
-                  </div>
-                  <div class="form-group">
-                    <label for="location">Location</label>
-                    <input type="text" class="form-control" id="location" placeholder="Enter your location" value="Bay Area, San Francisco, CA">
-                  </div>
-                  <div class="form-group small text-muted">
-                    All of the fields on this page are optional and can be deleted at any time, and by filling them out, you're giving us consent to share this data wherever your user profile appears.
-                  </div>
-                  <button type="button" class="btn btn-primary">Update Profile</button>
-                  <button type="reset" class="btn btn-light">Reset Changes</button>
+
+                    <button type="submit" class="btn btn-primary" onclick="{{ url_for('accountupdatefunc',data = 1) }}">Update Profile</button>
+                    </div>
+
+
                 </form>
               </div>
               <div class="tab-pane" id="account">

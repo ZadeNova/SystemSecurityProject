@@ -23,16 +23,25 @@
     {{ render_field(form.Password, class="form-control")  }}
   </div>
   <div class="form-group">
+    {{ render_field(form.Confirm_Password, class="form-control")  }}
+  </div>
+  <div class="form-group">
     {{ render_field(form.Phone_Number, class="form-control")  }}
   </div>
   <div class="form-group">
     {{ render_field(form.Email, class="form-control")  }}
   </div>
   <div class="form-group">
-    {{ render_field(form.Security_Questions, class="form-control")  }}
+    {{ render_field(form.Security_Questions_1, class="form-control")  }}
   </div>
   <div class="form-group">
-    {{ render_field(form.Answers, class="form-control")  }}
+    {{ render_field(form.Answers_1, class="form-control")  }}
+  </div>
+  <div class="form-group">
+    {{ render_field(form.Security_Questions_2, class="form-control")  }}
+  </div>
+  <div class="form-group">
+    {{ render_field(form.Answers_2, class="form-control")  }}
   </div>
   <div id="prof">
     <div class="form-group">
