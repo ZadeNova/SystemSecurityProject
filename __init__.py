@@ -40,11 +40,11 @@ from random import randint
 import requests
 from random import randint ###### email otp ####
 from UpdateUserAccount import UpdateUserForm
-
+import json
 # SQL stuff
 ###line 43 , 44 for hong ji only , the others just # this 2 line
-import pymysql
-pymysql.install_as_MySQLdb()
+#import pymysql
+#pymysql.install_as_MySQLdb()
 #### line 43 , 44 for hong ji only , the others just # this 2 line  as hong ji pc have bug cant use the sql
 
 from flask_mysqldb import MySQL
@@ -53,7 +53,7 @@ import re
 import bcrypt
 from cryptography.fernet import Fernet
 import jwt
-
+from itsdangerous import URLSafeSerializer , SignatureExpired,URLSafeTimedSerializer
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Project'
 
@@ -70,7 +70,7 @@ app.config['MAIL_DEFAULT_SENDER'] = 'Projectsec6@gmail.com'
 app.config['MAIL_MAX_EMAILS'] = None
 app.config['MAIL_SUPPRESS_SEND'] = False
 app.config['MAIL_ASCII_ATTACHMENTS'] = False
-
+s = URLSafeTimedSerializer('SecretKey?')
 mail = Mail(app)
 otp=randint(000000,999999) #email otp
 
@@ -78,7 +78,7 @@ otp=randint(000000,999999) #email otp
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'N0passwordatall' # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = 'ZadePrimeSQL69420' # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -252,17 +252,78 @@ def Userprofile():
 
 @app.route('/Settings',methods=['GET', 'POST'])
 def Changesettings():
-    formupdateuser = CreateLoginUserForm(request.form)
+    global dataforemailupdate,IDUpdate
+    formupdateuser = UpdateUserForm(request.form)
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
     account = cursor.fetchone()
+
+    print(account)
+    formupdateuser.Username.data = account['Username']
+    formupdateuser.NRIC.data = account['NRIC']
+    formupdateuser.DOB.data = account['Date_of_Birth']
+    formupdateuser.Gender.data = account['Gender']
+    formupdateuser.Phone_Number.data = account['Phone_Number']
+    formupdateuser.Email.data = account['Email']
+    formupdateuser.Security_Questions_1.data = account['Security_Question_1']
+    formupdateuser.Security_Questions_2.data = account['Security_Question_2']
+    formupdateuser.Answers_1.data = account['Answer_1']
+    formupdateuser.Answers_2.data = account['Answer_2']
+    formupdateuser.Address.data = account['Address']
     if request.method == 'POST':
+        IDUpdate = session['ID']
+
+
+
+
+
+
+
+
+
+        email = request.form['Email']
+        token = s.dumps(email, salt='Email-confirm')
+
         print('It posted')
         print(request.form)
+        msg = Message("Email Confirmation",recipients=[email])
+        dataforemailupdate = request.form
+        link = url_for('confirm_email_update',token=token,_external=True)
+        msg.body = 'Your link is {}'.format(link)
+        mail.send(msg)
+        return 'It worked'
 
 
-        return redirect(url_for('accountupdatefunc',data = 1))
+
+
+
+
     return render_template('Settings.html', account=account,form=formupdateuser)
+
+def updatedatabase():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+
+@app.route('/confirm_email_afterupdate/<token>')
+def confirm_email_update(token):
+    try:
+        print(dataforemailupdate,IDUpdate)
+        print(session)
+        data = dataforemailupdate
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM accounts WHERE id = %(ID)s', {'ID':IDUpdate})
+        account = cursor.fetchone()
+        print(account)
+        email = s.loads(token,salt='Email-confirm',max_age=180)
+
+        sql = "UPDATE accounts SET Username = %s,NRIC = %s,Date_of_Birth = %s,Gender = %s , Phone_Number = %s , Email = %s , Security_Question_1 = %s, Security_Question_2 = %s,Answer_1 = %s,Answer_2 = %s,Address = %s"
+        value = (data['Username'],data['NRIC'],data['DOB'],data['Gender'],data['Phone_Number'],data['Email'],data['Security_Questions_1'],data['Security_Questions_2'],data['Answers_1'],data['Answers_2'],data['Address'])
+        cursor.execute(sql,value)
+        mysql.connection.commit()
+        return redirect(url_for('Managerprofile'))
+    except SignatureExpired:
+        return 'Token is expired'
+
 
 
 @app.route('/managerprofile')
@@ -316,15 +377,15 @@ def TWOFA():
         return render_template('error404.html')
 
 
-@app.route('/UpdateAccount/<data>', methods=['GET', 'POST'])
-def accountupdatefunc(data):
-    try:
-        print("It upate")
-        print(data)
-
-        return 'something'
-    except:
-        return render_template('error404.html')
+#@app.route('/UpdateAccount/<data>', methods=['GET', 'POST'])
+#def accountupdatefunc(data):
+#    try:
+#        print("It upate")
+#        print(data)
+#
+#        return 'something'
+#    except:
+#        return render_template('error404.html')
 
 
 @app.route('/ForgetPassword', methods=['GET', 'POST'])
@@ -433,6 +494,7 @@ def create_login_user():
         role = 'Guest'
         now = datetime.datetime.now()
         account_creation_time = now.strftime("%Y-%m-%d %H:%M:%S")
+        email_confirm = 0
         # Check if account exists using MySQL
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         print(username, phone_no, NRIC, DOB, gender, email, password, address, role)
@@ -446,9 +508,9 @@ def create_login_user():
             msg = 'Please fill out the form!'
         else:
             # Account doesnt exists and the form data is valid, now insert new account into accounts table
-            cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+            cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                            , (username, NRIC, DOB, password, gender, phone_no, email, security_questions_1,
-                              security_questions_2, answer_1, answer_2, address, role, account_creation_time))
+                              security_questions_2, answer_1, answer_2, address, role, account_creation_time,email_confirm))
             mysql.connection.commit()
             msg = 'You have successfully registered! '
             print("working")
