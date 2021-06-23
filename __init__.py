@@ -78,7 +78,7 @@ otp=randint(000000,999999) #email otp
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = '1234' # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = 'N0passwordatall' # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -113,6 +113,7 @@ def sendemail():
     account = cursor.fetchone()
     return render_template("AuditLog.html", account=account)
 
+
 ## hong ji text message done ??? #####
 @app.route('/EmailOtpCheck')
 def EmailOtpCheck():
@@ -126,6 +127,7 @@ def EmailOtpCheck():
 
     return render_template('EmailOtpCheck.html',account=account)
 
+
 @app.route('/validate', methods=['GET', 'POST'])
 def validate():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -135,6 +137,7 @@ def validate():
     if otp==int(user_otp):
         return render_template('successful.html', account=account)
     return render_template('Fail.html', account=account)
+
 
 ## login using email
 @app.route('/EmailLogin',methods=['GET', 'POST'])
@@ -149,6 +152,7 @@ def verify():
     msg.body=str(otp)
     mail.send(msg)
     return render_template('verity.html')
+
 
 @app.route('/EmailLoginValidate',methods=['POST'])
 def EmailLoginValidate():
@@ -197,6 +201,7 @@ def EmailLoginValidate():
 # 2FA form route
 # 2FA page route
 
+
 @app.route("/login/2fa/")
 def login_2fa():
     # generating random secret key for authentication
@@ -204,9 +209,9 @@ def login_2fa():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
     account = cursor.fetchone()
-    img=qrcode.make(secret)
-    img.save('bit.jpg')
     return render_template("login_2fa.html", secret=secret,account=account)
+
+
 @app.route("/login/2fa/", methods=["POST"])
 def login_2fa_form():
 
@@ -227,6 +232,8 @@ def login_2fa_form():
         # inform users if OTP is invalid
         flash("You have supplied an invalid 2FA token!", "danger")
         return redirect(url_for("login_2fa"))
+
+
 # email test
 @app.route('/userprofile')
 def Userprofile():
@@ -323,36 +330,26 @@ def accountupdatefunc(data):
 @app.route('/ForgetPassword', methods=['GET', 'POST'])
 def ForgottenPassword():
     try:
+        if request.method == 'POST' and 'email' in request.form:
+            email = request.form['email']
+            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
-        # Check if email exist in sql database
+            cursor.execute("SELECT * FROM accounts WHERE Email = %(email)s", {'email': email})
 
-        print(request.form)
-
-        email = request.form['email']
-
-        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-
-        cursor.execute("SELECT * FROM accounts WHERE Email = %(email)s", {'email': email})
-
-        account = cursor.fetchone()
-
-        if account:
-
-            print("It exists")
-
-            msg = Message("Forget Password Link", recipients=['novaseraphzade@gmail.com'])
-
-            msg.html = render_template('forgotpasswordemail.html')
-            mail.send(msg)
-
+            account = cursor.fetchone()
+            print(account)
+            if account:
+                msg = Message("Forget Password Link", recipients=[email])
+                msg.html = render_template('forgotpasswordemail.html')
+                mail.send(msg)
+                print('sended')
+            else:
+                print('It doesnt exit')
+            return redirect(url_for('login'))
         else:
-
-            print("Its does not exist!")
-
-        return render_template('ForgetPassword.html')
-
+            return render_template('ForgetPassword.html')
     except:
-
+        print('error')
         return render_template('error404.html')
 
 
@@ -449,8 +446,8 @@ def create_login_user():
         else:
             # Account doesnt exists and the form data is valid, now insert new account into accounts table
             cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-                           ,(username,NRIC,DOB,password,gender,phone_no,email,security_questions_1,security_questions_2,answer_1,answer_2,address,role,account_creation_time))
-
+                           , (username, NRIC, DOB, password, gender, phone_no, email, security_questions_1,
+                              security_questions_2, answer_1, answer_2, address, role, account_creation_time))
             mysql.connection.commit()
             msg = 'You have successfully registered! '
             print("working")
