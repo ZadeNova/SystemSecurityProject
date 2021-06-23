@@ -150,6 +150,7 @@ def verify():
 
 @app.route('/EmailLoginValidate',methods=['POST'])
 def EmailLoginValidate():
+    print(session)
     user_otp=request.form['otp']
     print(user_otp)
     print(otp)
@@ -347,6 +348,7 @@ def login():
             username = request.form['username']
             password = request.form['password']
             # Check if account exists in MYSQL
+            print(request.remote_addr)
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute("SELECT * FROM accounts WHERE username = %(username)s AND password = %(password)s",
                            {'username': username, 'password': password})
