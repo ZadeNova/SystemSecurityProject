@@ -1,5 +1,4 @@
 import pyotp
-
 import Feedback as F
 import datetime
 import shelve
@@ -40,15 +39,14 @@ from flask_mail import Mail, Message
 from random import randint
 import requests
 from random import randint ###### email otp ####
-
 from UpdateUserAccount import UpdateUserForm
 
 # SQL stuff
 ###line 43 , 44 for hong ji only , the others just # this 2 line
-#import pymysql
-#pymysql.install_as_MySQLdb()
+import pymysql
+pymysql.install_as_MySQLdb()
 #### line 43 , 44 for hong ji only , the others just # this 2 line  as hong ji pc have bug cant use the sql
-#import pyotp
+
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
 import re
@@ -80,7 +78,7 @@ otp=randint(000000,999999) #email otp
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'ZadePrimeSQL69420' # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = '1234' # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -122,8 +120,8 @@ def EmailOtpCheck():
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
     account = cursor.fetchone()
     email=account['Email']
-    msg=Message(subject='OTP',recipients=[email])
-    msg.body=str(otp)
+    msg=Message('This is your OTP',recipients=[email])
+    msg.body='Your OTP is :\n'+'\t\t\t'+str(otp) +'\nPlease do not show this to anyone ! Thank you :)'
     mail.send(msg)
 
     return render_template('EmailOtpCheck.html',account=account)
@@ -206,6 +204,8 @@ def login_2fa():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
     account = cursor.fetchone()
+    img=qrcode.make(secret)
+    img.save('bit.jpg')
     return render_template("login_2fa.html", secret=secret,account=account)
 @app.route("/login/2fa/", methods=["POST"])
 def login_2fa_form():
