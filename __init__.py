@@ -46,7 +46,7 @@ import json
 #import pymysql
 #pymysql.install_as_MySQLdb()
 #### line 43 , 44 for hong ji only , the others just # this 2 line  as hong ji pc have bug cant use the sql
-
+#lol
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
 import re
