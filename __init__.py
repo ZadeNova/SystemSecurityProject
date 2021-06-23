@@ -138,7 +138,7 @@ def validate():
 ## login using email
 @app.route('/EmailLogin',methods=['GET', 'POST'])
 def EmailLogin():
-    if request.method == 'POST' and 'email' in request.form:
+    if request.method == 'POST' and 'email' in request.form :
         email = request.form['email']
         print(email)
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -198,7 +198,7 @@ def EmailLoginValidate():
         flash(status)
         return render_template('Email_Login.html')
     else:
-        status='Wrong Opt'
+        status='Wrong Opt '
         flash(status)
         return render_template('verity.html')
 

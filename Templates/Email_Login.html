@@ -176,7 +176,7 @@ form .button{
       <header>Login by Email</header>
          <p>
               {% with messages = get_flashed_messages() %}
-              {% if messages %}
+              {% if messages  %}
               {% for message in messages %}
           <div class="alert alert-primary">
               <strong>{{ message }}</strong>
