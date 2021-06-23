@@ -32,3 +32,4 @@ WTForms==2.3.3
 pyotp==2.6.0
 flask-qrcode==3.0.0
 pyotp==2.6.0
+

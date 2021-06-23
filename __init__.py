@@ -452,7 +452,7 @@ def create_login_user():
                            ,(username,NRIC,DOB,password,gender,phone_no,email,security_questions_1,security_questions_2,answer_1,answer_2,address,role,account_creation_time))
 
             mysql.connection.commit()
-            msg = 'You have successfully registered!'
+            msg = 'You have successfully registered! '
             print("working")
             return redirect('login')
     elif request.method == 'POST':
