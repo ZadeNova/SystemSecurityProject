@@ -176,10 +176,23 @@ form .button{
     <div class="container" >
 
       <header>Otp has been send</header>
-        <div class="msg">
-              {{ msg }}
-        </div>
+          <p>
+              {% with messages = get_flashed_messages() %}
+              {% if messages %}
+              {% for message in messages %}
+          <div class="alert alert-primary">
+              <strong>{{ message  }}</strong>
+          </div>
+          {% endfor %}
+          {% endif %}
+          {% endwith %}
+          </p>
       <form  action="/EmailLoginValidate" method="POST">
+        <div class="input-field">
+          <input type="email" class='input' name="email"  required>
+          <label>Email</label>
+        </div>
+          <form  action="/EmailLoginValidate" method="POST">
         <div class="input-field">
           <input type="text" class='input' name="otp" required>
           <label>Enter Otp:</label>

@@ -174,12 +174,24 @@ form .button{
   <body>
     <div class="container">
       <header>Login by Email</header>
-
-      <form method="POST" action="/verify">
+         <p>
+              {% with messages = get_flashed_messages() %}
+              {% if messages  %}
+              {% for message in messages %}
+          <div class="alert alert-primary">
+              <strong>{{ message }}</strong>
+          </div>
+          {% endfor %}
+          {% endif %}
+          {% endwith %}
+          </p>
+      <form method="POST" action="/EmailLogin">
         <div class="input-field">
           <input type="email" class='input' name="email"  required>
           <label>Email</label>
         </div>
+
+
 
 <div class="button">
           <div class="inner">
@@ -211,6 +223,7 @@ form .button{
           show.style.color = "#111";
         }
       }
+
     </script>
 
   </body>
