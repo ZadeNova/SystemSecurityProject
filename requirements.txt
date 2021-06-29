@@ -13,6 +13,7 @@ email-validator==1.1.2
 Flask==2.0.1
 Flask-Mail==0.9.1
 Flask-MySQLdb==0.2.0
+Flask-QRcode==3.0.0
 Flask-Reuploaded==1.1.0
 Flask-Simple-GeoIP==0.2.4
 idna==2.10
@@ -21,15 +22,14 @@ itsdangerous==2.0.1
 Jinja2==3.0.1
 MarkupSafe==2.0.1
 mysqlclient==2.0.3
+Pillow==8.2.0
 pycparser==2.20
 PyJWT==2.1.0
+pyotp==2.6.0
+qrcode==6.1
 requests==2.25.1
 simple-geoip==0.1.1
 six==1.16.0
 urllib3==1.26.5
 Werkzeug==2.0.1
 WTForms==2.3.3
-pyotp==2.6.0
-flask-qrcode==3.0.0
-pyotp==2.6.0
-

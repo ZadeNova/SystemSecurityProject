@@ -38,22 +38,23 @@ from viewupdateforms import CreateUpdateFeedbackForm
 from flask_mail import Mail, Message
 from random import randint
 import requests
-from random import randint ###### email otp ####
+from random import randint  ###### email otp ####
 from UpdateUserAccount import UpdateUserForm
 import json
 # SQL stuff
 ###line 43 , 44 for hong ji only , the others just # this 2 line
-#import pymysql
-#pymysql.install_as_MySQLdb()
+# import pymysql
+# pymysql.install_as_MySQLdb()
 #### line 43 , 44 for hong ji only , the others just # this 2 line  as hong ji pc have bug cant use the sql
-#lol
+# lol
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
 import re
 import bcrypt
 from cryptography.fernet import Fernet
 import jwt
-from itsdangerous import URLSafeSerializer , SignatureExpired,URLSafeTimedSerializer
+from itsdangerous import URLSafeSerializer, SignatureExpired, URLSafeTimedSerializer
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Project'
 
@@ -72,13 +73,14 @@ app.config['MAIL_SUPPRESS_SEND'] = False
 app.config['MAIL_ASCII_ATTACHMENTS'] = False
 s = URLSafeTimedSerializer('SecretKey?')
 mail = Mail(app)
-otp=randint(000000,999999) #email otp
+otp = randint(000000, 999999)  # email otp
 
 # Database connection MYSQL
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'ZadePrimeSQL69420' # change this line to our own sql password , thank you vry not much xd
+    app.config[
+        'MYSQL_PASSWORD'] = 'ZadePrimeSQL69420'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -113,33 +115,35 @@ def sendemail():
     account = cursor.fetchone()
     return render_template("AuditLog.html", account=account)
 
+
 ## hong ji text message done ??? #####
 @app.route('/EmailOtpCheck')
 def EmailOtpCheck():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
     account = cursor.fetchone()
-    email=account['Email']
-    msg=Message('This is your OTP',recipients=[email])
-    msg.body='Your OTP is :\n'+'\t\t\t'+str(otp) +'\nPlease do not show this to anyone ! Thank you :)'
+    email = account['Email']
+    msg = Message('This is your OTP', recipients=[email])
+    msg.body = 'Your OTP is :\n' + '\t\t\t' + str(otp) + '\nPlease do not show this to anyone ! Thank you :)'
     mail.send(msg)
-    return render_template('EmailOtpCheck.html',account=account)
+    return render_template('EmailOtpCheck.html', account=account)
+
 
 @app.route('/validate', methods=['GET', 'POST'])
 def validate():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
     account = cursor.fetchone()
-    user_otp=request.form['otp']
-    if otp==int(user_otp):
+    user_otp = request.form['otp']
+    if otp == int(user_otp):
         return render_template('successful.html', account=account)
     return render_template('Fail.html', account=account)
 
 
 ## login using email
-@app.route('/EmailLogin',methods=['GET', 'POST'])
+@app.route('/EmailLogin', methods=['GET', 'POST'])
 def EmailLogin():
-    if request.method == 'POST' and 'email' in request.form :
+    if request.method == 'POST' and 'email' in request.form:
         email = request.form['email']
         print(email)
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -152,25 +156,26 @@ def EmailLogin():
             msg.body = 'Your OTP is :\n' + '\t\t\t' + str(otp) + '\nPlease do not show this to anyone ! Thank you :)'
             mail.send(msg)
             print('sended')
-            ms1='Opt send! Please check your email'
+            ms1 = 'Opt send! Please check your email'
             flash(ms1)
             return render_template('verity.html')
 
         else:
-            ms1='Invalid email ! Please try again '
+            ms1 = 'Invalid email ! Please try again '
             flash(ms1)
             print('It doesnt exit')
         return redirect(url_for('login'))
     else:
         return render_template('Email_login.html')
 
-@app.route('/EmailLoginValidate',methods=['POST'])
+
+@app.route('/EmailLoginValidate', methods=['POST'])
 def EmailLoginValidate():
     print(session)
-    user_otp=request.form['otp']
+    user_otp = request.form['otp']
     print(user_otp)
     print(otp)
-    if otp==int(user_otp):
+    if otp == int(user_otp):
         if request.method == 'POST' and 'email' in request.form:
             email = request.form['email']
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -181,7 +186,7 @@ def EmailLoginValidate():
             print(account)
             if account:
                 session['loggedin'] = True
-                session['email']=account['Email']
+                session['email'] = account['Email']
                 session['ID'] = account['ID']
                 session['Username'] = account['Username']
                 session['password'] = account['Password']
@@ -199,9 +204,10 @@ def EmailLoginValidate():
         flash(status)
         return render_template('Email_Login.html')
     else:
-        status='Wrong Opt '
+        status = 'Wrong Opt '
         flash(status)
         return render_template('verity.html')
+
 
 ### hong ji text message end ####
 
@@ -215,12 +221,13 @@ def login_2fa():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
     account = cursor.fetchone()
-    img=qrcode.make(secret)
+    img = qrcode.make(secret)
     img.save('bit.jpg')
-    return render_template("login_2fa.html", secret=secret,account=account)
+    return render_template("login_2fa.html", secret=secret, account=account)
+
+
 @app.route("/login/2fa/", methods=["POST"])
 def login_2fa_form():
-
     # getting secret key used by user
     secret = request.form.get("secret")
     # getting OTP provided by user
@@ -238,6 +245,8 @@ def login_2fa_form():
         # inform users if OTP is invalid
         flash("You have supplied an invalid 2FA token!", "danger")
         return redirect(url_for("login_2fa"))
+
+
 # email test
 @app.route('/userprofile')
 def Userprofile():
@@ -249,14 +258,14 @@ def Userprofile():
         cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
         account = cursor.fetchone()
         # Show the profile page with account info
-        return render_template('userprofile.html', account=account)
+        return render_template('userprofile.html', account=account,email = session['email'])
         # User is not loggedin redirect to login page
     return redirect(url_for('login'))
 
 
-@app.route('/Settings',methods=['GET', 'POST'])
+@app.route('/Settings', methods=['GET', 'POST'])
 def Changesettings():
-    global dataforemailupdate,IDUpdate
+    global dataforemailupdate, IDUpdate
     formupdateuser = UpdateUserForm(request.form)
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
@@ -277,32 +286,20 @@ def Changesettings():
     if request.method == 'POST':
         IDUpdate = session['ID']
 
-
-
-
-
-
-
-
-
         email = request.form['Email']
         token = s.dumps(email, salt='Email-confirm')
 
         print('It posted')
         print(request.form)
-        msg = Message("Email Confirmation",recipients=[email])
+        msg = Message("Email Confirmation", recipients=[email])
         dataforemailupdate = request.form
-        link = url_for('confirm_email_update',token=token,_external=True)
+        link = url_for('confirm_email_update', token=token, _external=True)
         msg.body = 'Your link is {}'.format(link)
         mail.send(msg)
-        return 'It worked'
+        return redirect(url_for('login'))
 
+    return render_template('Settings.html', account=account, form=formupdateuser)
 
-
-
-
-
-    return render_template('Settings.html', account=account,form=formupdateuser)
 
 def updatedatabase():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -311,23 +308,24 @@ def updatedatabase():
 @app.route('/confirm_email_afterupdate/<token>')
 def confirm_email_update(token):
     try:
-        print(dataforemailupdate,IDUpdate)
+        print(dataforemailupdate, IDUpdate)
         print(session)
         data = dataforemailupdate
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute('SELECT * FROM accounts WHERE id = %(ID)s', {'ID':IDUpdate})
+        cursor.execute('SELECT * FROM accounts WHERE id = %(ID)s', {'ID': IDUpdate})
         account = cursor.fetchone()
         print(account)
-        email = s.loads(token,salt='Email-confirm',max_age=180)
+        email = s.loads(token, salt='Email-confirm', max_age=180)
 
         sql = "UPDATE accounts SET Username = %s,NRIC = %s,Date_of_Birth = %s,Gender = %s , Phone_Number = %s , Email = %s , Security_Question_1 = %s, Security_Question_2 = %s,Answer_1 = %s,Answer_2 = %s,Address = %s"
-        value = (data['Username'],data['NRIC'],data['DOB'],data['Gender'],data['Phone_Number'],data['Email'],data['Security_Questions_1'],data['Security_Questions_2'],data['Answers_1'],data['Answers_2'],data['Address'])
-        cursor.execute(sql,value)
+        value = (data['Username'], data['NRIC'], data['DOB'], data['Gender'], data['Phone_Number'], data['Email'],
+                 data['Security_Questions_1'], data['Security_Questions_2'], data['Answers_1'], data['Answers_2'],
+                 data['Address'])
+        cursor.execute(sql, value)
         mysql.connection.commit()
         return redirect(url_for('Managerprofile'))
     except SignatureExpired:
         return 'Token is expired'
-
 
 
 @app.route('/managerprofile')
@@ -381,8 +379,8 @@ def TWOFA():
         return render_template('error404.html')
 
 
-#@app.route('/UpdateAccount/<data>', methods=['GET', 'POST'])
-#def accountupdatefunc(data):
+# @app.route('/UpdateAccount/<data>', methods=['GET', 'POST'])
+# def accountupdatefunc(data):
 #    try:
 #        print("It upate")
 #        print(data)
@@ -418,6 +416,7 @@ def ForgottenPassword():
         print('error')
         return render_template('error404.html')
 
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     captcha_response = request.form.get('g-recaptcha-response')
@@ -431,25 +430,33 @@ def login():
             # Check if account exists in MYSQL
             print(request.remote_addr)
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-            cursor.execute("SELECT * FROM accounts WHERE username = %(username)s AND password = %(password)s",
-                           {'username': username, 'password': password})
+            cursor.execute("SELECT * FROM accounts WHERE username = %(username)s",
+                           {'username': username})
             # Fetch one record and return result
             account = cursor.fetchone()
             print(account)
             if account:
 
-                session['loggedin'] = True
-                session['ID'] = account['ID']
-                session['Username'] = account['Username']
-                session['password'] = account['Password']
+                key = account['SymmetricKey']
+                fkey = Fernet(key)
+                decryptedEmail_Binary = fkey.decrypt(account['Email'].encode())
+                decryptedEmail = decryptedEmail_Binary.decode('utf8')
+                print(decryptedEmail)
 
-                if account['Username'] == 'admin':
-                    return redirect(url_for('Managerprofile'))
+                hashandsalt = account['Password']
+                if bcrypt.checkpw(password.encode(), hashandsalt.encode()):
+                    session['loggedin'] = True
+                    session['ID'] = account['ID']
+                    session['Username'] = account['Username']
+                    session['email'] = decryptedEmail
+                    print(session)
+                    if account['Username'] == 'admin':
+                        return redirect(url_for('Managerprofile'))
+                    else:
+                        return redirect(url_for('Userprofile'))
                 else:
-                    return redirect(url_for('Userprofile'))
-            else:
-                msg = 'Incorrect Username/Password'
-                return render_template('login.html', msg=msg, sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
+                    msg = 'Incorrect Username/Password'
+                    return render_template('login.html', msg=msg, sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
         else:
             # Log invalid attempts
             status = "Sorry ! Please Check Im not a robot."
@@ -475,10 +482,13 @@ def logout():
 def create_login_user():
     # Output message if something goes wrong...
     create_login_user_form = CreateLoginUserForm(request.form)
+
     msg = ''
     # Check if "username", "password" and "email" POST requests exist (user submitted form)
     if request.method == 'POST' and 'Username' in request.form and 'Password' in request.form and 'Email' in request.form and create_login_user_form.validate():
         # Create variables for easy access
+        salt = bcrypt.gensalt(rounds=16)
+
         print("is the form even working")
         print(request.form)
         username = request.form['Username']
@@ -492,12 +502,20 @@ def create_login_user():
         answer_1 = request.form['Answers_1']
         security_questions_2 = request.form['Security_Questions_2']
         answer_2 = request.form['Answers_2']
-        password = request.form['Password']
         address = request.form['Address']
         role = 'Guest'
         now = datetime.datetime.now()
         account_creation_time = now.strftime("%Y-%m-%d %H:%M:%S")
         email_confirm = 0
+
+        hash_password = bcrypt.hashpw(password.encode(), salt)
+        #Symmetric Key encryption
+        key = Fernet.generate_key()
+        #Loads the key into the crypto API
+        fkey = Fernet(key)
+        #Encrypt the email and convert to bytes by calling f.encrypt
+        encryptedEmail = fkey.encrypt(email.encode())
+
         # Check if account exists using MySQL
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         print(username, phone_no, NRIC, DOB, gender, email, password, address, role)
@@ -511,9 +529,10 @@ def create_login_user():
             msg = 'Please fill out the form!'
         else:
             # Account doesnt exists and the form data is valid, now insert new account into accounts table
-            cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-                           , (username, NRIC, DOB, password, gender, phone_no, email, security_questions_1,
-                              security_questions_2, answer_1, answer_2, address, role, account_creation_time,email_confirm))
+            cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                           , (username, NRIC, DOB, hash_password, gender, phone_no, encryptedEmail, security_questions_1,
+                              security_questions_2, answer_1, answer_2, address, role, account_creation_time,
+                              email_confirm,key))
             mysql.connection.commit()
             msg = 'You have successfully registered! '
             print("working")
@@ -1425,12 +1444,15 @@ def mang_update_dinein(id):
     except:
         return render_template('error404.html')
 
+
 @app.route('/homepage')
 def homepage():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
     account = cursor.fetchone()
-    return render_template('homenew.html',account=account)
+    return render_template('homenew.html', account=account)
+
+
 @app.route('/')  # declarator
 # tie to map a web application function to an url
 def home():
