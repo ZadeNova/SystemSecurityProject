@@ -1,24 +1,24 @@
-from wtforms import Form, StringField, TextAreaField, validators,SelectField,PasswordField,RadioField,DateTimeField
+from wtforms import Form, StringField, TextAreaField, validators, SelectField, PasswordField, RadioField, DateTimeField
 import shelve
-from wtforms.validators import ValidationError,DataRequired
-from datetime import datetime,date
+from wtforms.validators import ValidationError, DataRequired
+from datetime import datetime, date
 from wtforms.fields.html5 import DateField
+import re
 class CreateLoginUserForm(Form):
 
-
     Username = StringField('Username:', [validators.Length(min=1, max=150), validators.DataRequired()])
-    NRIC=StringField('NRIC: ',[validators.DataRequired()])
-    DOB = DateField("Date of Birth", format='%Y-%m-%d',validators=[DataRequired('Select a date')])
-    Gender = RadioField('Gender', choices=[('Male', 'Male'), ('Female', 'Female'),("Other","Other")], default='')
-    Password = PasswordField('Account Password:', validators=[
-        validators.Length(min=8, max=20),
+    NRIC = StringField('NRIC: ', [validators.DataRequired()])
+    DOB = DateField("Date of Birth", format='%Y-%m-%d', validators=[DataRequired('Select a date')])
+    Gender = RadioField('Gender', choices=[('Male', 'Male'), ('Female', 'Female'), ("Other", "Other")], default='')
+    Password = PasswordField('Account Password:', validators=[validators.Regexp(regex="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{8,20}$"),
         validators.EqualTo('Confirm_Password', message='Passwords must match'),
     ])
     Confirm_Password = PasswordField('Confirm Password:', validators=[
-        validators.Length(min=8, max=20),validators.EqualTo('Password', message='Passwords must match')
+        validators.Length(min=8, max=20), validators.EqualTo('Password', message='Passwords must match')
     ])
-    Phone_Number = StringField('Phone Number:', [validators.DataRequired(),validators.Regexp(regex='\d{4}[-.\s]?\d{4}$',message='phone number can only have 8 digit !'),validators.Regexp(regex='[0-9]',message='Only numeric number')])
-    Email=StringField('Email Address: ',[validators.DataRequired()])
+
+    Phone_Number = StringField('Phone Number:', [validators.DataRequired(), validators.Regexp(regex='\d{4}[-.\s]?\d{4}$', message='phone number can only have 8 digit !'), validators.Regexp(regex='[0-9]', message='Only numeric number')])
+    Email = StringField('Email Address: ', [validators.DataRequired()])
     Security_Questions_1 = SelectField('Security Questions:', [validators.DataRequired()],
                            choices=[('', 'Question 1 (Select One)'), ('Where were you when you had your first kiss? ', 'Where were you when you had your first kiss?'),
                                     ('What was your childhood nickname?', 'What was your childhood nickname?'),
@@ -28,8 +28,7 @@ class CreateLoginUserForm(Form):
                                     ('What is your oldest sibling’s birthday month and year? (e.g., January 1999)', 'What is your oldest sibling’s birthday month and year? (e.g., January 1999)'),
                                     ('What is the middle name of your youngest child?', 'What is the middle name of your youngest child?')], default='')
 
-
-    Answers_1=StringField('Question 1 Answer: ',[validators.DataRequired()])
+    Answers_1 = StringField('Question 1 Answer: ', [validators.DataRequired()])
     Security_Questions_2 = SelectField('Security Questions:', [validators.DataRequired()],
                                        choices=[('', 'Question 2 (Select One)'), (
                                        'What school did you attend for sixth grade? ',
@@ -48,8 +47,8 @@ class CreateLoginUserForm(Form):
                                                 ('In what city does your nearest sibling live?',
                                                  'In what city does your nearest sibling live?')], default='')
     Answers_2 = StringField('Question 2 Answer: ', [validators.DataRequired()])
-    Address=TextAreaField('Address:',[validators.DataRequired()])
+    Address = TextAreaField('Address:', [validators.DataRequired()])
 
-    role=StringField('Role',default='Guest',render_kw = {'readonly':True})
+    role = StringField('Role', default='Guest', render_kw={'readonly': True})
 
 

@@ -43,8 +43,8 @@ from UpdateUserAccount import UpdateUserForm
 import json
 # SQL stuff
 ###line 43 , 44 for hong ji only , the others just # this 2 line
-# import pymysql
-# pymysql.install_as_MySQLdb()
+#import pymysql
+#pymysql.install_as_MySQLdb()
 #### line 43 , 44 for hong ji only , the others just # this 2 line  as hong ji pc have bug cant use the sql
 # lol
 from flask_mysqldb import MySQL
@@ -79,8 +79,7 @@ otp = randint(000000, 999999)  # email otp
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config[
-        'MYSQL_PASSWORD'] = 'ZadePrimeSQL69420'  # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = 'Dragonnight1002' # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -138,7 +137,6 @@ def validate():
     if otp == int(user_otp):
         return render_template('successful.html', account=account)
     return render_template('Fail.html', account=account)
-
 
 ## login using email
 @app.route('/EmailLogin', methods=['GET', 'POST'])
@@ -308,24 +306,23 @@ def updatedatabase():
 @app.route('/confirm_email_afterupdate/<token>')
 def confirm_email_update(token):
     try:
-        print(dataforemailupdate, IDUpdate)
+        print(dataforemailupdate,IDUpdate)
         print(session)
         data = dataforemailupdate
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute('SELECT * FROM accounts WHERE id = %(ID)s', {'ID': IDUpdate})
+        cursor.execute('SELECT * FROM accounts WHERE id = %(ID)s', {'ID':IDUpdate})
         account = cursor.fetchone()
         print(account)
-        email = s.loads(token, salt='Email-confirm', max_age=180)
+        email = s.loads(token,salt='Email-confirm',max_age=180)
 
         sql = "UPDATE accounts SET Username = %s,NRIC = %s,Date_of_Birth = %s,Gender = %s , Phone_Number = %s , Email = %s , Security_Question_1 = %s, Security_Question_2 = %s,Answer_1 = %s,Answer_2 = %s,Address = %s"
-        value = (data['Username'], data['NRIC'], data['DOB'], data['Gender'], data['Phone_Number'], data['Email'],
-                 data['Security_Questions_1'], data['Security_Questions_2'], data['Answers_1'], data['Answers_2'],
-                 data['Address'])
-        cursor.execute(sql, value)
+        value = (data['Username'],data['NRIC'],data['DOB'],data['Gender'],data['Phone_Number'],data['Email'],data['Security_Questions_1'],data['Security_Questions_2'],data['Answers_1'],data['Answers_2'],data['Address'])
+        cursor.execute(sql,value)
         mysql.connection.commit()
         return redirect(url_for('Managerprofile'))
     except SignatureExpired:
         return 'Token is expired'
+
 
 
 @app.route('/managerprofile')
