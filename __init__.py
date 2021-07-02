@@ -43,8 +43,8 @@ from UpdateUserAccount import UpdateUserForm
 import json
 # SQL stuff
 ###line 43 , 44 for hong ji only , the others just # this 2 line
-#import pymysql
-#pymysql.install_as_MySQLdb()
+# import pymysql
+# pymysql.install_as_MySQLdb()
 #### line 43 , 44 for hong ji only , the others just # this 2 line  as hong ji pc have bug cant use the sql
 # lol
 from flask_mysqldb import MySQL
@@ -79,7 +79,8 @@ otp = randint(000000, 999999)  # email otp
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'Dragonnight1002' # change this line to our own sql password , thank you vry not much xd
+    app.config[
+        'MYSQL_PASSWORD'] = 'ZadePrime'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -256,7 +257,7 @@ def Userprofile():
         cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
         account = cursor.fetchone()
         # Show the profile page with account info
-        return render_template('userprofile.html', account=account,email = session['email'])
+        return render_template('userprofile.html', account=account,email = session['email'],NRIC = session['NRIC'],address = session['Address'],phone_no = session['Phone_No'])
         # User is not loggedin redirect to login page
     return redirect(url_for('login'))
 
@@ -341,7 +342,7 @@ def Managerprofile():
             # Account does not exist.
             return False
         # Show the profile page with account info
-        return render_template('AdminProfile.html', account=account)
+        return render_template('AdminProfile.html', account=account,email = session['email'],NRIC = session['NRIC'],address = session['Address'],phone_no = session['Phone_No'])
         # User is not loggedin redirect to login page
     return redirect(url_for('login'))
 
@@ -357,7 +358,20 @@ def Ipmap():
 @app.route('/AuditLog')
 def Audit():
     try:
-        return render_template('AuditLog.html')
+        #data = [
+        #    ("01-01-2021",69),
+        #    ("02-01-2021",80),
+        #    ("03-01-2021", 190),
+        #    ("04-01-2021", 45),
+        #    ("05-01-2021", 70),
+        #    ("06-01-2021", 23),
+        #    ("07-01-2021", 148),
+#
+        #]
+        #labels = [row[0] for row in data]
+        #values = [row[1] for row in data]
+
+        return render_template('AuditLog.html')#labels = labels,values = values)
     except:
         return render_template('error404.html')
 
@@ -436,18 +450,29 @@ def login():
 
                 key = account['SymmetricKey']
                 fkey = Fernet(key)
-                decryptedEmail_Binary = fkey.decrypt(account['Email'].encode())
-                decryptedEmail = decryptedEmail_Binary.decode('utf8')
-                print(decryptedEmail)
+                decryptedaddress_Binary = fkey.decrypt(account['Address'].encode())
+                decryptedPhoneNo_Binary = fkey.decrypt(account['Phone_Number'].encode())
+                decryptedNRIC_Binary = fkey.decrypt(account['NRIC'].encode())
+                decryptedaddress = decryptedaddress_Binary.decode('utf8')
+                decryptedNRIC = decryptedNRIC_Binary.decode('utf-8')
+                decryptedPhoneNo = decryptedPhoneNo_Binary.decode('utf-8')
+                print(decryptedaddress)
+                print(decryptedNRIC)
+                print(decryptedPhoneNo)
+
 
                 hashandsalt = account['Password']
                 if bcrypt.checkpw(password.encode(), hashandsalt.encode()):
                     session['loggedin'] = True
                     session['ID'] = account['ID']
                     session['Username'] = account['Username']
-                    session['email'] = decryptedEmail
+                    session['email'] = account['Email']
+                    session['NRIC'] = decryptedNRIC
+                    session['Address'] = decryptedaddress
+                    session['Phone_No'] = decryptedPhoneNo
                     print(session)
-                    if account['Username'] == 'admin':
+                    print(account)
+                    if account['role'] == 'Admin':
                         return redirect(url_for('Managerprofile'))
                     else:
                         return redirect(url_for('Userprofile'))
@@ -510,8 +535,11 @@ def create_login_user():
         key = Fernet.generate_key()
         #Loads the key into the crypto API
         fkey = Fernet(key)
-        #Encrypt the email and convert to bytes by calling f.encrypt
-        encryptedEmail = fkey.encrypt(email.encode())
+        #Encrypt the stuff and convert to bytes by calling f.encrypt
+        encryptedaddress = fkey.encrypt(address.encode())
+        EncryptedNRIC = fkey.encrypt(NRIC.encode())
+        EncryptPhoneNo = fkey.encrypt(phone_no.encode())
+
 
         # Check if account exists using MySQL
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -527,8 +555,8 @@ def create_login_user():
         else:
             # Account doesnt exists and the form data is valid, now insert new account into accounts table
             cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-                           , (username, NRIC, DOB, hash_password, gender, phone_no, encryptedEmail, security_questions_1,
-                              security_questions_2, answer_1, answer_2, address, role, account_creation_time,
+                           , (username, EncryptedNRIC, DOB, hash_password, gender, EncryptPhoneNo, email, security_questions_1,
+                              security_questions_2, answer_1, answer_2, encryptedaddress, role, account_creation_time,
                               email_confirm,key))
             mysql.connection.commit()
             msg = 'You have successfully registered! '
