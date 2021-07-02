@@ -1,4 +1,5 @@
 import pyotp
+import uuid
 import Feedback as F
 import datetime
 import shelve
@@ -80,7 +81,7 @@ try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
     app.config[
-        'MYSQL_PASSWORD'] = 'ZadePrime'  # change this line to our own sql password , thank you vry not much xd
+        'MYSQL_PASSWORD'] = 'N0passwordatall'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -325,7 +326,6 @@ def confirm_email_update(token):
         return 'Token is expired'
 
 
-
 @app.route('/managerprofile')
 def Managerprofile():
     if 'loggedin' in session:
@@ -529,6 +529,7 @@ def create_login_user():
         now = datetime.datetime.now()
         account_creation_time = now.strftime("%Y-%m-%d %H:%M:%S")
         email_confirm = 0
+        UUID = uuid.uuid4().hex
 
         hash_password = bcrypt.hashpw(password.encode(), salt)
         #Symmetric Key encryption
@@ -539,11 +540,9 @@ def create_login_user():
         encryptedaddress = fkey.encrypt(address.encode())
         EncryptedNRIC = fkey.encrypt(NRIC.encode())
         EncryptPhoneNo = fkey.encrypt(phone_no.encode())
-
-
         # Check if account exists using MySQL
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        print(username, phone_no, NRIC, DOB, gender, email, password, address, role)
+        print(username, phone_no, NRIC, DOB, gender, email, password, address, role, UUID)
         cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': username})
         account = cursor.fetchone()
         # If account exists show error and validation checks(do this at the form for this function)
@@ -554,10 +553,10 @@ def create_login_user():
             msg = 'Please fill out the form!'
         else:
             # Account doesnt exists and the form data is valid, now insert new account into accounts table
-            cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+            cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                            , (username, EncryptedNRIC, DOB, hash_password, gender, EncryptPhoneNo, email, security_questions_1,
                               security_questions_2, answer_1, answer_2, encryptedaddress, role, account_creation_time,
-                              email_confirm,key))
+                              email_confirm, key, UUID))
             mysql.connection.commit()
             msg = 'You have successfully registered! '
             print("working")
