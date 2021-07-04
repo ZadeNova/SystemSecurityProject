@@ -210,7 +210,8 @@ body{
                     <label class="d-block text-danger">Delete Account</label>
                     <p class="text-muted font-size-sm">Once you delete your account, there is no going back. Please be certain.</p>
                   </div>
-                  <button class="btn btn-danger" type="button">Delete Account</button>
+
+                  <a href="/deleteaccount"><button class="btn btn-danger" type="button">Delete Account</button></a>
                 </form>
               </div>
               <div class="tab-pane" id="security">
@@ -235,7 +236,7 @@ body{
                         <div class="custom-control custom-control-nolabel custom-switch ml-auto">
                           <input type="checkbox" class="custom-control-input" id="customSwitch6"  checked="">
                           <label class="custom-control-label" for="customSwitch6"></label>
-                          <button class="btn btn-light btn-sm ml-auto" type="button"><a href="/EmailOtpCheck">Edit</a></button>
+                          <a href="/EmailOtpCheck"><button class="btn btn-light btn-sm ml-auto" type="button">Edit</button></a>
 
                         </div>
                       </li>
@@ -244,7 +245,7 @@ body{
                         <div class="custom-control custom-control-nolabel custom-switch ml-auto">
                           <input type="checkbox" class="custom-control-input" id="customSwitch7">
                           <label class="custom-control-label" for="customSwitch7"></label>
-                          <button class="btn btn-light btn-sm ml-auto" type="button"><a href="/login/2fa/">Edit</a></button>
+                          <a href="/login/2fa/"><button class="btn btn-light btn-sm ml-auto" type="button">Edit</button></a>
 
                         </div>
                       </li>
@@ -253,25 +254,17 @@ body{
                         <div class="custom-control custom-control-nolabel custom-switch ml-auto">
                           <input type="checkbox" class="custom-control-input" id="customSwitch8" checked="">
                           <label class="custom-control-label" for="customSwitch8"></label>
-                          <button class="btn btn-light btn-sm ml-auto" type="button"><a href="/login/2fa/">Edit</a></button>
+                          <a href="/login/2fa/"><button class="btn btn-light btn-sm ml-auto" type="button">Edit</button></a>
 
                         </div>
                       </li>
-                      <li class="list-group-item has-icon">
-                        FIDO U2F / Security Keys
-                        <div class="custom-control custom-control-nolabel custom-switch ml-auto">
-                          <input type="checkbox" class="custom-control-input" id="customSwitch9" checked="">
-                          <label class="custom-control-label" for="customSwitch9"></label>
-                          <button class="btn btn-light btn-sm ml-auto" type="button"><a href="/login/2fa/">Edit</a></button>
 
-                        </div>
-                      </li>
                       <li class="list-group-item has-icon">
                         Backup Codes
                         <div class="custom-control custom-control-nolabel custom-switch ml-auto">
                           <input type="checkbox" class="custom-control-input" id="customSwitch10">
                           <label class="custom-control-label" for="customSwitch10"></label>
-                          <button class="btn btn-light btn-sm ml-auto" type="button"><a href="/login/2fa/">Edit</a></button>
+                          <a href="/Backupcode"><button class="btn btn-light btn-sm ml-auto" type="button">Edit</button></a>
 
                         </div>
                       </li>
@@ -286,10 +279,10 @@ body{
                     <ul class="list-group list-group-sm">
                       <li class="list-group-item has-icon">
                         <div>
-                          <h6 class="mb-0">San Francisco City 190.24.335.55</h6>
-                          <small class="text-muted">Your current session seen in United States</small>
+                          <h6 class="mb-0">{{ip}}</h6>
+                          <small class="text-muted">Your current session seen in localhost</small>
                         </div>
-                        <button class="btn btn-light btn-sm ml-auto" type="button">More info</button>
+                        <a href="/ipaddchecker"><button class="btn btn-light btn-sm ml-auto" type="button">More info</button></a>
                       </li>
                     </ul>
                   </div>

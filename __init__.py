@@ -1,6 +1,9 @@
 import pyotp
-import uuid
 import Feedback as F
+import string
+import random
+import ipapi
+
 import datetime
 import shelve
 import datetime
@@ -44,8 +47,8 @@ from UpdateUserAccount import UpdateUserForm
 import json
 # SQL stuff
 ###line 43 , 44 for hong ji only , the others just # this 2 line
-# import pymysql
-# pymysql.install_as_MySQLdb()
+import pymysql
+pymysql.install_as_MySQLdb()
 #### line 43 , 44 for hong ji only , the others just # this 2 line  as hong ji pc have bug cant use the sql
 # lol
 from flask_mysqldb import MySQL
@@ -74,14 +77,19 @@ app.config['MAIL_SUPPRESS_SEND'] = False
 app.config['MAIL_ASCII_ATTACHMENTS'] = False
 s = URLSafeTimedSerializer('SecretKey?')
 mail = Mail(app)
+
 otp = randint(000000, 999999)  # email otp
+optt = string.ascii_uppercase + string.digits
+tem = random.sample(optt, 8)
+conv = ''.join(tem)
+
 
 # Database connection MYSQL
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
     app.config[
-        'MYSQL_PASSWORD'] = 'N0passwordatall'  # change this line to our own sql password , thank you vry not much xd
+        'MYSQL_PASSWORD'] = '1234'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -213,16 +221,37 @@ def EmailLoginValidate():
 
 # 2FA form route
 # 2FA page route
+@app.route("/Backupcode")
+def backupcode():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+    account = cursor.fetchone()
+    return render_template("BackupCodeCheck.html",backup=conv,account=account)
+
+@app.route('/backupcodetest', methods=['GET', 'POST'])
+def backupcode_test():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+    account = cursor.fetchone()
+    user_otp = request.form['backupcode']
+    if conv == user_otp:
+        return render_template('successful.html', account=account)
+    return render_template('Fail.html', account=account)
+
+
 
 @app.route("/login/2fa/")
 def login_2fa():
     # generating random secret key for authentication
     secret = pyotp.random_base32()
+    totp_uri = pyotp.totp.TOTP(secret).provisioning_uri(
+        "alice@google.com",
+        issuer_name="Secure App")
+    print(totp_uri)
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
     account = cursor.fetchone()
-    img = qrcode.make(secret)
-    img.save('bit.jpg')
+
     return render_template("login_2fa.html", secret=secret, account=account)
 
 
@@ -262,9 +291,50 @@ def Userprofile():
         # User is not loggedin redirect to login page
     return redirect(url_for('login'))
 
+@app.route('/ipaddchecker', methods=['GET', 'POST'])
+def ipchecker():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+    account = cursor.fetchone()
+    ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+    data = ipapi.location(ip=ip, output='json')
+    return render_template('ipaddresscheck.html',data=data,account=account)
+
+@app.route('/deleteaccount',methods=['GET','POST'])
+def deleteaccount():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+    account = cursor.fetchone()
+    flash('I want to delete my account')
+    return render_template("accountdelete.html", account=account)
+
+
+@app.route('/deleteaccountcheck',methods=['POST'])
+def deleteaccoutcheck():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+    account = cursor.fetchone()
+    user_int=request.form['user_int']
+    if user_int == 'I want to delete my account':
+        try:
+            username=account['Username']
+            cursor.execute("""DELETE  FROM accounts WHERE Username = %(username)s""", {'username': username})
+            mysql.connection.commit()
+            print(cursor.rowcount, "record(s) deleted")
+            session.clear()
+            return redirect(url_for('login'))
+        except:
+            return render_template("error404.html")
+    else:
+        msg='Wrong input , please follow word by word , including spacing , and capital !'
+        flash('I want to delete my account')
+        #return redirect(url_for('deleteaccount',msg=msg))
+        return render_template("accountdelete.html", account=account,msg=msg)
+
 
 @app.route('/Settings', methods=['GET', 'POST'])
 def Changesettings():
+    ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
     global dataforemailupdate, IDUpdate
     formupdateuser = UpdateUserForm(request.form)
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -298,7 +368,7 @@ def Changesettings():
         mail.send(msg)
         return redirect(url_for('login'))
 
-    return render_template('Settings.html', account=account, form=formupdateuser)
+    return render_template('Settings.html', account=account, form=formupdateuser,ip=ip)
 
 
 def updatedatabase():
@@ -324,6 +394,7 @@ def confirm_email_update(token):
         return redirect(url_for('Managerprofile'))
     except SignatureExpired:
         return 'Token is expired'
+
 
 
 @app.route('/managerprofile')
@@ -479,6 +550,10 @@ def login():
                 else:
                     msg = 'Incorrect Username/Password'
                     return render_template('login.html', msg=msg, sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
+            else:
+                msg='Incorrect Username/Password'
+                return render_template('login.html', msg=msg, sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
+
         else:
             # Log invalid attempts
             status = "Sorry ! Please Check Im not a robot."
@@ -529,7 +604,6 @@ def create_login_user():
         now = datetime.datetime.now()
         account_creation_time = now.strftime("%Y-%m-%d %H:%M:%S")
         email_confirm = 0
-        UUID = uuid.uuid4().hex
 
         hash_password = bcrypt.hashpw(password.encode(), salt)
         #Symmetric Key encryption
@@ -540,9 +614,11 @@ def create_login_user():
         encryptedaddress = fkey.encrypt(address.encode())
         EncryptedNRIC = fkey.encrypt(NRIC.encode())
         EncryptPhoneNo = fkey.encrypt(phone_no.encode())
+
+
         # Check if account exists using MySQL
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        print(username, phone_no, NRIC, DOB, gender, email, password, address, role, UUID)
+        print(username, phone_no, NRIC, DOB, gender, email, password, address, role)
         cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': username})
         account = cursor.fetchone()
         # If account exists show error and validation checks(do this at the form for this function)
@@ -553,10 +629,10 @@ def create_login_user():
             msg = 'Please fill out the form!'
         else:
             # Account doesnt exists and the form data is valid, now insert new account into accounts table
-            cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+            cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                            , (username, EncryptedNRIC, DOB, hash_password, gender, EncryptPhoneNo, email, security_questions_1,
                               security_questions_2, answer_1, answer_2, encryptedaddress, role, account_creation_time,
-                              email_confirm, key, UUID))
+                              email_confirm,key))
             mysql.connection.commit()
             msg = 'You have successfully registered! '
             print("working")

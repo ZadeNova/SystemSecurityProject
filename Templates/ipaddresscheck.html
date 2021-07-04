@@ -1,0 +1,44 @@
+
+{% if role == "Staff" %}
+    {% extends "base.html" %}
+{% elif name == "admin" %}
+    {% extends "base.html" %}
+{% else %}
+    {% extends "base2.html" %}
+{% endif %}
+
+{% block title %}Library Loan System - Home{% endblock %}
+{% block content %}
+
+<style>
+    p{
+    font-size:30px;
+    }
+    b{
+    font-size:30px;
+    }
+</style>
+<h1 class="display-4">Ip address</h1>
+<div id="MyClockDisplay" class="clock" onload="showTime()"></div>
+<body onload="showTime()">
+<ul>
+    <li>IP Address is : {{data.ip}}</li>
+    <li>City Location is : {{data.city}}</li>
+     <li>IP Country is : {{data.country}}</li>
+      <li>Available Language is : {{data.languages}}</li>
+
+    <li>Latitude Information Is : {{data.latitude}}</li>
+   <li>Longitude Information Is : {{data.longitude}}</li>
+   <li>Time Zone Information Is : {{data.timezone}}</li>
+   <li>Availble Calling Code : {{data.country_calling_code}}</li>
+   <li>Available Currency Is : {{data.currency}}</li>
+   <li>Internet Network Is : {{data.org}}</li>
+     <li>Continent Code Is : {{data.continent_code}}</li>
+   <li>Postal Code Is : {{data.postal}}</li>
+     <li>UTC Offset Is : {{data.utc_offset}}</li>
+</ul>
+</div>
+    <a href="/Settings" class="btn btn-warning">Return</a>
+{% endblock %}
+
+

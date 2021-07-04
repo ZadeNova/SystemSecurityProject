@@ -12,7 +12,7 @@
 {% from "includes/_formsHelper.html" import render_field %}
 
 <form action="/validate" method="post">
-    <h1>One time password has been sent to {{account['Email']}}.  please check </h1>
+    <h1>One time password has been sent to {{session['email']}}.  please check </h1>
     Enter OTP: <input type="text" name="otp">
     <input type="submit" value="Submit">
 </form>

@@ -1,0 +1,59 @@
+
+{% if role == "Staff" %}
+    {% extends "base.html" %}
+{% elif name == "admin" %}
+    {% extends "base.html" %}
+{% else %}
+    {% extends "base2.html" %}
+{% endif %}
+
+{% block title %}Library Loan System - Home{% endblock %}
+{% block content %}
+
+<style>
+    p{
+    font-size:30px;
+    }
+    b{
+    font-size:30px;
+    }
+</style>
+<h1 class="display-4">Delete account</h1>
+<br>
+<div id="MyClockDisplay" class="clock" onload="showTime()"></div>
+<body onload="showTime()">
+<p>The following will be deleted : </p>
+<ul>
+    <li><b>username :</b> <b>{{ account['Username'] }}  </b></li>
+    <li><b>role :</b> <b>{{ account['role'] }}  </b></li>
+
+</ul>
+<br>
+
+ <p>
+
+
+<p>Please type the following sentences word :</p>
+        {% if msg %}
+        <div class="alert alert-danger">
+              <strong>{{msg}}</strong>
+          </div>
+
+          {% endif %}
+
+              {% with messages = get_flashed_messages() %}
+              {% if messages %}
+              {% for message in messages %}
+          <div class="alert alert-primary">
+              <strong>{{ message }}</strong>
+          </div>
+          {% endfor %}
+          {% endif %}
+          {% endwith %}
+          </p>
+
+<form  action="/deleteaccountcheck" method="post">
+    Type the sentences above , word by word including spacing : <input type="text" name="user_int">
+    <input type="submit" value="Submit">
+</form>
+{% endblock %}

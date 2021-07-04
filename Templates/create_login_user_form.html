@@ -5,7 +5,11 @@
 
 
 <h1 class="display-4">Create new account</h1>
-
+ {% if msg %}
+        <div class="alert alert-danger">
+              <strong>{{msg}}</strong>
+          </div>
+          {% endif %}
 <form method="POST" action="">
   <div class="form-group">
     {{ render_field(form.Username, class="form-control") }}
@@ -50,11 +54,12 @@
     </div>
   </div>
 
-  <div class = "msg">{{ msg }}</div>
+
    <input type="submit" value="Submit" class="btn btn-primary"/>
   <td><a href="/login" class="btn btn-warning">Return</a></td>
    </div>
 
 
 </form>
+
 {% endblock %}
