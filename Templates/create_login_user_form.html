@@ -13,44 +13,61 @@
 <form method="POST" action="">
   <div class="form-group">
     {{ render_field(form.Username, class="form-control") }}
+    <p>Enter your username between 5 and 20 characters</p>
   </div>
   <div class="form-group">
     {{ render_field(form.NRIC, class="form-control")  }}
+    <p>Include the letters in the NRIC too. (eg. S12345678, T12345678)</p>
   </div>
   <div class="form-group">
     {{ render_field(form.DOB, class="form-control")  }}
-    <p>This is the instructions</p>
+    <p>Select Date of Birth in the format of Month/Date/Year (eg. 01/01/1990)</p>
   </div>
   <div class="form-group">
     {{ render_field(form.Gender, class="form-check", style="list-style-type:none") }}
+    <p>Select a gender</p>
   </div>
   <div class="form-group">
     {{ render_field(form.Password, class="form-control")  }}
+      <ul>
+        <li>Contain at least one number</li>
+        <li>Contain at least one uppercase and one lowercase character</li>
+        <li>Contain at least one special symbol</li>
+        <li>Password must be between 8 to 20 characters long</li>
+      </ul>
   </div>
   <div class="form-group">
     {{ render_field(form.Confirm_Password, class="form-control")  }}
+    <p>Enter your password again. Both passwords entered must be the same</p>
   </div>
   <div class="form-group">
     {{ render_field(form.Phone_Number, class="form-control")  }}
+    <p>Phone number must start with a 8 or a 9 and 8 numbers in total</p>
   </div>
   <div class="form-group">
     {{ render_field(form.Email, class="form-control")  }}
+    <p>Enter a valid email address (eg. abc@gmail.com) </p>
   </div>
   <div class="form-group">
     {{ render_field(form.Security_Questions_1, class="form-control")  }}
+    <p>Choose your 1st security question</p>
   </div>
   <div class="form-group">
     {{ render_field(form.Answers_1, class="form-control")  }}
+    <p>Enter security question 1 answer</p>
   </div>
   <div class="form-group">
     {{ render_field(form.Security_Questions_2, class="form-control")  }}
+    <p>Choose your 2nd security question</p>
   </div>
   <div class="form-group">
     {{ render_field(form.Answers_2, class="form-control")  }}
+    <p>Enter security question 2 answer</p>
   </div>
   <div id="prof">
     <div class="form-group">
       {{ render_field(form.Address, class="form-control") }}
+      <p>Enter your address. (eg. Bukit Batok West Avenue 4 #01-01 Singapore 123456)</p>
     </div>
   </div>
 
@@ -58,7 +75,7 @@
    <input type="submit" value="Submit" class="btn btn-primary"/>
   <td><a href="/login" class="btn btn-warning">Return</a></td>
    </div>
-
+  <br>
 
 </form>
 
