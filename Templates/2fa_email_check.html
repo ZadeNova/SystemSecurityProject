@@ -169,18 +169,14 @@ form .button{
     <!-- <title>Animated Login Form</title> -->
     <link rel="stylesheet" href="style.css">
     <script src="https://kit.fontawesome.com/a076d05399.js"></script>
-    <script src="https://www.google.com/recaptcha/api.js"></script>
   </head>
   <img src="{{url_for('static', filename='fairmont-singapore-asian-market-cafe.jpg')}}"  width="500" height="600" />
-
-  <div class="container">
-
-      <header>Login Form</header>
-
-      <form method="POST">
-          <p>
+  <body>
+    <div class="container">
+      <header>Enter your Otp</header>
+         <p>
               {% with messages = get_flashed_messages() %}
-              {% if messages %}
+              {% if messages  %}
               {% for message in messages %}
           <div class="alert alert-primary">
               <strong>{{ message }}</strong>
@@ -189,64 +185,25 @@ form .button{
           {% endif %}
           {% endwith %}
           </p>
-          <p>
-              {% if error %}
-          <div class="alert alert-primary">
-              <strong>{{ error }}</strong>
-          </div>
-
-          {% endif %}
-
-          </p>
-          <div class="msg">
-              {{ msg }}
-          </div>
-          <div class="input-field">
-
-              <input type="text" class='input' name="username"  required>
-              <label>Username</label>
-          </div>
-          <div class="input-field">
-              <input class="pswrd"  type="password" name="password" required>
-              <span class="show">SHOW</span>
-              <label>Password</label>
-          </div>
+      <form method="POST" action="/twofaemailcheck">
+        <div class="input-field">
+          <input type="text" class='input' name="otp"  required>
+          <label>6 Digit OTP</label>
+        </div>
 
 
-          <div class="g-recaptcha" data-sitekey="{{ sitekey }}"></div> <br/>
 
+<div class="button">
+          <div class="inner">
+</div>
 
-          <div class="button">
-              <div class="inner">
-              </div>
+<button type='submit'>CONTINUE</button>
+        </div>
+</form>
+<div class="auth">
 
-              <button type='submit'>LOGIN</button>
-          </div>
-      </form>
-      <div class="auth">
+<div class="links">
+</div>
 
-          <div class="links">
-          </div>
-          <div class="signup">
-              Not a member? <a href="/Createloginuser">Signup now</a><br>
-              Forget Password? <a href="/ForgetPassword">Reset Password</a>
-          </div>
-      </div>
-      <script>
-      var input = document.querySelector('.pswrd');
-      var show = document.querySelector('.show');
-      show.addEventListener('click', active);
-      function active(){
-        if(input.type === "password"){
-          input.type = "text";
-          show.style.color = "#1DA1F2";
-          show.textContent = "HIDE";
-        }else{
-          input.type = "password";
-          show.textContent = "SHOW";
-          show.style.color = "#111";
-        }
-      }
-    </script>
-
+  </body>
 </html>

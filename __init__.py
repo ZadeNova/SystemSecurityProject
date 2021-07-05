@@ -1,3 +1,5 @@
+import logging.config
+
 import pyotp
 import Feedback as F
 import string
@@ -10,7 +12,7 @@ import shelve
 import datetime
 from datetime import date
 # Bryan Import
-from flask import Flask, render_template, request, redirect, url_for, flash, json
+from flask import Flask, render_template, request, redirect, url_for, flash, json ,g
 from flask import session
 from flask_uploads import UploadSet, configure_uploads, IMAGES
 import requests
@@ -48,8 +50,8 @@ from UpdateUserAccount import UpdateUserForm
 import json
 # SQL stuff
 ###line 43 , 44 for hong ji only , the others just # this 2 line
-#import pymysql
-#pymysql.install_as_MySQLdb()
+import pymysql
+pymysql.install_as_MySQLdb()
 #### line 43 , 44 for hong ji only , the others just # this 2 line  as hong ji pc have bug cant use the sql
 # lol
 from flask_mysqldb import MySQL
@@ -80,9 +82,7 @@ s = URLSafeTimedSerializer('SecretKey?')
 mail = Mail(app)
 
 otp = randint(000000, 999999)  # email otp
-optt = string.ascii_uppercase + string.digits
-tem = random.sample(optt, 8)
-conv = ''.join(tem)
+
 
 
 # Database connection MYSQL
@@ -90,7 +90,7 @@ try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
     app.config[
-        'MYSQL_PASSWORD'] = 'Dragonnight1002'  # change this line to our own sql password , thank you vry not much xd
+        'MYSQL_PASSWORD'] = '1234'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -129,6 +129,8 @@ def sendemail():
 ## hong ji text message done ??? #####
 @app.route('/EmailOtpCheck')
 def EmailOtpCheck():
+
+    #if status == 'check'
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
     account = cursor.fetchone()
@@ -144,8 +146,15 @@ def validate():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
     account = cursor.fetchone()
+
     user_otp = request.form['otp']
     if otp == int(user_otp):
+        cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
+        account = cursor.fetchone()
+        print('updating text status')
+        cursor.execute("UPDATE  authentication_table SET Text_Message_Status=True WHERE Account_ID=%s ", [session['ID']])
+        mysql.connection.commit()
+        print('updated successfully noice ')
         return render_template('successful.html', account=account)
     return render_template('Fail.html', account=account)
 
@@ -227,34 +236,136 @@ def backupcode():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
     account = cursor.fetchone()
-    return render_template("BackupCodeCheck.html",backup=conv,account=account)
+    cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
+    account1 = cursor.fetchone()
+    if account1['Backup_Code_Status']==False or account1['Backup_Code_No_Of_Use']== 1 :
+        optt = string.ascii_uppercase + string.digits
+        tem = random.sample(optt, 8)
+        conv = ''.join(tem)
+        Backup_Code_Status=True
+        Backup_Code_Key=conv
+        Backup_Code_No_Of_Use=False
+        cursor.execute("UPDATE authentication_table SET Backup_Code_Status=%s , Backup_Code_Key= %s ,Backup_Code_No_Of_Use=%s  WHERE Account_ID=%s ",
+                     (Backup_Code_Status, Backup_Code_Key, Backup_Code_No_Of_Use , [session['ID']]))
+        mysql.connection.commit()
+        return render_template("BackupCodeCheck.html",backup=conv,account=account)
+    else:
+        conv=account1['Backup_Code_Key']
+        return render_template("BackupCodeCheck.html", backup=conv, account=account)
 
-@app.route('/backupcodetest', methods=['GET', 'POST'])
-def backupcode_test():
+### 2fa login ##
+@app.route('/2fa', methods=['GET', 'POST'])
+def two_fa():
+    return render_template("2fa.html")
+@app.route('/twofaemail', methods=['GET', 'POST'])
+def two_fa_email():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+    account = cursor.fetchone()
+    if request.method == 'POST':
+        cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
+        account1 = cursor.fetchone()
+        if account1['Text_Message_Status']==True:
+            email = account['Email']
+            msg = Message('This is your OTP', recipients=[email])
+            msg.body = 'Your OTP is :\n' + '\t\t\t' + str(otp) + '\nPlease do not show this to anyone ! Thank you :)'
+            mail.send(msg)
+            return render_template('2fa_email_check.html', account=account)
+        else:
+            flash('You havent active this function yet choose other 2 factor authentication method')
+            return redirect(url_for("two_fa_email"))
+    else:
+        return redirect(url_for("two_fa"))
+
+@app.route('/twofaemailcheck', methods=['GET', 'POST'])
+def two_fa_email_check():
+    user_otp = request.form['otp']
+    if otp == int(user_otp):
+        return redirect(url_for("homepage"))
+    else:
+        flash('Incorrect Otp , please try again !')
+        return redirect(url_for("two_fa_email"))
+
+@app.route('/twofabackupcode', methods=['GET', 'POST'])
+def two_fa_backupcode():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
     account = cursor.fetchone()
+    if request.method == 'POST':
+        cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
+        account1 = cursor.fetchone()
+        if account1['Backup_Code_Status'] == True and account1['Backup_Code_No_Of_Use'] == False:
+            return render_template('2fa_backupcode_check.html')
+        else:
+            flash('You havent active this function yet choose other 2 factor authentication method')
+            return redirect(url_for("two_fa"))
+    else:
+        return redirect(url_for("two_fa"))
+
+@app.route('/twofabackupcodecheck', methods=['GET', 'POST'])
+def two_fa_backupcode_check():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
+    account1 = cursor.fetchone()
+    conv = account1['Backup_Code_Key']
     user_otp = request.form['backupcode']
     if conv == user_otp:
-        return render_template('successful.html', account=account)
-    return render_template('Fail.html', account=account)
+        return redirect(url_for("homepage"))
+    else:
+        flash('Incorrect Opt ,please check again !')
+        return redirect(url_for("two_fa"))
 
-
-
-@app.route("/login/2fa/")
-def login_2fa():
-    # generating random secret key for authentication
-    secret = pyotp.random_base32()
-    totp_uri = pyotp.totp.TOTP(secret).provisioning_uri(
-        "alice@google.com",
-        issuer_name="Secure App")
-    print(totp_uri)
+@app.route('/twofaauthen', methods=['GET', 'POST'])
+def two_fa_authen():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
     account = cursor.fetchone()
+    if request.method == 'POST':
+        cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
+        account1 = cursor.fetchone()
+        if account1['Authenticator_Status'] == True :
+            return render_template('2fa_authenticator_check.html')
+        else:
+            flash('You havent active this function yet choose other 2 factor authentication method')
+            return redirect(url_for("two_fa"))
+    else:
+        return redirect(url_for("two_fa"))
 
-    return render_template("login_2fa.html", secret=secret, account=account)
-
+@app.route('/twofaauthencheck', methods=['GET', 'POST'])
+def two_fa_authen_check():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+    account = cursor.fetchone()
+    cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
+    account1 = cursor.fetchone()
+    otp = int(request.form.get("otp1"))
+    secret=account1['Authenticator_Key']
+    if pyotp.TOTP(secret).verify(otp):
+        return redirect(url_for("homepage"))
+    else:
+        # inform users if OTP is invalid
+        flash("You have supplied an invalid 2FA token!", "danger")
+        return redirect(url_for("two_fa"))
+### end of 2fa login ###
+@app.route("/login/2fa/")
+def login_2fa():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
+    account1 = cursor.fetchone()
+    cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+    account = cursor.fetchone()
+    if account1['Authenticator_Status'] == False or account1['Authenticator_Key'] == 0:
+        # generating random secret key for authentication
+        secret = pyotp.random_base32()
+        totp_uri = pyotp.totp.TOTP(secret).provisioning_uri(
+            "alice@google.com",
+            issuer_name="Secure App")
+        print(totp_uri)
+        return render_template("login_2fa.html", secret=secret, account=account)
+    else:
+        secret=account1["Authenticator_Key"]
+        return render_template("login_2fa.html", secret=secret, account=account)
 
 @app.route("/login/2fa/", methods=["POST"])
 def login_2fa_form():
@@ -270,7 +381,16 @@ def login_2fa_form():
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
         account = cursor.fetchone()
-        return redirect(url_for("Userprofile"))
+        cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
+        account1 = cursor.fetchone()
+        Authenticator_Status = True
+        Authenticator_Key = secret
+        cursor.execute(
+            "UPDATE authentication_table SET Authenticator_Status=%s , Authenticator_Key= %s   WHERE Account_ID=%s ",
+            (Authenticator_Status, Authenticator_Key, [session['ID']]))
+        mysql.connection.commit()
+
+        return render_template("login_2fa.html", secret=secret, account=account)
     else:
         # inform users if OTP is invalid
         flash("You have supplied an invalid 2FA token!", "danger")
@@ -319,7 +439,10 @@ def deleteaccoutcheck():
     if user_int == 'I want to delete my account':
         try:
             username=account['Username']
-            cursor.execute("""DELETE  FROM accounts WHERE Username = %(username)s""", {'username': username})
+            Account_Status='Disable'
+            cursor.execute(
+                "UPDATE accounts SET Account_Status=%s   WHERE Account_ID=%s ",
+                (Account_Status, [session['ID']]))
             mysql.connection.commit()
             print(cursor.rowcount, "record(s) deleted")
             session.clear()
@@ -518,6 +641,8 @@ def login():
             # Fetch one record and return result
             account = cursor.fetchone()
             print(account)
+
+
             if account:
 
                 key = account['SymmetricKey']
@@ -544,10 +669,15 @@ def login():
                     session['Phone_No'] = decryptedPhoneNo
                     print(session)
                     print(account)
-                    if account['role'] == 'Admin':
-                        return redirect(url_for('Managerprofile'))
+                    cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
+                    account1 = cursor.fetchone()
+                    if account1['Text_Message_Status'] ==True or account1['Authenticator_Status']==True or account1['Push_Base_Status']==True or account1['Backup_Code_Status']==True:
+                        return render_template("2fa.html")
                     else:
-                        return redirect(url_for('Userprofile'))
+                        if account['role'] == 'Admin':
+                            return redirect(url_for('Managerprofile'))
+                        else:
+                            return redirect(url_for('Userprofile'))
                 else:
                     msg = 'Incorrect Username/Password'
                     return render_template('login.html', msg=msg, sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
@@ -602,11 +732,12 @@ def create_login_user():
         answer_2 = request.form['Answers_2']
         address = request.form['Address']
         role = 'Guest'
+
         now = datetime.datetime.now()
         account_creation_time = now.strftime("%Y-%m-%d %H:%M:%S")
         email_confirm = 0
         UUID = uuid.uuid4().hex
-
+        Account_Status='Acitve'
         hash_password = bcrypt.hashpw(password.encode(), salt)
         #Symmetric Key encryption
         key = Fernet.generate_key()
@@ -630,14 +761,34 @@ def create_login_user():
             print("3")
             msg = 'Please fill out the form!'
         else:
+
             # Account doesnt exists and the form data is valid, now insert new account into accounts table
-            cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+            cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                            , (username, EncryptedNRIC, DOB, hash_password, gender, EncryptPhoneNo, email, security_questions_1,
                               security_questions_2, answer_1, answer_2, encryptedaddress, role, account_creation_time,
-                              email_confirm,key,UUID))
+                              email_confirm,key,UUID,Account_Status))
             mysql.connection.commit()
             msg = 'You have successfully registered! '
             print("working")
+            print('inserting authentication table')
+            Text_Message_Status = False
+            Authenticator_Status = False
+            Authenticator_Key = 0
+            Push_Base_Status = False
+            Backup_Code_Status = False
+            Backup_Code_Key = 0
+            Backup_Code_No_Of_Use = 0
+            #cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+            cursor.execute("""SELECT ID FROM accounts WHERE Username = %(username)s""", {'username': username})
+            account = cursor.fetchone()
+            Account_ID = account['ID']
+            print(Account_ID, 'account id  ')
+            cursor.execute("INSERT INTO authentication_table VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
+                           , (Account_ID, Text_Message_Status, Authenticator_Status, Authenticator_Key,
+                              Push_Base_Status, Backup_Code_Status, Backup_Code_Key, Backup_Code_No_Of_Use))
+            mysql.connection.commit()
+            print('insert successfully nocie ')
+
             return redirect('login')
     elif request.method == 'POST':
         # Form is empty... (no POST data)
@@ -1552,8 +1703,25 @@ def homepage():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
     account = cursor.fetchone()
-    return render_template('homenew.html', account=account)
-
+    cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
+    account1 = cursor.fetchone()
+    if account1['Text_Message_Status'] == True:
+        flash('Email otp is activated ','primary')
+    else:
+        flash('Email otp  not activated ', "danger")
+    if account1['Authenticator_Status'] == True:
+        flash('Google /Auth Authenticator is activated','primary')
+    else:
+        flash('Google /Auth Authenticator  not activated ','danger')
+    if account1['Push_Base_Status'] == True:
+        flash('Push notification is activated ','primary')
+    else:
+        flash('Push notification  not activated ','danger')
+    if account1['Backup_Code_Status'] == True:
+        flash('Backup code  is activated ','primary')
+    else:
+        flash('Backup code not activated ','danger')
+    return render_template('homenew.html', account=account,account1=account1)
 
 @app.route('/')  # declarator
 # tie to map a web application function to an url

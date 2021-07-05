@@ -17,12 +17,22 @@
     b{
     font-size:30px;
     }
+
 </style>
 <h1 class="display-4">Home</h1>
 <div id="MyClockDisplay" class="clock" onload="showTime()"></div>
 <body onload="showTime()">
 <p>Hello welcomeback <b>{{ account['Username'] }} </b> </p>
-
+ {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      {% for category, message in messages %}
+      <div class="alert alert-{{ category }}" role="alert">
+        {{ message }}
+      </div>
+      {% endfor %}
+      {% endif %}
+      {% endwith %}
+<a href="/2fa"><button class="btn btn-light btn-sm ml-auto" type="button">2fa test page</button></a>
 
 
 {% endblock %}
