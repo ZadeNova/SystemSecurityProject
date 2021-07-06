@@ -72,7 +72,7 @@ mail = Mail(app)
 
 otp = randint(000000, 999999)  # email otp
 
-
+#69!
 
 # Database connection MYSQL
 try:
