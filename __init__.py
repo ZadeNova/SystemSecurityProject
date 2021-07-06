@@ -90,7 +90,7 @@ try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
     app.config[
-        'MYSQL_PASSWORD'] = 'ZadePrimeSQL69420'  # change this line to our own sql password , thank you vry not much xd
+        'MYSQL_PASSWORD'] = 'N0passwordatall'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -520,7 +520,6 @@ def confirm_email_update(token):
         return 'Token is expired'
 
 
-
 @app.route('/managerprofile')
 def Managerprofile():
     if 'loggedin' in session:
@@ -605,15 +604,19 @@ def ForgottenPassword():
         if request.method == 'POST' and 'email' in request.form:
             email = request.form['email']
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-
             cursor.execute("SELECT * FROM accounts WHERE Email = %(email)s", {'email': email})
-
             account = cursor.fetchone()
             print(account)
             if account:
+                print('1')
                 msg = Message("Forget Password Link", recipients=[email])
-                msg.html = render_template('forgotpasswordemail.html')
+                print('1')
+                UUID = account['UUID']
+                print('1')
+                msg.html = render_template('forgotpasswordemail.html', UUID=UUID)
+                print('1')
                 mail.send(msg)
+                print('1')
                 print('sended')
             else:
                 print('It doesnt exit')
@@ -624,6 +627,37 @@ def ForgottenPassword():
     except:
         print('error')
         return render_template('error404.html')
+
+
+@app.route('/Resetpassword/<path:UUID>', methods=['GET', 'POST'])
+def Resetpassword(UUID):
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute("SELECT * FROM accounts WHERE UUID = %(UUID)s", {'UUID': UUID})
+    account = cursor.fetchone()
+    if account:
+        captcha_response = request.form.get('g-recaptcha-response')
+        if request.method == 'POST' and 'password' in request.form and 'confirm password' in request.form:
+            if is_human(captcha_response):
+                password = request.form['password']
+                confirm_password = request.form['confirm password']
+                if password != confirm_password:
+                    flash("Your Password isn't the same as your confirm password. Please Try Again..")
+                    return render_template('Resetpassword.html', sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
+                else:
+                    salt = bcrypt.gensalt(rounds=16)
+                    hash_password = bcrypt.hashpw(password.encode(), salt)
+                    sql = "UPDATE accounts SET Password = %s WHERE UUID = %s "
+                    value = (hash_password, UUID)
+                    cursor.execute(sql, value)
+                    UUID2 = uuid.uuid4().hex
+                    sql2 = "UPDATE accounts SET UUID = %s WHERE UUID = %s "
+                    value2 = (UUID2, UUID)
+                    cursor.execute(sql2, value2)
+                    mysql.connection.commit()
+                    return redirect(url_for('login'))
+        return render_template('Resetpassword.html', sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
+    else:
+        return redirect(url_for('login'))
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -685,7 +719,7 @@ def login():
                     msg = 'Incorrect Username/Password'
                     return render_template('login.html', msg=msg, sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
             else:
-                msg='Incorrect Username/Password'
+                msg ='Incorrect Username/Password'
                 return render_template('login.html', msg=msg, sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
 
         else:
