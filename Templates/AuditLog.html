@@ -8,22 +8,30 @@
 {% block content %}
 {% from "includes/_formsHelper.html" import render_field %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
 <style>
     #titletablelol {
     text-align: center;
 
     }
+    #myInput {
+    width:20%;
 
+
+    }
 
 </style>
 <h1>Testing.For audit log</h1>
 <p>lol</p>
-<table class="table table-hover">
-    <thead>
-        <th id="titletablelol" colspan="4">AUDIT LOG?</th>
+<div class = table-responsive">
+  <input class="form-control" id="myInput" type = 'text' placeholder = 'Search...'>
+<table class="table table-hover table-bordered">
+    <thead class="thread-dark">
+        <th id="titletablelol" colspan="6">AUDIT LOG?</th>
 
     </thead>
-  <thead>
+  <thead class="thread-dark">
     <tr>
       <th scope ="col">User</th>
       <th scope="col">Level</th>
@@ -33,7 +41,7 @@
       <th scope="col">IP Location</th>
     </tr>
   </thead>
-  <tbody>
+  <tbody id="myTable">
     <tr>
 
       <th scope="row">1</th>
@@ -62,4 +70,16 @@
   </tbody>
 </table>
 </div>
+
+
+<script>
+$(document).ready(function(){
+  $("#myInput").on("keyup", function() {
+    var value = $(this).val().toLowerCase();
+    $("#myTable tr").filter(function() {
+      $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+    });
+  });
+});
+</script>
 {% endblock %}

@@ -1,23 +1,31 @@
-import logging.config
-
-import pyotp
-import Feedback as F
-import string
+import datetime
+import json
 import random
-import ipapi
-import uuid
-
-import datetime
 import shelve
-import datetime
-from datetime import date
-# Bryan Import
+import string
+import uuid
+from random import randint  ###### email otp ####
+
+import MySQLdb.cursors
+import bcrypt
+import pyotp
+import requests
+from cryptography.fernet import Fernet
 from flask import Flask, render_template, request, redirect, url_for, flash, json
 from flask import session
+from flask_mail import Mail, Message
+# SQL stuff
+###line 43 , 44 for hong ji only , the others just # this 2 line
+# import pymysql
+# pymysql.install_as_MySQLdb()
+#### line 43 , 44 for hong ji only , the others just # this 2 line  as hong ji pc have bug cant use the sql
+# lol
+from flask_mysqldb import MySQL
 from flask_uploads import UploadSet, configure_uploads, IMAGES
-import requests
+from itsdangerous import SignatureExpired, URLSafeTimedSerializer
+
 import CreatingSupplier
-# Jolene Import#
+import Feedback as F
 import Food
 import Inventory
 import OrderCreation
@@ -32,35 +40,16 @@ from Forms import CreateUserForm
 from InventoryForm import AddInventoryForm
 from NewFoodForm import CreateFoodForm
 from OrderForm import OrderInventory
-from create_login_user import CreateLoginUser
+from UpdateUserAccount import UpdateUserForm
 from dineinForm import CreateDineInForm
 from dineinuser import dineinuser
 from loginform import CreateLoginUserForm
-from mang_dinine_form import MangDineInForm
 from managetable import mangetable1
 from managetableform import Createmangetable
+from mang_dinine_form import MangDineInForm
 from updateOrder import Orderupdate
 from updateSupplier import updateSupplierForm
 from viewupdateforms import CreateUpdateFeedbackForm
-from flask_mail import Mail, Message
-from random import randint
-import requests
-from random import randint  ###### email otp ####
-from UpdateUserAccount import UpdateUserForm
-import json
-# SQL stuff
-###line 43 , 44 for hong ji only , the others just # this 2 line
-#import pymysql
-#pymysql.install_as_MySQLdb()
-#### line 43 , 44 for hong ji only , the others just # this 2 line  as hong ji pc have bug cant use the sql
-# lol
-from flask_mysqldb import MySQL
-import MySQLdb.cursors
-import re
-import bcrypt
-from cryptography.fernet import Fernet
-import jwt
-from itsdangerous import URLSafeSerializer, SignatureExpired, URLSafeTimedSerializer
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Project'
@@ -90,7 +79,7 @@ try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
     app.config[
-        'MYSQL_PASSWORD'] = 'Dragonnight1002'  # change this line to our own sql password , thank you vry not much xd
+        'MYSQL_PASSWORD'] = 'ZadePrimeSQL69420'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -482,14 +471,14 @@ def Userprofile():
         # User is not loggedin redirect to login page
     return redirect(url_for('login'))
 
-@app.route('/ipaddchecker', methods=['GET', 'POST'])
-def ipchecker():
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
-    account = cursor.fetchone()
-    ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
-    data = ipapi.location(ip=ip, output='json')
-    return render_template('ipaddresscheck.html',data=data,account=account,role=account['role'])
+#@app.route('/ipaddchecker', methods=['GET', 'POST'])
+#def ipchecker():
+#    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+#    cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+#    account = cursor.fetchone()
+#    ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+#    data = ipapi.location(ip=ip, output='json')
+#    return render_template('ipaddresscheck.html',data=data,account=account,role=account['role'])
 
 @app.route('/deleteaccount',methods=['GET','POST'])
 def deleteaccount():
@@ -615,13 +604,27 @@ def Managerprofile():
         # User is not loggedin redirect to login page
     return redirect(url_for('login'))
 
+def get_location(ip_address):
+    try:
+        response = requests.get("http://ip-api.com/json/{}".format(ip_address))
+        js = response.json()
+        country = js
+        return country
+    except Exception as e:
+        return "Unknown"
+
+
 
 @app.route('/IPmap')
 def Ipmap():
+    ip_address = request.remote_addr
+    #ip_address =
+    country = get_location(ip_address)
+    print(country)
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
     account = cursor.fetchone()
-    return render_template("IPmap.html", account=account)
+    return render_template("IPmap.html", account=account,country = country)
 
 @app.route('/dashboard')
 def ViewDashboard():
@@ -771,7 +774,7 @@ def login():
             username = request.form['username']
             password = request.form['password']
             # Check if account exists in MYSQL
-            print(request.remote_addr)
+
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute("SELECT * FROM accounts WHERE username = %(username)s",
                            {'username': username})
@@ -796,6 +799,10 @@ def login():
 
 
                 hashandsalt = account['Password']
+                # This means that you have logged in
+                print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+                print(request.remote_addr)
+
                 if bcrypt.checkpw(password.encode(), hashandsalt.encode()):
                     session['loggedin'] = True
                     session['ID'] = account['ID']
@@ -808,6 +815,8 @@ def login():
                     print(account)
                     cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
                     account1 = cursor.fetchone()
+                    cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s)""",(session['ID'],datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),request.remote_addr))
+                    mysql.connection.commit()
                     if account1['Text_Message_Status'] ==True or account1['Authenticator_Status']==True or account1['Push_Base_Status']==True or account1['Backup_Code_Status']==True:
                         return render_template("2fa.html")
                     else:
@@ -817,9 +826,13 @@ def login():
                             return redirect(url_for('Userprofile'))
                 else:
                     msg = 'Incorrect Username/Password'
+                    Username = account['Username']
+                    if Username == request.form['username']:
+                        print("Attempted failed log in! ")
                     return render_template('login.html', msg=msg, sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
             else:
                 msg ='Incorrect Username/Password'
+
                 return render_template('login.html', msg=msg, sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
 
         else:
@@ -834,6 +847,11 @@ def login():
 @app.route('/logout')
 def logout():
     try:
+        #cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        #sqlcode = """UPDATE account_log_ins SET Account_Log_Out_Time = %s WHERE Account_ID = %s"""
+        #values = (datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),session['ID'])
+        #cursor.execute(sqlcode,values)
+        #mysql.connection.commit()
         print(session)
         session.clear()
         print(session)
@@ -3675,7 +3693,8 @@ def page_not_found(e):
 # @app.errorhandler(404)
 # def page_not_found(e):
 # return render_template('error404.html'), 404
-
+if bool(session) == False:
+    print("session closed.")
 
 if __name__ == '__main__':
     app.run(debug=True)

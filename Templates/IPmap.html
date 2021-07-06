@@ -1,10 +1,8 @@
 
+{% extends "base.html" %}
 
-{% if role == "Admin" %}
-    {% extends "base.html" %}
-{% else %}
-    {% extends "base2.html" %}
-{% endif %}
+
+
 
 {% block title %}Library Loan System - Update User{% endblock %}
 
@@ -12,10 +10,16 @@
 {% from "includes/_formsHelper.html" import render_field %}
 
 
-<h1>IP MAN jk its ip map lmao fuck u</h1>
+<p>Country = {{ country.country }}</p>
+
+<p>Country = {{ country.countryCode }}</p>
+
+<p>Country = {{ country.lat }}</p>
+
+<p>Country = {{ country.lon }}</p>
+
+<p>Country = {{ country.timezone }}</p>
 
 
-
-
-
+<p>Country = {{ country.isp }}</p>
 {% endblock %}
