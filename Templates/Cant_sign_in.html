@@ -173,37 +173,25 @@ form .button{
   <img src="{{url_for('static', filename='fairmont-singapore-asian-market-cafe.jpg')}}"  width="500" height="600" />
   <body>
     <div class="container">
-      <header>Forgot Your Password?</header>
-
-      <form method="POST">
-          <p>
-              {% with messages = get_flashed_messages() %}
-              {% if messages %}
-              {% for message in messages %}
-          <div class="alert alert-primary">
-              <strong>{{ message }}</strong>
+      <header>Can't Sign In?</header>
+      <p>There are a few reasons you might not be able to sign in. Check the options below for possible solutions.</p>
+      <form method="POST" action="/ForgetUsername">
+          <div class="button">
+            <div class="inner">
+            </div>
+            <button type='submit'>Forget Username</button>
           </div>
-          {% endfor %}
-          {% endif %}
-          {% endwith %}
-          </p>
-        <div class="input-field">
-          <input type="email" class='input' name="email" required>
-          <label>Email</label>
-        </div>
-<div class="button">
-          <div class="inner">
-</div>
-<button type='submit'>CONTINUE</button>
-        </div>
-</form>
-<div class="auth">
+      </form>
+      <form method="POST" action="/ForgetPassword">
+          <div class="button">
+            <div class="inner">
+            </div>
+            <button type='submit'>Forget Password</button>
+          </div>
+      </form>
+  <div class="auth">
 
-<div class="links">
-</div>
-<div class="signup">
-        Not a member? <a href="/Createloginuser">Signup now</a><br>
-        Return to login page? <a href="/login">Login</a>
-</div>
+  <div class="links">
+  </div>
   </body>
 </html>

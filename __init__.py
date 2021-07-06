@@ -90,7 +90,7 @@ try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
     app.config[
-        'MYSQL_PASSWORD'] = '1234'  # change this line to our own sql password , thank you vry not much xd
+        'MYSQL_PASSWORD'] = 'N0passwordatall'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -663,6 +663,36 @@ def TWOFA():
 #    except:
 #        return render_template('error404.html')
 
+@app.route('/Cantsignin', methods=['GET', 'POST'])
+def Cantsignin():
+    return render_template("Cant_sign_in.html")
+
+
+@app.route('/ForgetUsername', methods=['GET', 'POST'])
+def ForgottenUsername():
+    try:
+        if request.method == 'POST' and 'email' in request.form:
+            email = request.form['email']
+            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute("SELECT * FROM accounts WHERE Email = %(email)s", {'email': email})
+            account = cursor.fetchone()
+            print(account)
+            if account:
+                msg = Message("Forget Username", recipients=[email])
+                Username = account['Username']
+                msg.html = render_template('forgetusernameemail.html', Username=Username)
+                mail.send(msg)
+                print('sended')
+            else:
+                print('It doesnt exit')
+            flash('If your email matches an existing account we will send a password reset email within a few minutes.')
+            return render_template('ForgetUsername.html')
+        else:
+            return render_template('ForgetUsername.html')
+    except:
+        print('error')
+        #return render_template('error404.html')
+
 
 @app.route('/ForgetPassword', methods=['GET', 'POST'])
 def ForgottenPassword():
@@ -674,15 +704,10 @@ def ForgottenPassword():
             account = cursor.fetchone()
             print(account)
             if account:
-                print('1')
                 msg = Message("Forget Password Link", recipients=[email])
-                print('1')
                 UUID = account['UUID']
-                print('1')
                 msg.html = render_template('forgotpasswordemail.html', UUID=UUID)
-                print('1')
                 mail.send(msg)
-                print('1')
                 print('sended')
             else:
                 print('It doesnt exit')
