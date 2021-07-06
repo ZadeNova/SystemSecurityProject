@@ -90,7 +90,7 @@ try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
     app.config[
-        'MYSQL_PASSWORD'] = 'N0passwordatall'  # change this line to our own sql password , thank you vry not much xd
+        'MYSQL_PASSWORD'] = '1234'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -130,14 +130,17 @@ def sendemail():
 @app.route('/EmailOtpCheck')
 def EmailOtpCheck():
 
-    #if status == 'check'
+
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
     account = cursor.fetchone()
+    cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
+    account1 = cursor.fetchone()
     email = account['Email']
     msg = Message('This is your OTP', recipients=[email])
     msg.body = 'Your OTP is :\n' + '\t\t\t' + str(otp) + '\nPlease do not show this to anyone ! Thank you :)'
     mail.send(msg)
+
     return render_template('EmailOtpCheck.html', account=account,role=account['role'])
 
 @app.route('/EmailOtpdisable')
@@ -169,11 +172,13 @@ def validate():
     user_otp = request.form['otp']
     if otp == int(user_otp):
         cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
-        account = cursor.fetchone()
+        account1 = cursor.fetchone()
         print('updating text status')
         cursor.execute("UPDATE  authentication_table SET Text_Message_Status=True WHERE Account_ID=%s ", [session['ID']])
         mysql.connection.commit()
         print('updated successfully noice ')
+
+
         return render_template('successful.html', account=account,role=account['role'])
     return render_template('Fail.html', account=account,role=account['role'])
 
@@ -314,7 +319,7 @@ def two_fa_email():
             mail.send(msg)
             return render_template('2fa_email_check.html', account=account,role=account['role'])
         else:
-            flash('You havent active this function yet choose other 2 factor authentication method')
+            flash('You havent active this function yet choose other 2 factor authentication method','danger')
             return redirect(url_for("two_fa_email"))
     else:
         return redirect(url_for("two_fa"))
@@ -339,7 +344,7 @@ def two_fa_backupcode():
         if account1['Backup_Code_Status'] == True and account1['Backup_Code_No_Of_Use'] == False:
             return render_template('2fa_backupcode_check.html')
         else:
-            flash('You havent active this function yet choose other 2 factor authentication method')
+            flash('You havent active this function yet choose other 2 factor authentication method','danger')
             return redirect(url_for("two_fa"))
     else:
         return redirect(url_for("two_fa"))
@@ -368,7 +373,7 @@ def two_fa_authen():
         if account1['Authenticator_Status'] == True :
             return render_template('2fa_authenticator_check.html')
         else:
-            flash('You havent active this function yet choose other 2 factor authentication method')
+            flash('You havent active this function yet choose other 2 factor authentication method','danger')
             return redirect(url_for("two_fa"))
     else:
         return redirect(url_for("two_fa"))
@@ -530,6 +535,8 @@ def Changesettings():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
     account = cursor.fetchone()
+    cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
+    account1 = cursor.fetchone()
     role=account['role']
     print(account)
     formupdateuser.Username.data = account['Username']
@@ -543,6 +550,8 @@ def Changesettings():
     formupdateuser.Answers_1.data = account['Answer_1']
     formupdateuser.Answers_2.data = account['Answer_2']
     formupdateuser.Address.data = account['Address']
+
+
     if request.method == 'POST':
         IDUpdate = session['ID']
 
@@ -558,7 +567,7 @@ def Changesettings():
         mail.send(msg)
         return redirect(url_for('login'))
 
-    return render_template('Settings.html', account=account, form=formupdateuser,ip=ip,role=role)
+    return render_template('Settings.html', account=account, form=formupdateuser,ip=ip,role=role,status_text=account1['Text_Message_Status'],status_auth=account1['Authenticator_Status'],status_psuh=account1['Push_Base_Status'],status_back=account1['Backup_Code_Status'])
 
 
 def updatedatabase():
@@ -1834,6 +1843,7 @@ def homepage():
     role=account['role']
     cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
     account1 = cursor.fetchone()
+
     if account1['Text_Message_Status'] == True:
         flash('Email otp is activated ','primary')
     else:

@@ -174,17 +174,15 @@ form .button{
   <body>
     <div class="container">
       <header>2 factor authentication</header>
-         <p>
-              {% with messages = get_flashed_messages() %}
-              {% if messages  %}
-              {% for message in messages %}
-          <div class="alert alert-primary">
-              <strong>{{ message }}</strong>
-          </div>
-          {% endfor %}
-          {% endif %}
-          {% endwith %}
-          </p>
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      {% for category, message in messages %}
+      <div class="alert alert-{{ category }}" role="alert">
+        {{ message }}
+      </div>
+      {% endfor %}
+      {% endif %}
+      {% endwith %}
       <form method="POST" action="/twofaemail">
 <div class="button">
           <div class="inner">

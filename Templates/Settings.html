@@ -210,7 +210,6 @@ body{
                     <label class="d-block text-danger">Delete Account</label>
                     <p class="text-muted font-size-sm">Once you delete your account, there is no going back. Please be certain.</p>
                   </div>
-
                   <a href="/deleteaccount"><button class="btn btn-danger" type="button">Delete Account</button></a>
                 </form>
               </div>
@@ -245,8 +244,11 @@ body{
                         <div class="custom-control custom-control-nolabel custom-switch ml-auto">
                           <input type="checkbox" class="custom-control-input" id="customSwitch6"  checked="">
                           <label class="custom-control-label" for="customSwitch6"></label>
+                          {%if status_text == 0 %}
                           <a href="/EmailOtpCheck"><button class="btn btn-light btn-sm ml-auto" type="button">Enable</button></a>
+                          {%else%}
                           <a href="/EmailOtpdisable"><button class="btn btn-light btn-sm ml-auto" type="button">Disable</button></a>
+                          {% endif %}
                         </div>
                       </li>
                       <li class="list-group-item has-icon">
@@ -254,9 +256,11 @@ body{
                         <div class="custom-control custom-control-nolabel custom-switch ml-auto">
                           <input type="checkbox"  class="custom-control-input" id="customSwitch7" checked="">
                           <label class="custom-control-label" for="customSwitch7"></label>
+                          {%if status_auth == 0 %}
                           <a href="/login/2fa/"><button class="btn btn-light btn-sm ml-auto" type="button">Enable</button></a>
+                          {%else%}
                           <a href="/login/2fadisable/"><button class="btn btn-light btn-sm ml-auto" type="button">Disable</button></a>
-
+                           {% endif %}
                         </div>
                       </li>
                       <li class="list-group-item has-icon">
@@ -264,8 +268,11 @@ body{
                         <div class="custom-control custom-control-nolabel custom-switch ml-auto">
                           <input type="checkbox" class="custom-control-input" id="customSwitch8" checked="">
                           <label class="custom-control-label" for="customSwitch8"></label>
+                          {%if status_push == 0 %}
                           <a href="/login/2fa/"><button class="btn btn-light btn-sm ml-auto" type="button">Enable</button></a>
+                          {%else%}
                           <a href="/login/2fadisable/"><button class="btn btn-light btn-sm ml-auto" type="button">Disable</button></a>
+                          {% endif %}
 
                         </div>
                       </li>
@@ -275,8 +282,11 @@ body{
                         <div class="custom-control custom-control-nolabel custom-switch ml-auto">
                           <input type="checkbox" class="custom-control-input" id="customSwitch10">
                           <label class="custom-control-label" for="customSwitch10"></label>
+                          {%if status_back == 0 %}
                           <a href="/Backupcode"><button class="btn btn-light btn-sm ml-auto" type="button">Enable</button></a>
+                          {%else  %}
                           <a href="/Backupcodedisable"><button class="btn btn-light btn-sm ml-auto" type="button">Disable</button></a>
+                          {% endif %}
 
                         </div>
                       </li>
