@@ -1,6 +1,5 @@
-{% if role == "Staff" %}
-    {% extends "base.html" %}
-{% elif name == "admin" %}
+
+{% if role == "Admin" %}
     {% extends "base.html" %}
 {% else %}
     {% extends "base2.html" %}
@@ -16,6 +15,8 @@
     Enter OTP: <input type="text" name="otp">
     <input type="submit" value="Submit">
 </form>
+<a href="/Settings"><button class="btn btn-primary" type="button">Return</button></a>
+
 
 
 

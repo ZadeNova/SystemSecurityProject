@@ -1,4 +1,4 @@
-{% if name == "admin" %}
+{% if role == "Admin" %}
     {% extends "base.html" %}
 {% else %}
     {% extends "base2.html" %}
@@ -215,6 +215,15 @@ body{
                 </form>
               </div>
               <div class="tab-pane" id="security">
+                 {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      {% for category, message in messages %}
+      <div class="alert alert-{{ category }}" role="alert">
+        {{ message }}
+      </div>
+      {% endfor %}
+      {% endif %}
+      {% endwith %}
                 <h6>SECURITY SETTINGS</h6>
                 <hr>
                 <form>
@@ -236,8 +245,8 @@ body{
                         <div class="custom-control custom-control-nolabel custom-switch ml-auto">
                           <input type="checkbox" class="custom-control-input" id="customSwitch6"  checked="">
                           <label class="custom-control-label" for="customSwitch6"></label>
-                          <a href="/EmailOtpCheck"><button class="btn btn-light btn-sm ml-auto" type="button">Edit</button></a>
-
+                          <a href="/EmailOtpCheck"><button class="btn btn-light btn-sm ml-auto" type="button">Enable</button></a>
+                          <a href="/EmailOtpdisable"><button class="btn btn-light btn-sm ml-auto" type="button">Disable</button></a>
                         </div>
                       </li>
                       <li class="list-group-item has-icon">
@@ -245,7 +254,8 @@ body{
                         <div class="custom-control custom-control-nolabel custom-switch ml-auto">
                           <input type="checkbox"  class="custom-control-input" id="customSwitch7" checked="">
                           <label class="custom-control-label" for="customSwitch7"></label>
-                          <a href="/login/2fa/"><button class="btn btn-light btn-sm ml-auto" type="button">Edit</button></a>
+                          <a href="/login/2fa/"><button class="btn btn-light btn-sm ml-auto" type="button">Enable</button></a>
+                          <a href="/login/2fadisable/"><button class="btn btn-light btn-sm ml-auto" type="button">Disable</button></a>
 
                         </div>
                       </li>
@@ -254,7 +264,8 @@ body{
                         <div class="custom-control custom-control-nolabel custom-switch ml-auto">
                           <input type="checkbox" class="custom-control-input" id="customSwitch8" checked="">
                           <label class="custom-control-label" for="customSwitch8"></label>
-                          <a href="/login/2fa/"><button class="btn btn-light btn-sm ml-auto" type="button">Edit</button></a>
+                          <a href="/login/2fa/"><button class="btn btn-light btn-sm ml-auto" type="button">Enable</button></a>
+                          <a href="/login/2fadisable/"><button class="btn btn-light btn-sm ml-auto" type="button">Disable</button></a>
 
                         </div>
                       </li>
@@ -264,7 +275,8 @@ body{
                         <div class="custom-control custom-control-nolabel custom-switch ml-auto">
                           <input type="checkbox" class="custom-control-input" id="customSwitch10">
                           <label class="custom-control-label" for="customSwitch10"></label>
-                          <a href="/Backupcode"><button class="btn btn-light btn-sm ml-auto" type="button">Edit</button></a>
+                          <a href="/Backupcode"><button class="btn btn-light btn-sm ml-auto" type="button">Enable</button></a>
+                          <a href="/Backupcodedisable"><button class="btn btn-light btn-sm ml-auto" type="button">Disable</button></a>
 
                         </div>
                       </li>

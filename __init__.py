@@ -50,8 +50,8 @@ from UpdateUserAccount import UpdateUserForm
 import json
 # SQL stuff
 ###line 43 , 44 for hong ji only , the others just # this 2 line
-#import pymysql
-#pymysql.install_as_MySQLdb()
+import pymysql
+pymysql.install_as_MySQLdb()
 #### line 43 , 44 for hong ji only , the others just # this 2 line  as hong ji pc have bug cant use the sql
 # lol
 from flask_mysqldb import MySQL
@@ -90,7 +90,7 @@ try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
     app.config[
-        'MYSQL_PASSWORD'] = 'N0passwordatall'  # change this line to our own sql password , thank you vry not much xd
+        'MYSQL_PASSWORD'] = '1234'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -123,7 +123,7 @@ def sendemail():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
     account = cursor.fetchone()
-    return render_template("AuditLog.html", account=account)
+    return render_template("AuditLog.html", account=account,role=account['role'])
 
 
 ## hong ji text message done ??? #####
@@ -138,7 +138,26 @@ def EmailOtpCheck():
     msg = Message('This is your OTP', recipients=[email])
     msg.body = 'Your OTP is :\n' + '\t\t\t' + str(otp) + '\nPlease do not show this to anyone ! Thank you :)'
     mail.send(msg)
-    return render_template('EmailOtpCheck.html', account=account)
+    return render_template('EmailOtpCheck.html', account=account,role=account['role'])
+
+@app.route('/EmailOtpdisable')
+def EmailOtpdisable():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+    account = cursor.fetchone()
+    cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
+    account1 = cursor.fetchone()
+    if account1['Text_Message_Status'] ==True:
+        Text_Message_Status=False
+        cursor.execute(
+            "UPDATE authentication_table SET Text_Message_Status=%s  WHERE Account_ID=%s ",
+            (Text_Message_Status, [session['ID']]))
+        mysql.connection.commit()
+        flash('Text message  disable ! ','primary')
+        return redirect(url_for('Changesettings'))
+    else:
+        flash('Text message is not activated ','danger')
+    return redirect(url_for('Changesettings'))
 
 
 @app.route('/validate', methods=['GET', 'POST'])
@@ -155,8 +174,8 @@ def validate():
         cursor.execute("UPDATE  authentication_table SET Text_Message_Status=True WHERE Account_ID=%s ", [session['ID']])
         mysql.connection.commit()
         print('updated successfully noice ')
-        return render_template('successful.html', account=account)
-    return render_template('Fail.html', account=account)
+        return render_template('successful.html', account=account,role=account['role'])
+    return render_template('Fail.html', account=account,role=account['role'])
 
 ## login using email
 @app.route('/EmailLogin', methods=['GET', 'POST'])
@@ -236,6 +255,7 @@ def backupcode():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
     account = cursor.fetchone()
+    role=account['role']
     cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
     account1 = cursor.fetchone()
     if account1['Backup_Code_Status']==False or account1['Backup_Code_No_Of_Use']== 1 :
@@ -248,10 +268,31 @@ def backupcode():
         cursor.execute("UPDATE authentication_table SET Backup_Code_Status=%s , Backup_Code_Key= %s ,Backup_Code_No_Of_Use=%s  WHERE Account_ID=%s ",
                      (Backup_Code_Status, Backup_Code_Key, Backup_Code_No_Of_Use , [session['ID']]))
         mysql.connection.commit()
-        return render_template("BackupCodeCheck.html",backup=conv,account=account)
+        return render_template("BackupCodeCheck.html",backup=conv,account=account,role=role)
     else:
         conv=account1['Backup_Code_Key']
-        return render_template("BackupCodeCheck.html", backup=conv, account=account)
+        return render_template("BackupCodeCheck.html", backup=conv, account=account,role=role)
+
+@app.route("/Backupcodedisable")
+def backupcode_disable():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+    account = cursor.fetchone()
+    role=account['role']
+    cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
+    account1 = cursor.fetchone()
+    if account1['Backup_Code_Status']==True  :
+        Backup_Code_Status=False
+        Backup_Code_Key=False
+        Backup_Code_No_Of_Use=False
+        cursor.execute("UPDATE authentication_table SET Backup_Code_Status=%s , Backup_Code_Key= %s ,Backup_Code_No_Of_Use=%s  WHERE Account_ID=%s ",
+                     (Backup_Code_Status, Backup_Code_Key, Backup_Code_No_Of_Use , [session['ID']]))
+        mysql.connection.commit()
+        flash('Backup Code   disable ! ', 'primary')
+        return redirect(url_for('Changesettings'))
+    else:
+        flash('Backup Code is not activated ', 'danger')
+    return redirect(url_for('Changesettings'))
 
 ### 2fa login ##
 @app.route('/2fa', methods=['GET', 'POST'])
@@ -271,7 +312,7 @@ def two_fa_email():
             msg = Message('This is your OTP', recipients=[email])
             msg.body = 'Your OTP is :\n' + '\t\t\t' + str(otp) + '\nPlease do not show this to anyone ! Thank you :)'
             mail.send(msg)
-            return render_template('2fa_email_check.html', account=account)
+            return render_template('2fa_email_check.html', account=account,role=account['role'])
         else:
             flash('You havent active this function yet choose other 2 factor authentication method')
             return redirect(url_for("two_fa_email"))
@@ -348,6 +389,28 @@ def two_fa_authen_check():
         flash("You have supplied an invalid 2FA token!", "danger")
         return redirect(url_for("two_fa"))
 ### end of 2fa login ###
+@app.route("/login/2fadisable/")
+def login_2fa_disable():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
+    account1 = cursor.fetchone()
+    cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+    account = cursor.fetchone()
+    role=account['role']
+    if account1['Authenticator_Status'] == True:
+        Authenticator_Key=False
+        Authenticator_Status=False
+        cursor.execute(
+            "UPDATE authentication_table SET Authenticator_Status=%s , Authenticator_Key=%s  WHERE Account_ID=%s ",
+            (Authenticator_Status,Authenticator_Key, [session['ID']]))
+        mysql.connection.commit()
+        flash('Authenticator App  disable ! ', 'primary')
+        return redirect(url_for('Changesettings'))
+    else:
+        flash('Authenticator App is not activated ', 'danger')
+        return redirect(url_for('Changesettings'))
+
+
 @app.route("/login/2fa/")
 def login_2fa():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -355,6 +418,7 @@ def login_2fa():
     account1 = cursor.fetchone()
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
     account = cursor.fetchone()
+    role=account['role']
     if account1['Authenticator_Status'] == False or account1['Authenticator_Key'] == 0:
         # generating random secret key for authentication
         secret = pyotp.random_base32()
@@ -362,10 +426,10 @@ def login_2fa():
             "alice@google.com",
             issuer_name="Secure App")
         print(totp_uri)
-        return render_template("login_2fa.html", secret=secret, account=account)
+        return render_template("login_2fa.html", secret=secret, account=account,role=role)
     else:
         secret=account1["Authenticator_Key"]
-        return render_template("login_2fa.html", secret=secret, account=account)
+        return render_template("login_2fa.html", secret=secret, account=account,role=role)
 
 @app.route("/login/2fa/", methods=["POST"])
 def login_2fa_form():
@@ -381,6 +445,7 @@ def login_2fa_form():
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
         account = cursor.fetchone()
+        role=account['role']
         cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
         account1 = cursor.fetchone()
         Authenticator_Status = True
@@ -390,7 +455,7 @@ def login_2fa_form():
             (Authenticator_Status, Authenticator_Key, [session['ID']]))
         mysql.connection.commit()
 
-        return render_template("login_2fa.html", secret=secret, account=account)
+        return render_template("login_2fa.html", secret=secret, account=account,role=role)
     else:
         # inform users if OTP is invalid
         flash("You have supplied an invalid 2FA token!", "danger")
@@ -419,7 +484,7 @@ def ipchecker():
     account = cursor.fetchone()
     ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
     data = ipapi.location(ip=ip, output='json')
-    return render_template('ipaddresscheck.html',data=data,account=account)
+    return render_template('ipaddresscheck.html',data=data,account=account,role=account['role'])
 
 @app.route('/deleteaccount',methods=['GET','POST'])
 def deleteaccount():
@@ -427,7 +492,7 @@ def deleteaccount():
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
     account = cursor.fetchone()
     flash('I want to delete my account')
-    return render_template("accountdelete.html", account=account)
+    return render_template("accountdelete.html", account=account,role=account['role'])
 
 
 @app.route('/deleteaccountcheck',methods=['POST'])
@@ -458,13 +523,14 @@ def deleteaccoutcheck():
 
 @app.route('/Settings', methods=['GET', 'POST'])
 def Changesettings():
+
     ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
     global dataforemailupdate, IDUpdate
     formupdateuser = UpdateUserForm(request.form)
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
     account = cursor.fetchone()
-
+    role=account['role']
     print(account)
     formupdateuser.Username.data = account['Username']
     formupdateuser.NRIC.data = account['NRIC']
@@ -492,7 +558,7 @@ def Changesettings():
         mail.send(msg)
         return redirect(url_for('login'))
 
-    return render_template('Settings.html', account=account, form=formupdateuser,ip=ip)
+    return render_template('Settings.html', account=account, form=formupdateuser,ip=ip,role=role)
 
 
 def updatedatabase():
@@ -1740,6 +1806,7 @@ def homepage():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
     account = cursor.fetchone()
+    role=account['role']
     cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
     account1 = cursor.fetchone()
     if account1['Text_Message_Status'] == True:
@@ -1758,7 +1825,7 @@ def homepage():
         flash('Backup code  is activated ','primary')
     else:
         flash('Backup code not activated ','danger')
-    return render_template('homenew.html', account=account,account1=account1)
+    return render_template('homenew.html', account=account,account1=account1,role=role)
 
 @app.route('/')  # declarator
 # tie to map a web application function to an url
