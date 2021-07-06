@@ -12,7 +12,7 @@ import shelve
 import datetime
 from datetime import date
 # Bryan Import
-from flask import Flask, render_template, request, redirect, url_for, flash, json ,g
+from flask import Flask, render_template, request, redirect, url_for, flash, json
 from flask import session
 from flask_uploads import UploadSet, configure_uploads, IMAGES
 import requests
@@ -50,8 +50,8 @@ from UpdateUserAccount import UpdateUserForm
 import json
 # SQL stuff
 ###line 43 , 44 for hong ji only , the others just # this 2 line
-import pymysql
-pymysql.install_as_MySQLdb()
+#import pymysql
+#pymysql.install_as_MySQLdb()
 #### line 43 , 44 for hong ji only , the others just # this 2 line  as hong ji pc have bug cant use the sql
 # lol
 from flask_mysqldb import MySQL
@@ -89,7 +89,8 @@ otp = randint(000000, 999999)  # email otp
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'N0passwordatall'  # change this line to our own sql password , thank you vry not much xd
+    app.config[
+        'MYSQL_PASSWORD'] = 'ZadePrimeSQL69420'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -156,7 +157,6 @@ def validate():
         print('updated successfully noice ')
         return render_template('successful.html', account=account)
     return render_template('Fail.html', account=account)
-
 
 ## login using email
 @app.route('/EmailLogin', methods=['GET', 'POST'])
@@ -367,7 +367,6 @@ def login_2fa():
         secret=account1["Authenticator_Key"]
         return render_template("login_2fa.html", secret=secret, account=account)
 
-
 @app.route("/login/2fa/", methods=["POST"])
 def login_2fa_form():
     # getting secret key used by user
@@ -413,7 +412,6 @@ def Userprofile():
         # User is not loggedin redirect to login page
     return redirect(url_for('login'))
 
-
 @app.route('/ipaddchecker', methods=['GET', 'POST'])
 def ipchecker():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -422,7 +420,6 @@ def ipchecker():
     ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
     data = ipapi.location(ip=ip, output='json')
     return render_template('ipaddresscheck.html',data=data,account=account)
-
 
 @app.route('/deleteaccount',methods=['GET','POST'])
 def deleteaccount():
@@ -552,29 +549,32 @@ def Ipmap():
     account = cursor.fetchone()
     return render_template("IPmap.html", account=account)
 
+@app.route('/dashboard')
+def ViewDashboard():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+    account = cursor.fetchone()
+    return render_template('dashboard.html',account=account)
 
 @app.route('/AuditLog')
 def Audit():
-    try:
-        #data = [
-        #    ("01-01-2021",69),
-        #    ("02-01-2021",80),
-        #    ("03-01-2021", 190),
-        #    ("04-01-2021", 45),
-        #    ("05-01-2021", 70),
-        #    ("06-01-2021", 23),
-        #    ("07-01-2021", 148),
-#
-        #]
-        #labels = [row[0] for row in data]
-        #values = [row[1] for row in data]
 
-        return render_template('AuditLog.html')#labels = labels,values = values)
-    except:
-        return render_template('error404.html')
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+    account = cursor.fetchone()
+
+    return render_template('AuditLog.html',account=account,role = account['role'])#labels = labels,values = values)
+
 
 
 # Edit this - Zadesqlstuff
+
+@app.route('/ActivityLogUser', methods = ['GET','POST'])
+def UserLogsActivity():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+    account = cursor.fetchone()
+    return render_template('UserActivityLog.html',account=account,role = account['role'])
 
 
 @app.route('/TwoFactorAuthentication', methods=['GET', 'POST'])
@@ -612,8 +612,7 @@ def ForgottenPassword():
             print(account)
             if account:
                 msg = Message("Forget Password Link", recipients=[email])
-                UUID = account['UUID']
-                msg.html = render_template('forgotpasswordemail.html', UUID=UUID)
+                msg.html = render_template('forgotpasswordemail.html')
                 mail.send(msg)
                 print('sended')
             else:
@@ -625,37 +624,6 @@ def ForgottenPassword():
     except:
         print('error')
         return render_template('error404.html')
-
-
-@app.route('/Resetpassword/<path:UUID>', methods=['GET', 'POST'])
-def Resetpassword(UUID):
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute("SELECT * FROM accounts WHERE UUID = %(UUID)s", {'UUID': UUID})
-    account = cursor.fetchone()
-    if account:
-        captcha_response = request.form.get('g-recaptcha-response')
-        if request.method == 'POST' and 'password' in request.form and 'confirm password' in request.form:
-            if is_human(captcha_response):
-                password = request.form['password']
-                confirm_password = request.form['confirm password']
-                if password != confirm_password:
-                    flash("Your Password isn't the same as your confirm password. Please Try Again..")
-                    return render_template('Resetpassword.html', sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
-                else:
-                    salt = bcrypt.gensalt(rounds=16)
-                    hash_password = bcrypt.hashpw(password.encode(), salt)
-                    sql = "UPDATE accounts SET Password = %s WHERE UUID = %s "
-                    value = (hash_password, UUID)
-                    cursor.execute(sql, value)
-                    UUID2 = uuid.uuid4().hex
-                    sql2 = "UPDATE accounts SET UUID = %s WHERE UUID = %s "
-                    value2 = (UUID2, UUID)
-                    cursor.execute(sql2, value2)
-                    mysql.connection.commit()
-                    return redirect(url_for('login'))
-        return render_template('Resetpassword.html', sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
-    else:
-        return redirect(url_for('login'))
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -717,7 +685,7 @@ def login():
                     msg = 'Incorrect Username/Password'
                     return render_template('login.html', msg=msg, sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
             else:
-                msg ='Incorrect Username/Password'
+                msg='Incorrect Username/Password'
                 return render_template('login.html', msg=msg, sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
 
         else:
@@ -1830,55 +1798,6 @@ def mangement_retrieve():
         return render_template('error404.html')
 
 
-@app.route('/dashboard')
-def dashboard():
-    try:
-        users_dict1 = {}
-        db = shelve.open('login.db', 'r')
-        users_dict1 = db['login']
-        db.close()
-        users_list1 = []
-        for key in users_dict1:
-            user = users_dict1.get(key)
-            users_list1.append(user)
-        for users in users_list1:
-            if 'username' in session:
-                username = session['username']
-                role = users.get_role()
-                if username == 'admin':
-                    role = 'Staff'
-                else:
-                    role = 'Guest'
-        kk = datetime.date.today()
-        users_dict = {}
-        db = shelve.open('userbooking.db', 'r')
-        users_dict = db['userbooking']
-        db.close()
-
-        users_dict2 = {}
-        db = shelve.open('userdinein.db', 'r')
-        users_dict2 = db['userdinein']
-        db.close()
-        users_list = []
-        for key in users_dict:
-            user = users_dict.get(key)
-            users_list.append(user)
-            rev = user.get_no_ppl
-            revdate = user.get_date
-            if revdate == kk:
-                revtdyppl = revdate
-            else:
-                revtdyppl = '0'
-        users_list2 = []
-        for key in users_dict2:
-            user = users_dict2.get(key)
-            users_list2.append(user)
-            dine = user.get_no_ppl()
-        return render_template('dashboard.html', count=len(users_list), count2=len(users_list2),
-                               users_list2=users_list2,
-                               users_list=users_list, name=session['username'], role=role)
-    except:
-        return render_template('error404.html')
 
 
 @app.route('/mangementdinetretrieve')

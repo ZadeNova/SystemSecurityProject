@@ -1,9 +1,65 @@
-{% extends "base.html" %}
+{% if role == "Admin" %}
+    {% extends "base.html" %}
+{% else %}
+    {% extends "base2.html" %}
+{% endif %}
 {% block title %}Library Loan System - Accounts{% endblock %}
 
 {% block content %}
 {% from "includes/_formsHelper.html" import render_field %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    #titletablelol {
+    text-align: center;
+
+    }
+
+
+</style>
 <h1>Testing.For audit log</h1>
-<p1></p1>
+<p>lol</p>
+<table class="table table-hover">
+    <thead>
+        <th id="titletablelol" colspan="4">AUDIT LOG?</th>
+
+    </thead>
+  <thead>
+    <tr>
+      <th scope ="col">User</th>
+      <th scope="col">Level</th>
+      <th scope="col">Date and Time</th>
+      <th scope="col">Action</th>
+      <th scope="col">IP address</th>
+      <th scope="col">IP Location</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+
+      <th scope="row">1</th>
+      <td><span class="badge badge-danger">Danger</span></td>
+      <td>DATE AND TIME</td>
+      <td>Account Log in</td>
+      <td>IP ADDRESS</td>
+      <td>Location</td>
+    </tr>
+    <tr>
+      <th scope="row">2</th>
+      <td><span class="badge badge-success">Success</span></td>
+      <td>DATE AND TIME</td>
+      <td>Updated account</td>
+      <td>IP ADDRESS</td>
+      <td>Location</td>
+    </tr>
+    <tr>
+      <th scope="row">3</th>
+      <td><span class="badge badge-warning">Warning</span></td>
+      <td>DATE AND TIME</td>
+      <td>Idk what action</td>
+      <td>IP ADDRESS</td>
+      <td>Location</td>
+    </tr>
+  </tbody>
+</table>
+</div>
 {% endblock %}

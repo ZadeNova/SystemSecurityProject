@@ -1,163 +1,102 @@
 {% extends "base.html" %}
-{% block title %}Library Loan System - Home{% endblock %}
+
+{% block title %}Library Loan System - Dashboard{% endblock %}
 
 {% block content %}
+<h1>Testing</h1>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<div class="container">
+    <canvas id="myChart" width="300" height="150"></canvas>
+</div>
+<h1>huh</h1>
+<script>
+    let myChart = document.getElementById('myChart').getContext('2d');
 
-<head>
-	<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" type="text/css" href="custom.css">
-    <link href="https://fonts.googleapis.com/css?family=Raleway:100,200,400,500,600" rel="stylesheet" type="text/css">
+    // Global Options
 
-</head>
-<style>
-    body{
-        background:white;
-	font-family: 'Raleway', sans-serif;
-}
-.main-section{
-	width:80%;
-	margin:0 auto;
-	text-align: center;
-	padding: 0px 5px;
-}
-.dashbord{
-	width:32%;
-	display: inline-block;
-	background-color:#34495E;
-	color:#fff;
-	margin-top: 50px;
-}
-.icon-section i{
-	font-size: 30px;
-	padding:10px;
-	border:1px solid #fff;
-	border-radius:50%;
-	margin-top:-25px;
-	margin-bottom: 10px;
-	background-color:#34495E;
-}
-.icon-section p{
-	margin:0px;
-	font-size: 20px;
-	padding-bottom: 10px;
-}
-.detail-section{
-	background-color: #2F4254;
-	padding: 5px 0px;
-}
-.dashbord .detail-section:hover{
-	background-color: #5a5a5a;
-	cursor: pointer;
-}
-.detail-section a{
-	color:#fff;
-	text-decoration: none;
-}
-.dashbord-green .icon-section,.dashbord-green .icon-section i{
-	background-color: #16A085;
-}
-.dashbord-green .detail-section{
-	background-color: #149077;
-}
-.dashbord-orange .icon-section,.dashbord-orange .icon-section i{
-	background-color: #F39C12;
-}
-.dashbord-orange .detail-section{
-	background-color: #DA8C10;
-}
-.dashbord-blue .icon-section,.dashbord-blue .icon-section i{
-	background-color: #2980B9;
-}
-.dashbord-blue .detail-section{
-	background-color:#2573A6;
-}
-.dashbord-red .icon-section,.dashbord-red .icon-section i{
-	background-color:#E74C3C;
-}
-.dashbord-red .detail-section{
-	background-color:#CF4436;
-}
-.dashbord-skyblue .icon-section,.dashbord-skyblue .icon-section i{
-	background-color:#8E44AD;
-}
-.dashbord-skyblue .detail-section{
-	background-color:#803D9B;
-}
-</style>
-<body>
-	<div class="main-section">
-		<div class="dashbord">
-			<div class="icon-section">
-				<i class="fa fa-users" aria-hidden="true"></i><br>
-				<small>Reservation</small>
-				<p>{{ count }}</p>
-			</div>
-			<div class="detail-section">
-				<a href="/mangementretrieve">More Info </a>
-			</div>
-		</div>
-		<div class="dashbord ">
-			<div class="icon-section">
-				<i class="fa fa-users" aria-hidden="true"></i><br>
-				<small>Dine In </small>
-				<p>{{ count2 }}</p>
-			</div>
-			<div class="detail-section">
-				<a href="/mangementdinetretrieve">More Info </a>
-			</div>
-		</div>
-		<div class="dashbord dashbord-orange">
-			<div class="icon-section">
-				<i class="fa fa-bell" aria-hidden="true"></i><br>
-				<small>Alert</small>
-				<p>9 New</p>
-			</div>
-			<div class="detail-section">
-				<a href="#">More Info </a>
-			</div>
-		</div>
-		<div class="dashbord dashbord-blue">
-			<div class="icon-section">
-				<i class="fa fa-tasks" aria-hidden="true"></i><br>
-				<small>Task</small>
-				<p>00</p>
-			</div>
-			<div class="detail-section">
-				<a href="#">More Info </a>
-			</div>
-		</div>
-		<div class="dashbord dashbord-red">
-			<div class="icon-section">
-				<i class="fa fa-shopping-cart" aria-hidden="true"></i><br>
-				<small>Cart</small>
-				<p>$ 00</p>
-			</div>
-			<div class="detail-section">
-				<a href="#">More Info </a>
-			</div>
-		</div>
-		<div class="dashbord dashbord-skyblue">
-			<div class="icon-section">
-				<i class="fa fa-comments" aria-hidden="true"></i><br>
-				<small>Mentions</small>
-				<p>00</p>
-			</div>
-			<div class="detail-section">
-				<a href="#">More Info </a>
-			</div>
-		</div>
-		<div class="dashbord dashbord-skyblue">
-			<div class="icon-section">
-				<i class="fa fa-comments" aria-hidden="true"></i><br>
-				<small>total no of ppl now</small>
-				<p>{{rev}}</p>
+    let massPopChart = new Chart(myChart, {
+      type:'line', // bar, horizontalBar, pie, line, doughnut, radar, polarArea
+      data:{
+        labels:['Boston', 'Worcester', 'Springfield', 'Lowell', 'Cambridge', 'New Bedford'],
+        datasets:[{
+          label:'Population',
+          data:[
+            617594,
+            181045,
+            153060,
+            106519,
+            105162,
+            95072
+          ],
+          //backgroundColor:'green',
+          backgroundColor:[
+            'rgba(255, 99, 132, 0.6)',
+            'rgba(54, 162, 235, 0.6)',
+            'rgba(255, 206, 86, 0.6)',
+            'rgba(75, 192, 192, 0.6)',
+            'rgba(153, 102, 255, 0.6)',
+            'rgba(255, 159, 64, 0.6)',
+            'rgba(255, 99, 132, 0.6)'
+          ],
+          borderWidth:1,
+          borderColor:'#777',
+          hoverBorderWidth:3,
+          hoverBorderColor:'#000',
+          fill:true
+        }]
+      },
+      options:{
 
-			</div>
-			<div class="detail-section">
-				<a href="check_tdy_ppl">More Info </a>
-			</div>
-		</div>
+        scales:{
+            x:{
+                title:{
+                    color:'red',
+                    display:true,
+                    text:'Cities'
 
-	</div>
-</body>
+
+                }
+
+            },
+            y:{
+                title:{
+                color:'red',
+                display:true,
+                text:'No of People'
+
+                }
+
+            }
+        },
+        plugins:{
+        	legend:{
+          display:true,
+          position:'right',
+          labels:{
+            fontColor:'#000'
+          }
+        },
+        	title:{
+        		text:'testing graph',
+        		display: true,
+        		fontSize:40
+        	}
+
+
+        },
+        layout:{
+          padding:{
+            left:0,
+            right:0,
+            bottom:0,
+            top:0
+          }
+        },
+        tooltips:{
+          enabled:true
+        }
+
+      }
+    });
+  </script>
 {% endblock %}
