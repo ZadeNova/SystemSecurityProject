@@ -4,10 +4,11 @@ from wtforms.validators import ValidationError, DataRequired
 from datetime import datetime, date
 from wtforms.fields.html5 import DateField
 import re
+
 class CreateLoginUserForm(Form):
 
-    Username = StringField('Username:', [validators.Length(min=1, max=150), validators.DataRequired()])
-    NRIC = StringField('NRIC: ', [validators.DataRequired()])
+    Username = StringField('Username:', [validators.Length(min=5, max=20), validators.DataRequired()])
+    NRIC = StringField('NRIC: ', validators=[validators.Regexp(regex="^[ST][0-9]{7}[A-Z]$", message='Must start with a S or T and end with any letter between A-Z')])
     DOB = DateField("Date of Birth", format='%Y-%m-%d', validators=[DataRequired('Select a date')])
     Gender = RadioField('Gender', choices=[('Male', 'Male'), ('Female', 'Female'), ("Other", "Other")], default='')
     Password = PasswordField('Account Password:', validators=[validators.Regexp(regex="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{8,20}$"),

@@ -5,6 +5,7 @@
 
 
 <h1 class="display-4">Create new account</h1>
+<link href="static/css/create_login_user_form.css" rel="stylesheet">
  {% if msg %}
         <div class="alert alert-danger">
               <strong>{{msg}}</strong>
@@ -17,7 +18,7 @@
   </div>
   <div class="form-group">
     {{ render_field(form.NRIC, class="form-control")  }}
-    <p>Include the letters in the NRIC too. (eg. S12345678, T12345678)</p>
+    <p>Include the letters in the NRIC too. (eg. S12345678A, T12345678C)</p>
   </div>
   <div class="form-group">
     {{ render_field(form.DOB, class="form-control")  }}
@@ -35,6 +36,7 @@
         <li>Contain at least one special symbol</li>
         <li>Password must be between 8 to 20 characters long</li>
       </ul>
+    <input id="show-passwords" type="checkbox" name="show-passwords"> Show Passwords
   </div>
   <div class="form-group">
     {{ render_field(form.Confirm_Password, class="form-control")  }}
@@ -78,5 +80,52 @@
   <br>
 
 </form>
+
+<script>
+//
+// Variables
+//
+
+// Get the password toggle
+const toggle = document.querySelector('#show-passwords');
+
+// Get the password fields
+const passwords = Array.from(
+  document.querySelectorAll('[type="password"]')
+);
+
+
+//
+// Functions
+//
+
+/**
+ * Toggle the visibility of a password field
+ * based on a checkbox's current state
+ *
+ * @param {HTMLInputElement} checkbox The checkbox
+ * @param {HTMLInputElement} field The password field
+ */
+function togglePassword (checkbox, field) {
+  field.type = checkbox.checked ? 'text' : 'password';
+}
+
+/**
+ * Handle change events
+ */
+function handleChange () {
+  passwords.forEach(password => {
+    togglePassword(this, password);
+  });
+}
+
+
+//
+// Inits & Event Listeners
+//
+
+// Handle change events
+toggle.addEventListener('change', handleChange);
+</script>
 
 {% endblock %}
