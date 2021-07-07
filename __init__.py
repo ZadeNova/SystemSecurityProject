@@ -16,8 +16,8 @@ from flask import session
 from flask_mail import Mail, Message
 # SQL stuff
 ###line 43 , 44 for hong ji only , the others just # this 2 line
-import pymysql
-pymysql.install_as_MySQLdb()
+# import pymysql
+# pymysql.install_as_MySQLdb()
 #### line 43 , 44 for hong ji only , the others just # this 2 line  as hong ji pc have bug cant use the sql
 # lol
 import MySQLdb.cursors
@@ -98,7 +98,7 @@ try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
     app.config[
-        'MYSQL_PASSWORD'] = '1234'  # change this line to our own sql password , thank you vry not much xd
+        'MYSQL_PASSWORD'] = 'Dragonnight1002'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -930,93 +930,101 @@ def logout():
 def create_login_user():
     # Output message if something goes wrong...
     create_login_user_form = CreateLoginUserForm(request.form)
-
+    captcha_response = request.form.get('g-recaptcha-response')
     msg = ''
     # Check if "username", "password" and "email" POST requests exist (user submitted form)
     if request.method == 'POST' and 'Username' in request.form and 'Password' in request.form and 'Email' in request.form and create_login_user_form.validate():
-        # Create variables for easy access
-        salt = bcrypt.gensalt(rounds=16)
+        if is_human(captcha_response):
+            # Process request here
+            status = ''
 
-        print("is the form even working")
-        print(request.form)
-        username = request.form['Username']
-        NRIC = request.form['NRIC']
-        DOB = request.form['DOB']
-        gender = request.form['Gender']
-        password = request.form['Password']
-        phone_no = request.form['Phone_Number']
-        email = request.form['Email']
-        security_questions_1 = request.form['Security_Questions_1']
-        answer_1 = request.form['Answers_1']
-        security_questions_2 = request.form['Security_Questions_2']
-        answer_2 = request.form['Answers_2']
-        address = request.form['Address']
-        role = 'Guest'
+            # Create variables for easy access
+            salt = bcrypt.gensalt(rounds=16)
 
-        now = datetime.datetime.now()
-        account_creation_time = now.strftime("%Y-%m-%d %H:%M:%S")
-        email_confirm = 0
-        UUID = uuid.uuid4().hex
-        Account_Status='Acitve'
-        hash_password = bcrypt.hashpw(password.encode(), salt)
-        #Symmetric Key encryption
-        key = Fernet.generate_key()
-        #Loads the key into the crypto API
-        fkey = Fernet(key)
-        #Encrypt the stuff and convert to bytes by calling f.encrypt
-        encryptedaddress = fkey.encrypt(address.encode())
-        EncryptedNRIC = fkey.encrypt(NRIC.encode())
-        EncryptPhoneNo = fkey.encrypt(phone_no.encode())
+            print("is the form even working")
+            print(request.form)
+            username = request.form['Username']
+            NRIC = request.form['NRIC']
+            DOB = request.form['DOB']
+            gender = request.form['Gender']
+            password = request.form['Password']
+            phone_no = request.form['Phone_Number']
+            email = request.form['Email']
+            security_questions_1 = request.form['Security_Questions_1']
+            answer_1 = request.form['Answers_1']
+            security_questions_2 = request.form['Security_Questions_2']
+            answer_2 = request.form['Answers_2']
+            address = request.form['Address']
+            role = 'Guest'
+            print(DOB)
+            now = datetime.datetime.now()
+            account_creation_time = now.strftime("%Y-%m-%d %H:%M:%S")
+            email_confirm = 0
+            UUID = uuid.uuid4().hex
+            Account_Status='Acitve'
+            hash_password = bcrypt.hashpw(password.encode(), salt)
+            #Symmetric Key encryption
+            key = Fernet.generate_key()
+            #Loads the key into the crypto API
+            fkey = Fernet(key)
+            #Encrypt the stuff and convert to bytes by calling f.encrypt
+            encryptedaddress = fkey.encrypt(address.encode())
+            EncryptedNRIC = fkey.encrypt(NRIC.encode())
+            EncryptPhoneNo = fkey.encrypt(phone_no.encode())
 
 
-        # Check if account exists using MySQL
-        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        print(username, phone_no, NRIC, DOB, gender, email, password, address, role,UUID)
-        cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': username})
-        account = cursor.fetchone()
-        # If account exists show error and validation checks(do this at the form for this function)
-        if account:
-            msg = 'Account already exists!'
-        elif not username or not password or not email:
-            print("3")
-            msg = 'Please fill out the form!'
-        else:
-
-            # Account doesnt exists and the form data is valid, now insert new account into accounts table
-            cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-                           , (username, EncryptedNRIC, DOB, hash_password, gender, EncryptPhoneNo, email, security_questions_1,
-                              security_questions_2, answer_1, answer_2, encryptedaddress, role, account_creation_time,
-                              email_confirm,key,UUID,Account_Status))
-            mysql.connection.commit()
-            msg = 'You have successfully registered! '
-            print("working")
-            print('inserting authentication table')
-            Text_Message_Status = False
-            Authenticator_Status = False
-            Authenticator_Key = 0
-            Push_Base_Status = False
-            Backup_Code_Status = False
-            Backup_Code_Key = 0
-            Backup_Code_No_Of_Use = 0
-            #cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
-            cursor.execute("""SELECT ID FROM accounts WHERE Username = %(username)s""", {'username': username})
+            # Check if account exists using MySQL
+            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+            print(username, phone_no, NRIC, DOB, gender, email, password, address, role,UUID)
+            cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': username})
             account = cursor.fetchone()
-            Account_ID = account['ID']
-            print(Account_ID, 'account id  ')
-            cursor.execute("INSERT INTO authentication_table VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
-                           , (Account_ID, Text_Message_Status, Authenticator_Status, Authenticator_Key,
-                              Push_Base_Status, Backup_Code_Status, Backup_Code_Key, Backup_Code_No_Of_Use))
-            mysql.connection.commit()
-            print('insert successfully nocie ')
+            # If account exists show error and validation checks(do this at the form for this function)
+            if account:
+                msg = 'Account already exists!'
+            elif not username or not password or not email:
+                print("3")
+                msg = 'Please fill out the form!'
+            else:
 
-            return redirect('login')
+                # Account doesnt exists and the form data is valid, now insert new account into accounts table
+                cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                               , (username, EncryptedNRIC, DOB, hash_password, gender, EncryptPhoneNo, email, security_questions_1,
+                                  security_questions_2, answer_1, answer_2, encryptedaddress, role, account_creation_time,
+                                  email_confirm,key,UUID,Account_Status))
+                mysql.connection.commit()
+                msg = 'You have successfully registered! '
+                print("working")
+                print('inserting authentication table')
+                Text_Message_Status = False
+                Authenticator_Status = False
+                Authenticator_Key = 0
+                Push_Base_Status = False
+                Backup_Code_Status = False
+                Backup_Code_Key = 0
+                Backup_Code_No_Of_Use = 0
+                #cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+                cursor.execute("""SELECT ID FROM accounts WHERE Username = %(username)s""", {'username': username})
+                account = cursor.fetchone()
+                Account_ID = account['ID']
+                print(Account_ID, 'account id  ')
+                cursor.execute("INSERT INTO authentication_table VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
+                               , (Account_ID, Text_Message_Status, Authenticator_Status, Authenticator_Key,
+                                  Push_Base_Status, Backup_Code_Status, Backup_Code_Key, Backup_Code_No_Of_Use))
+                mysql.connection.commit()
+                print('insert successfully nocie ')
+
+                return redirect('login')
+        else:
+            msg = 'Please check the box "I am not a robot".'
+            return render_template('create_login_user_form.html', msg=msg, form=create_login_user_form, sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
+
     elif request.method == 'POST':
         # Form is empty... (no POST data)
         print("not working")
         print(request.form)
         msg = 'Please fill out the form!'
     # Show registration form with message (if any)
-    return render_template('create_login_user_form.html', msg=msg, form=create_login_user_form)
+    return render_template('create_login_user_form.html', msg=msg, form=create_login_user_form, sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
 
 
 @app.route('/Createloginadmin', methods=['GET', 'POST'])

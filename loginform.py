@@ -2,16 +2,17 @@ from wtforms import Form, StringField, TextAreaField, validators, SelectField, P
 import shelve
 from wtforms.validators import ValidationError, DataRequired
 from datetime import datetime, date
-from wtforms.fields.html5 import DateField
+from wtforms.fields.html5 import DateField, EmailField
 import re
 import datetime
+
 class CreateLoginUserForm(Form):
     yy = datetime.datetime.now()
     yy = yy.replace(year=yy.year - 16)
     kkk = yy.strftime('%Y-%m-%d')
 
-    Username = StringField('Username:', [validators.Length(min=1, max=150), validators.DataRequired()])
-    NRIC = StringField('NRIC: ', [validators.DataRequired()])
+    Username = StringField('Username:', [validators.Length(min=5, max=20), validators.DataRequired()])
+    NRIC = StringField('NRIC: ', validators=[validators.Regexp(regex="^[ST][0-9]{7}[A-Z]$", message='Must start with a S or T and end with any letter between A-Z')])
     DOB = DateField("Date of Birth", format='%Y-%m-%d', validators=[DataRequired('Select a date')])
 
    # if DOB < kkk:
@@ -28,8 +29,8 @@ class CreateLoginUserForm(Form):
         validators.Length(min=8, max=20), validators.EqualTo('Password', message='Passwords must match')
     ])
 
-    Phone_Number = StringField('Phone Number:', [validators.DataRequired(), validators.Regexp(regex='\d{4}[-.\s]?\d{4}$', message='phone number can only have 8 digit !'), validators.Regexp(regex='[0-9]', message='Only numeric number')])
-    Email = StringField('Email Address: ', [validators.DataRequired()])
+    Phone_Number = StringField('Phone Number:', [validators.DataRequired(), validators.Regexp(regex='\d{4}[-.\s]?\d{4}$', message='Phone Number can only have 8 digits !'), validators.Regexp(regex='[0-9]', message='Only numeric number')])
+    Email = EmailField('Email Address: ', [validators.DataRequired(), validators.Email()])
     Security_Questions_1 = SelectField('Security Questions:', [validators.DataRequired()],
                            choices=[('', 'Question 1 (Select One)'), ('Where were you when you had your first kiss? ', 'Where were you when you had your first kiss?'),
                                     ('What was your childhood nickname?', 'What was your childhood nickname?'),
