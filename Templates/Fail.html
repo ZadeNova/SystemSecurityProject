@@ -12,6 +12,15 @@
 {% from "includes/_formsHelper.html" import render_field %}
 <br>
 <br>
+{% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      {% for category, message in messages %}
+      <div class="alert alert-{{ category }}" role="alert">
+        {{ message }}
+      </div>
+      {% endfor %}
+      {% endif %}
+      {% endwith %}
 <p>Email verification Fail 1 :(  </p>
 <a href="/EmailOtpCheck"><button class="btn btn-light btn-sm ml-auto" type="button">Email otp</button>
 

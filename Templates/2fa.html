@@ -183,6 +183,7 @@ form .button{
       {% endfor %}
       {% endif %}
       {% endwith %}
+        {%if status_text == 1 %}
       <form method="POST" action="/twofaemail">
 <div class="button">
           <div class="inner">
@@ -190,6 +191,8 @@ form .button{
 <button type='submit'>Email Otp</button>
         </div>
 </form>
+        {% endif %}
+        {% if status_auth == 1 %}
             <form method="POST" action="/twofaauthen">
 <div class="button">
           <div class="inner">
@@ -197,6 +200,8 @@ form .button{
 <button type='submit'>Google Authenticator / Auth</button>
         </div>
 </form>
+        {% endif %}
+        {% if status_psuh == 1 %}
 
             <form method="POST" action="">
 <div class="button">
@@ -205,6 +210,8 @@ form .button{
 <button type='submit'>Push Notifi</button>
         </div>
 </form>
+        {% endif %}
+        {% if status_back == 1 %}
         <form method="POST" action="/twofabackupcode">
 <div class="button">
           <div class="inner">
@@ -213,6 +220,7 @@ form .button{
         </div>
 </form>
 
+        {% endif %}
 <div class="auth">
 
 <div class="links">

@@ -4,12 +4,22 @@ from wtforms.validators import ValidationError, DataRequired
 from datetime import datetime, date
 from wtforms.fields.html5 import DateField
 import re
-
+import datetime
 class CreateLoginUserForm(Form):
+    yy = datetime.datetime.now()
+    yy = yy.replace(year=yy.year - 16)
+    kkk = yy.strftime('%Y-%m-%d')
 
-    Username = StringField('Username:', [validators.Length(min=5, max=20), validators.DataRequired()])
-    NRIC = StringField('NRIC: ', validators=[validators.Regexp(regex="^[ST][0-9]{7}[A-Z]$", message='Must start with a S or T and end with any letter between A-Z')])
+    Username = StringField('Username:', [validators.Length(min=1, max=150), validators.DataRequired()])
+    NRIC = StringField('NRIC: ', [validators.DataRequired()])
     DOB = DateField("Date of Birth", format='%Y-%m-%d', validators=[DataRequired('Select a date')])
+
+   # if DOB < kkk:
+        #ValidationError('wrong')
+        #DOB = DateField("Date of Birth", format='%Y-%m-%d', validators=[DataRequired('Select a date')])
+    #else:
+        #DOB=DOB
+
     Gender = RadioField('Gender', choices=[('Male', 'Male'), ('Female', 'Female'), ("Other", "Other")], default='')
     Password = PasswordField('Account Password:', validators=[validators.Regexp(regex="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{8,20}$"),
         validators.EqualTo('Confirm_Password', message='Passwords must match'),
@@ -51,5 +61,7 @@ class CreateLoginUserForm(Form):
     Address = TextAreaField('Address:', [validators.DataRequired()])
 
     role = StringField('Role', default='Guest', render_kw={'readonly': True})
+
+  #  def validate_date(self,):
 
 
