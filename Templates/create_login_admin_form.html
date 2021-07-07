@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% from "includes/_formsHelper.html" import render_field %}
+
+
+<h1 class="display-4">Create new admin</h1>
+<link href="static/css/create_login_user_form.css" rel="stylesheet">
+ {% if msg %}
+        <div class="alert alert-danger">
+              <strong>{{msg}}</strong>
+          </div>
+          {% endif %}
+<form method="POST" action="">
+  <div class="form-group">
+    {{ render_field(form.Username, class="form-control") }}
+    <p>Enter your username between 5 and 20 characters</p>
+  </div>
+  <div class="form-group">
+    {{ render_field(form.NRIC, class="form-control")  }}
+    <p>Include the letters in the NRIC too. (eg. S12345678A, T12345678C)</p>
+  </div>
+  <div class="form-group">
+    {{ render_field(form.DOB, class="form-control")  }}
+    <p>Select Date of Birth in the format of Month/Date/Year (eg. 01/01/1990)</p>
+  </div>
+  <div class="form-group">
+    {{ render_field(form.Gender, class="form-check", style="list-style-type:none") }}
+    <p>Select a gender</p>
+  </div>
+  <div class="form-group">
+    {{ render_field(form.Password, class="form-control")  }}
+      <ul>
+        <li>Contain at least one number</li>
+        <li>Contain at least one uppercase and one lowercase character</li>
+        <li>Contain at least one special symbol</li>
+        <li>Password must be between 8 to 20 characters long</li>
+      </ul>
+    <input id="show-passwords" type="checkbox" name="show-passwords"> Show Passwords
+  </div>
+  <div class="form-group">
+    {{ render_field(form.Confirm_Password, class="form-control")  }}
+    <p>Enter your password again. Both passwords entered must be the same</p>
+  </div>
+  <div class="form-group">
+    {{ render_field(form.Phone_Number, class="form-control")  }}
+    <p>Phone number must start with a 8 or a 9 and 8 numbers in total</p>
+  </div>
+  <div class="form-group">
+    {{ render_field(form.Email, class="form-control")  }}
+    <p>Enter a valid email address (eg. abc@gmail.com) </p>
+  </div>
+  <div class="form-group">
+    {{ render_field(form.Security_Questions_1, class="form-control")  }}
+    <p>Choose your 1st security question</p>
+  </div>
+  <div class="form-group">
+    {{ render_field(form.Answers_1, class="form-control")  }}
+    <p>Enter security question 1 answer</p>
+  </div>
+  <div class="form-group">
+    {{ render_field(form.Security_Questions_2, class="form-control")  }}
+    <p>Choose your 2nd security question</p>
+  </div>
+  <div class="form-group">
+    {{ render_field(form.Answers_2, class="form-control")  }}
+    <p>Enter security question 2 answer</p>
+  </div>
+  <div id="prof">
+    <div class="form-group">
+      {{ render_field(form.Address, class="form-control") }}
+      <p>Enter your address. (eg. Bukit Batok West Avenue 4 #01-01 Singapore 123456)</p>
+    </div>
+  </div>
+
+
+   <input type="submit" value="Submit" class="btn btn-primary"/>
+  <td><a href="/login" class="btn btn-warning">Return</a></td>
+   </div>
+  <br>
+
+</form>
+
+<script>
+//
+// Variables
+//
+
+// Get the password toggle
+const toggle = document.querySelector('#show-passwords');
+
+// Get the password fields
+const passwords = Array.from(
+  document.querySelectorAll('[type="password"]')
+);
+
+
+//
+// Functions
+//
+
+/**
+ * Toggle the visibility of a password field
+ * based on a checkbox's current state
+ *
+ * @param {HTMLInputElement} checkbox The checkbox
+ * @param {HTMLInputElement} field The password field
+ */
+function togglePassword (checkbox, field) {
+  field.type = checkbox.checked ? 'text' : 'password';
+}
+
+/**
+ * Handle change events
+ */
+function handleChange () {
+  passwords.forEach(password => {
+    togglePassword(this, password);
+  });
+}
+
+
+//
+// Inits & Event Listeners
+//
+
+// Handle change events
+toggle.addEventListener('change', handleChange);
+</script>
+
+{% endblock %}
