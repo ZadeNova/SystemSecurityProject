@@ -17,8 +17,8 @@ from flask_socketio import SocketIO, emit , send
 from flask_mail import Mail, Message
 # SQL stuff
 ###line 43 , 44 for hong ji only , the others just # this 2 line
-import pymysql
-pymysql.install_as_MySQLdb()
+#import pymysql
+#pymysql.install_as_MySQLdb()
 #### line 43 , 44 for hong ji only , the others just # this 2 line  as hong ji pc have bug cant use the sql
 # lol
 import MySQLdb.cursors
@@ -728,22 +728,25 @@ def Audit():
 
 @app.route('/ManageUserAccounts',methods = ['GET','POST'])
 def ManageAccount():
-    if session['role'] == "Admin":
-        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute("""SELECT * FROM accounts""")
-        account = cursor.fetchone()
-        cursor.execute("""SELECT * FROM accounts""")
-        allaccounts = cursor.fetchall()
+    if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
+        if session['role'] == "Admin":
+            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute("""SELECT * FROM accounts""")
+            account = cursor.fetchone()
+            cursor.execute("""SELECT * FROM accounts""")
+            allaccounts = cursor.fetchall()
 
 
-        for lol in allaccounts:
-            print(lol)
+            for lol in allaccounts:
+                print(lol)
 
-        return render_template('UserAccountManager.html',account=account,allaccounts=allaccounts)
+            return render_template('UserAccountManager.html',account=account,allaccounts=allaccounts)
+        else:
+            return redirect(url_for('Userprofile'))
+
     else:
-        return redirect(url_for('Userprofile'))
-
-
+        flash('Please complete your 2FA !', 'danger')
+        return redirect(url_for("two_fa"))
 
 
 
@@ -3953,4 +3956,4 @@ def page_not_found(e):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug = True)
