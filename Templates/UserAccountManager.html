@@ -13,15 +13,21 @@
     }
     #myInput {
     width:20%;
-
-
     }
+    div.ex3 {
+
+  height: 300px;
+  width: 1400;
+  overflow-y: auto;
+}
+
 
 </style>
 <h1>Testing.For User manage log</h1>
 <p>lol</p>
 <div class = table-responsive">
   <input class="form-control" id="myInput" type = 'text' placeholder = 'Search...'>
+<div class="ex3">
 <table class="table table-hover table-bordered table-dark">
     <thead class="thread-dark">
         <th id="titletablelol" colspan="6">User Accounts</th>
@@ -37,7 +43,7 @@
       <th scope="col">Settings</th>
     </tr>
   </thead>
-  <tbody id="myTable">
+  <tbody id="myTable" class="ex3">
   {% for lol in allaccounts %}
     <tr>
       <th scope="row">{{ lol['ID'] }}</th>
@@ -51,7 +57,7 @@
   </tbody>
 </table>
 </div>
-
+</div>
 
 <script>
 $(document).ready(function(){
