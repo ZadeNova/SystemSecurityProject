@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Library Loan System - Dashboard{% endblock %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<style>
+    #titletablelol {
+    text-align: center;
+
+    }
+    #myInput {
+    width:20%;
+
+
+    }
+
+</style>
+<h1>Testing.For User manage log</h1>
+<p>lol</p>
+<div class = table-responsive">
+  <input class="form-control" id="myInput" type = 'text' placeholder = 'Search...'>
+<table class="table table-hover table-bordered">
+    <thead class="thread-dark">
+        <th id="titletablelol" colspan="6">AUDIT LOG?</th>
+
+    </thead>
+  <thead class="thread-dark">
+    <tr>
+      <th scope ="col">#</th>
+      <th scope="col">User</th>
+      <th scope="col">Date Created</th>
+      <th scope="col">Status</th>
+      <th scope="col">Role</th>
+      <th scope="col">Settings</th>
+    </tr>
+  </thead>
+  <tbody id="myTable">
+    <tr>
+
+      <th scope="row">1</th>
+      <td>Name</td>
+      <td>DATE AND TIME</td>
+      <td><span class="badge badge-danger">Danger</span></td>
+      <td>IP ADDRESS</td>
+      <td>Location</td>
+    </tr>
+    <tr>
+      <th scope="row">2</th>
+      <td>Namee</td>
+      <td>DATE AND TIME</td>
+      <td><span class="badge badge-danger">Danger</span></td>
+      <td>IP ADDRESS</td>
+      <td>Location</td>
+    </tr>
+    <tr>
+      <th scope="row">3</th>
+      <td>NAMEEEE</td>
+      <td>DATE AND TIME</td>
+      <td><span class="badge badge-danger">Danger</span></td>
+      <td>IP ADDRESS</td>
+      <td>Location</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+<script>
+$(document).ready(function(){
+  $("#myInput").on("keyup", function() {
+    var value = $(this).val().toLowerCase();
+    $("#myTable tr").filter(function() {
+      $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+    });
+  });
+});
+</script>
+
+
+
+{% endblock %}

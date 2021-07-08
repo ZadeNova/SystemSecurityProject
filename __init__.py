@@ -98,7 +98,7 @@ try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
     app.config[
-        'MYSQL_PASSWORD'] = 'Dragonnight1002'  # change this line to our own sql password , thank you vry not much xd
+        'MYSQL_PASSWORD'] = 'ZadePrimeSQL69420'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -703,6 +703,25 @@ def Audit():
 
 # Edit this - Zadesqlstuff
 
+
+@app.route('/ManageUserAccounts',methods = ['GET','POST'])
+def ManageAccount():
+
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute("""SELECT * FROM accounts""")
+    account = cursor.fetchall()
+    print(account)
+
+
+
+    return render_template('UserAccountManager.html',account=account)
+
+
+
+
+
+
+
 @app.route('/ActivityLogUser', methods = ['GET','POST'])
 def UserLogsActivity():
     if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
@@ -879,7 +898,7 @@ def login():
                     print(account)
                     cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
                     account1 = cursor.fetchone()
-                    cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s)""",(session['ID'],datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),request.remote_addr))
+                    cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""",(session['ID'],datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),request.remote_addr))
                     mysql.connection.commit()
                     if account1['Text_Message_Status'] ==True or account1['Authenticator_Status']==True or account1['Push_Base_Status']==True or account1['Backup_Code_Status']==True:
                         session['2fa_status']='Fail'
@@ -910,21 +929,29 @@ def login():
 
 
 @app.route('/logout')
-def logout():
+def accountlogout():
     try:
-        #cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        #sqlcode = """UPDATE account_log_ins SET Account_Log_Out_Time = %s WHERE Account_ID = %s"""
-        #values = (datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),session['ID'])
-        #cursor.execute(sqlcode,values)
-        #mysql.connection.commit()
-        print(session)
-        session.clear()
-        print(session)
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        #cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': session['Username']})
+        #account = cursor.fetchone()
+        if session:
 
-        return redirect(url_for('login'))
+
+            cursor.execute("""INSERT INTO account_log_out VALUES (NULL,%s,%s) """,(session['ID'],datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+            mysql.connection.commit()
+            sqlcode = """UPDATE account_log_ins INNER JOIN account_log_out ON account_log_ins.Account_ID = 
+            account_log_out.Account_ID SET account_log_ins.Log_Out_ID = account_log_out.Log_Out_ID WHERE 
+            account_log_ins.Account_ID = %s AND account_log_ins.Log_Out_ID IS NULL AND account_log_out.Log_Out_ID = (SELECT max(account_log_out.Log_Out_ID) from account_log_out where account_log_out.Account_ID = %s)"""
+            values = (session['ID'],session['ID'])
+            cursor.execute(sqlcode,values)
+            mysql.connection.commit()
+            print(session)
+            session.clear()
+            print(session)
+
+            return redirect(url_for('login'))
     except:
         return render_template('error404.html')
-
 
 @app.route('/Createloginuser', methods=['GET', 'POST'])
 def create_login_user():

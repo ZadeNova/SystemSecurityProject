@@ -11,9 +11,22 @@
 
     }
 
+    #titletablelol {
+    text-align: center;
+
+    }
+    #MYInput {
+    width:20%;
+
+
+    }
+
 
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -34,6 +47,7 @@
 </head>
 
 <body id="page-top">
+
 
     <!-- Page Wrapper -->
     <div id="wrapper">
@@ -154,7 +168,7 @@
                             <div class="card shadow mb-4">
                                 <!-- Card Header - Dropdown -->
                                 <div
-                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between bg-info">
                                     <h6 class="m-0 font-weight-bold text-primary">Testing Graph</h6>
                                     <div class="dropdown no-arrow">
                                         <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
@@ -185,7 +199,7 @@
                             <div class="card shadow mb-4">
                                 <!-- Card Header - Dropdown -->
                                 <div
-                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between bg-dark">
                                     <h6 class="m-0 font-weight-bold text-primary">Revenue Sources</h6>
                                     <div class="dropdown no-arrow">
                                         <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
@@ -231,7 +245,7 @@
 
                             <!-- Project Card Example -->
                             <div class="card shadow mb-4">
-                                <div class="card-header py-3">
+                                <div class="card-header py-3 bg-dark">
                                     <h6 class="m-0 font-weight-bold text-primary">User Security Level</h6>
                                 </div>
                                 <div class="card-body">
@@ -277,25 +291,66 @@
 
                             <!-- Illustrations -->
                             <div class="card shadow mb-4">
-                                <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Illustrations</h6>
+                                <div class="card-header py-3 bg-dark">
+                                    <h6 class="m-0 font-weight-bold text-primary">User Activity</h6>
                                 </div>
                                 <div class="card-body">
                                     <div class="text-center">
-                                        <h1>Hello im here</h1>
+
+                                        <input class="form-control" id="MYInput" type = 'text' placeholder = 'Search...'>
                                     </div>
-                                    <p>Add some quality, svg illustrations to your project courtesy of <a
-                                            target="_blank" rel="nofollow" href="https://undraw.co/">unDraw</a>, a
-                                        constantly updated collection of beautiful svg images that you can use
-                                        completely free and without attribution!</p>
-                                    <a target="_blank" rel="nofollow" href="https://undraw.co/">Browse Illustrations on
-                                        unDraw &rarr;</a>
-                                </div>
+                                    <div class = table-responsive">
+
+                                    <table class="table table-hover table-bordered">
+                                        <thead class="thread-dark">
+                                            <th id="titletablelol" colspan="6">AUDIT LOG?</th>
+
+                                        </thead>
+                                      <thead class="thread-dark">
+                                        <tr>
+                                          <th scope ="col">User</th>
+                                          <th scope="col">Level</th>
+                                          <th scope="col">Date and Time</th>
+                                          <th scope="col">Action</th>
+                                          <th scope="col">IP address</th>
+                                          <th scope="col">IP Location</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody id="MYTable">
+                                        <tr>
+
+                                          <th scope="row">1</th>
+                                          <td><span class="badge badge-danger">Danger</span></td>
+                                          <td>DATE AND TIME</td>
+                                          <td>Account Log in</td>
+                                          <td>IP ADDRESS</td>
+                                          <td>Location</td>
+                                        </tr>
+                                        <tr>
+                                          <th scope="row">2</th>
+                                          <td><span class="badge badge-success">Success</span></td>
+                                          <td>DATE AND TIME</td>
+                                          <td>Updated account</td>
+                                          <td>IP ADDRESS</td>
+                                          <td>Location</td>
+                                        </tr>
+                                        <tr>
+                                          <th scope="row">3</th>
+                                          <td><span class="badge badge-warning">Warning</span></td>
+                                          <td>DATE AND TIME</td>
+                                          <td>Idk what action</td>
+                                          <td>IP ADDRESS</td>
+                                          <td>Location</td>
+                                        </tr>
+                                      </tbody>
+                                    </table>
+                                    </div>   <!-- div tag for table div -->
+                                </div>   <!-- whatever that is inside this div goes inside body -->
                             </div>
 
                             <!-- Approach -->
                             <div class="card shadow mb-4">
-                                <div class="card-header py-3">
+                                <div class="card-header py-3 bg-dark">
                                     <h6 class="m-0 font-weight-bold text-primary">Development Approach</h6>
                                 </div>
                                 <div class="card-body">
@@ -356,7 +411,7 @@
             </div>
         </div>
     </div>
-
+    <script src="../static/JavaScript/Searchbar.js"></script>
     <!-- Bootstrap core JavaScript-->
     <script src="vendor/jquery/jquery.min.js"></script>
     <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
@@ -372,8 +427,8 @@
 
     <!-- Page level custom scripts -->
     <script src="js/demo/chart-area-demo.js"></script>
-    <script src="js/demo/chart-pie-demo.js"></script>
-    <script src="../static/JavaScript/FirstGraph.js"></script>
+    <script src="../static/JavaScript/Piechart.js"></script>
+
 
 </body>
 
