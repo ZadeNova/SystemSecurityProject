@@ -13,11 +13,12 @@ import requests
 from cryptography.fernet import Fernet
 from flask import Flask, render_template, request, redirect, url_for, flash, json
 from flask import session
+from flask_socketio import SocketIO, emit , send
 from flask_mail import Mail, Message
 # SQL stuff
 ###line 43 , 44 for hong ji only , the others just # this 2 line
-import pymysql
-pymysql.install_as_MySQLdb()
+#import pymysql
+#pymysql.install_as_MySQLdb()
 #### line 43 , 44 for hong ji only , the others just # this 2 line  as hong ji pc have bug cant use the sql
 # lol
 import MySQLdb.cursors
@@ -60,8 +61,8 @@ from UpdateUserAccount import UpdateUserForm
 import json
 # SQL stuff
 ###line 43 , 44 for hong ji only , the others just # this 2 line
-import pymysql
-pymysql.install_as_MySQLdb()
+#import pymysql
+#pymysql.install_as_MySQLdb()
 #### line 43 , 44 for hong ji only , the others just # this 2 line  as hong ji pc have bug cant use the sql
 # lol
 from flask_mysqldb import MySQL
@@ -91,14 +92,14 @@ app.config['MAIL_ASCII_ATTACHMENTS'] = False
 s = URLSafeTimedSerializer('SecretKey?')
 mail = Mail(app)
 
-
+socketio = SocketIO(app)
 
 # Database connection MYSQL
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
     app.config[
-        'MYSQL_PASSWORD'] = '1234'  # change this line to our own sql password , thank you vry not much xd
+        'MYSQL_PASSWORD'] = 'ZadePrimeSQL69420'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -124,16 +125,29 @@ def is_human(captcha_response):
 
 
 # Hong ji this email shit is yours
-@app.route('/EmailTest')
-def sendemail():
-    msg = Message("Hello there!", recipients=['limojo8042@awinceo.com'])
-    mail.send(msg)
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
-    account = cursor.fetchone()
-    return render_template("AuditLog.html", account=account,role=account['role'])
+#@app.route('/EmailTest')
+#def sendemail():
+#    msg = Message("Hello there!", recipients=['limojo8042@awinceo.com'])
+#    mail.send(msg)
+#    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+#    cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+#    account = cursor.fetchone()
+#    return render_template("AuditLog.html", account=account,role=account['role'])
+
+#@socketio.on("Disconnect")
+#def disconnecttt():
+#    print('hello')
+#    pass
+#
+#@socketio.on('message')
+#def handlemessage(msg):
+#    print(f'{msg}')
+#    send(msg,broadcast=True)
 
 
+@app.route('/testsocket')
+def testtt():
+    return render_template('testsocketio.html')
 ## hong ji text message done ??? #####
 @app.route('/EmailOtpCheck')
 def EmailOtpCheck():
@@ -699,7 +713,8 @@ def Audit():
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
             account = cursor.fetchone()
-
+            cursor.execute("""SELECT * FROM accounts""")
+            allaccounts = cursor.fetchall()
             return render_template('AuditLog.html',account=account,role = account['role'])#labels = labels,values = values)
         else:
             return redirect(url_for('Userprofile'))
@@ -713,15 +728,20 @@ def Audit():
 
 @app.route('/ManageUserAccounts',methods = ['GET','POST'])
 def ManageAccount():
+    if session['role'] == "Admin":
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute("""SELECT * FROM accounts""")
+        account = cursor.fetchone()
+        cursor.execute("""SELECT * FROM accounts""")
+        allaccounts = cursor.fetchall()
 
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute("""SELECT * FROM accounts""")
-    account = cursor.fetchall()
-    print(account)
 
+        for lol in allaccounts:
+            print(lol)
 
-
-    return render_template('UserAccountManager.html',account=account)
+        return render_template('UserAccountManager.html',account=account,allaccounts=allaccounts)
+    else:
+        return redirect(url_for('Userprofile'))
 
 
 
@@ -736,7 +756,19 @@ def UserLogsActivity():
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
         account = cursor.fetchone()
-        return render_template('UserActivityLog.html',account=account,role = account['role'])
+        cursor.execute("""SELECT distinct a.Account_ID,u.LoginType,a.Log_In_IP_Address,b.Log_Out_Time 
+        FROM account_log_ins a inner join account_log_out AS b ON b.Account_ID = a.Account_ID 
+        INNER JOIN useractions AS u ON u.Account_ID = a.Account_ID
+        WHERE u.LoginType = 'Logout' and a.Account_ID = %s;""",[session['ID']])
+        userlogouts = cursor.fetchall()
+        cursor.execute("""SELECT distinct a.Account_ID,u.LoginType,a.Log_In_IP_Address,a.Account_Log_In_Time 
+        FROM account_log_ins a inner join account_log_out AS b ON b.Account_ID = a.Account_ID 
+        INNER JOIN useractions AS u ON u.Account_ID = a.Account_ID
+        WHERE u.LoginType = 'Login' and a.Account_ID = %s;""",[session['ID']])
+        userlogins = cursor.fetchall()
+        for i in userlogouts:
+            print(i)
+        return render_template('UserActivityLog.html',account=account,role = account['role'],userlogouts = userlogouts,userlogins = userlogins)
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
@@ -903,6 +935,12 @@ def login():
                     session['role']=account['role']
                     print(session)
                     print(account)
+
+                    # Update UserActions table for login!
+                    cursor.execute("""INSERT INTO UserActions VALUES (NULL,%s,%s) """,(session['ID'],"Login"))
+                    mysql.connection.commit()
+
+
                     cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
                     account1 = cursor.fetchone()
                     cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""",(session['ID'],datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),request.remote_addr))
@@ -942,8 +980,8 @@ def accountlogout():
         #cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': session['Username']})
         #account = cursor.fetchone()
         if session:
-
-
+            #Record into database that user log out
+            cursor.execute("""INSERT INTO UserActions VALUES (NULL,%s,%s) """,(session['ID'],"Logout"))
             cursor.execute("""INSERT INTO account_log_out VALUES (NULL,%s,%s) """,(session['ID'],datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
             mysql.connection.commit()
             sqlcode = """UPDATE account_log_ins INNER JOIN account_log_out ON account_log_ins.Account_ID = 
@@ -995,7 +1033,7 @@ def create_login_user():
             account_creation_time = now.strftime("%Y-%m-%d %H:%M:%S")
             email_confirm = 0
             UUID = uuid.uuid4().hex
-            Account_Status='Acitve'
+            Account_Status='Active'
             hash_password = bcrypt.hashpw(password.encode(), salt)
             #Symmetric Key encryption
             key = Fernet.generate_key()
@@ -1102,7 +1140,7 @@ def create_login_admin():
                 account_creation_time = now.strftime("%Y-%m-%d %H:%M:%S")
                 email_confirm = 0
                 UUID = uuid.uuid4().hex
-                Account_Status='Acitve'
+                Account_Status='Active'
                 hash_password = bcrypt.hashpw(password.encode(), salt)
                 #Symmetric Key encryption
                 key = Fernet.generate_key()
@@ -3911,8 +3949,8 @@ def page_not_found(e):
 # @app.errorhandler(404)
 # def page_not_found(e):
 # return render_template('error404.html'), 404
-if bool(session) == False:
-    print("session closed.")
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -303,12 +303,12 @@
 
                                     <table class="table table-hover table-bordered">
                                         <thead class="thread-dark">
-                                            <th id="titletablelol" colspan="6">AUDIT LOG?</th>
+                                            <th id="titletablelol" colspan="6">Your Activity</th>
 
                                         </thead>
                                       <thead class="thread-dark">
                                         <tr>
-                                          <th scope ="col">User</th>
+                                          <th scope ="col">Count</th>
                                           <th scope="col">Level</th>
                                           <th scope="col">Date and Time</th>
                                           <th scope="col">Action</th>
@@ -317,31 +317,28 @@
                                         </tr>
                                       </thead>
                                       <tbody id="MYTable">
+                                      {% for i in userlogouts %}
                                         <tr>
 
                                           <th scope="row">1</th>
                                           <td><span class="badge badge-danger">Danger</span></td>
-                                          <td>DATE AND TIME</td>
-                                          <td>Account Log in</td>
-                                          <td>IP ADDRESS</td>
+                                          <td>{{ i['Log_Out_Time'] }}</td>
+                                          <td>{{ i['LoginType'] }}</td>
+                                          <td>{{ i['Log_In_IP_Address'] }}</td>
                                           <td>Location</td>
                                         </tr>
+                                       {% endfor %}
+                                      {% for i in userlogins %}
                                         <tr>
-                                          <th scope="row">2</th>
-                                          <td><span class="badge badge-success">Success</span></td>
-                                          <td>DATE AND TIME</td>
-                                          <td>Updated account</td>
-                                          <td>IP ADDRESS</td>
+
+                                          <th scope="row">1</th>
+                                          <td><span class="badge badge-danger">Danger</span></td>
+                                          <td>{{ i['Account_Log_In_Time'] }}</td>
+                                          <td>{{ i['LoginType'] }}</td>
+                                          <td>{{ i['Log_In_IP_Address'] }}</td>
                                           <td>Location</td>
                                         </tr>
-                                        <tr>
-                                          <th scope="row">3</th>
-                                          <td><span class="badge badge-warning">Warning</span></td>
-                                          <td>DATE AND TIME</td>
-                                          <td>Idk what action</td>
-                                          <td>IP ADDRESS</td>
-                                          <td>Location</td>
-                                        </tr>
+                                       {% endfor %}
                                       </tbody>
                                     </table>
                                     </div>   <!-- div tag for table div -->
@@ -428,6 +425,7 @@
     <!-- Page level custom scripts -->
     <script src="js/demo/chart-area-demo.js"></script>
     <script src="../static/JavaScript/Piechart.js"></script>
+    <script src="../static/JavaScript/FirstGraph.js"></script>
 
 
 </body>

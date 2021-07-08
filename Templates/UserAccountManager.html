@@ -5,6 +5,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
 <style>
     #titletablelol {
     text-align: center;
@@ -21,9 +22,9 @@
 <p>lol</p>
 <div class = table-responsive">
   <input class="form-control" id="myInput" type = 'text' placeholder = 'Search...'>
-<table class="table table-hover table-bordered">
+<table class="table table-hover table-bordered table-dark">
     <thead class="thread-dark">
-        <th id="titletablelol" colspan="6">AUDIT LOG?</th>
+        <th id="titletablelol" colspan="6">User Accounts</th>
 
     </thead>
   <thead class="thread-dark">
@@ -37,31 +38,16 @@
     </tr>
   </thead>
   <tbody id="myTable">
+  {% for lol in allaccounts %}
     <tr>
-
-      <th scope="row">1</th>
-      <td>Name</td>
-      <td>DATE AND TIME</td>
-      <td><span class="badge badge-danger">Danger</span></td>
-      <td>IP ADDRESS</td>
-      <td>Location</td>
+      <th scope="row">{{ lol['ID'] }}</th>
+      <td>{{ lol['Username'] }}</td>
+      <td>{{ lol['account_creation_time'] }}</td>
+      <td><span class="badge badge-danger">{{ lol['Account_Status'] }}</span></td>
+      <td>{{ lol['role'] }}</td>
+      <td><button type="button" class="btn btn-warning"><i class="fas fa-users-cog"></i></button></td>
     </tr>
-    <tr>
-      <th scope="row">2</th>
-      <td>Namee</td>
-      <td>DATE AND TIME</td>
-      <td><span class="badge badge-danger">Danger</span></td>
-      <td>IP ADDRESS</td>
-      <td>Location</td>
-    </tr>
-    <tr>
-      <th scope="row">3</th>
-      <td>NAMEEEE</td>
-      <td>DATE AND TIME</td>
-      <td><span class="badge badge-danger">Danger</span></td>
-      <td>IP ADDRESS</td>
-      <td>Location</td>
-    </tr>
+  {% endfor %}
   </tbody>
 </table>
 </div>
