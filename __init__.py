@@ -16,8 +16,8 @@ from flask import session
 from flask_mail import Mail, Message
 # SQL stuff
 ###line 43 , 44 for hong ji only , the others just # this 2 line
-# import pymysql
-# pymysql.install_as_MySQLdb()
+import pymysql
+pymysql.install_as_MySQLdb()
 #### line 43 , 44 for hong ji only , the others just # this 2 line  as hong ji pc have bug cant use the sql
 # lol
 import MySQLdb.cursors
@@ -60,8 +60,8 @@ from UpdateUserAccount import UpdateUserForm
 import json
 # SQL stuff
 ###line 43 , 44 for hong ji only , the others just # this 2 line
-#import pymysql
-#pymysql.install_as_MySQLdb()
+import pymysql
+pymysql.install_as_MySQLdb()
 #### line 43 , 44 for hong ji only , the others just # this 2 line  as hong ji pc have bug cant use the sql
 # lol
 from flask_mysqldb import MySQL
@@ -98,7 +98,7 @@ try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
     app.config[
-        'MYSQL_PASSWORD'] = 'ZadePrimeSQL69420'  # change this line to our own sql password , thank you vry not much xd
+        'MYSQL_PASSWORD'] = '1234'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -344,8 +344,15 @@ def two_fa_backupcode_check():
     account1 = cursor.fetchone()
     conv = account1['Backup_Code_Key']
     user_otp = request.form['backupcode']
-    if conv == user_otp:
+    if conv == user_otp and account1['Backup_Code_No_Of_Use'] == False:
         session['2fa_status'] = 'Pass'
+        Backup_Code_Status=False
+        Backup_Code_Key=False
+        Backup_Code_No_Of_Use=False
+        cursor.execute(
+            "UPDATE authentication_table SET Backup_Code_Status=%s , Backup_Code_Key= %s ,Backup_Code_No_Of_Use=%s  WHERE Account_ID=%s ",
+            (Backup_Code_Status, Backup_Code_Key, Backup_Code_No_Of_Use, [session['ID']]))
+        mysql.connection.commit()
         return redirect(url_for("homepage"))
     else:
         flash('Incorrect Opt ,please check again !')
