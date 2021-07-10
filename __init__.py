@@ -99,7 +99,7 @@ try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
     app.config[
-        'MYSQL_PASSWORD'] = '1234'  # change this line to our own sql password , thank you vry not much xd
+        'MYSQL_PASSWORD'] = 'ZadePrimeSQL69420'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -139,35 +139,72 @@ def is_human(captcha_response):
 #    print('hello')
 #    pass
 #
-def pls():
-    print("Hello there motherfucker!")
 
-def executeplz():
-    print("The function here has been executed")
-
-@socketio.event('connect')
-def what():
-    print("Connected!")
-
-
-@socketio.on('message')
-def handlemessage(msg):
-    print(msg['data'])
-    pls()
-@socketio.on("Pepe")
-def evento():
-    print("PEPEPEPEPEPEPEPEE")
-
-
+# Just dont touch anything plz
+def popsession():
+    try:
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        #cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': session['Username']})
+        #account = cursor.fetchone()
+        if session:
+            #Record into database that user log out
+            cursor.execute("""INSERT INTO UserActions VALUES (NULL,%s,%s) """,(session['ID'],"Logout"))
+            cursor.execute("""INSERT INTO account_log_out VALUES (NULL,%s,%s) """,(session['ID'],datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+            mysql.connection.commit()
+            sqlcode = """UPDATE account_log_ins INNER JOIN account_log_out ON account_log_ins.Account_ID = 
+            account_log_out.Account_ID SET account_log_ins.Log_Out_ID = account_log_out.Log_Out_ID WHERE 
+            account_log_ins.Account_ID = %s AND account_log_ins.Log_Out_ID IS NULL AND account_log_out.Log_Out_ID = (SELECT max(account_log_out.Log_Out_ID) from account_log_out where account_log_out.Account_ID = %s)"""
+            values = (session['ID'],session['ID'])
+            cursor.execute(sqlcode,values)
+            mysql.connection.commit()
+            print(session)
+            session.clear()
+            print(session)
+            print("Log out complete sir!")
+        else:
+            print("User is not logged in")
+    except:
+        return render_template("error404.html")
+#def pls():
+#    print("Hello there motherfucker!")
+#
+#def executeplz():
+#
+#    print("The function here has been executed")
+#
+#@socketio.event('connect')
+#def what():
+#    print("Connected!")
+#
+#
+#@socketio.on('message')
+#def handlemessage(msg):
+#    print(msg['data'])
+#    pls()
+#
+#@socketio.on("Pepe")
+#def evento():
+#    print("PEPEPEPEPEPEPEPEE")
+#
+#
 @socketio.on('disconnect')
 def disconnect_details():
     print("Wait so it disconnected")
-    executeplz()
+    popsession()
+
+
 @app.route('/testsocket')
 def testtt():
     print(session)
 
     return render_template('testsocketio.html')
+
+
+@app.route('/testsocket2')
+def test2():
+    print(session)
+
+    return render_template('testsocketio2.html')
 ## hong ji text message done ??? #####
 @app.route('/EmailOtpCheck')
 def EmailOtpCheck():
