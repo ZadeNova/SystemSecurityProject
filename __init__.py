@@ -13,7 +13,7 @@ import requests
 from cryptography.fernet import Fernet
 from flask import Flask, render_template, request, redirect, url_for, flash, json
 from flask import session
-from flask_socketio import SocketIO, emit , send
+from flask_socketio import SocketIO, emit , send , disconnect
 from flask_mail import Mail, Message
 # SQL stuff
 ###line 43 , 44 for hong ji only , the others just # this 2 line
@@ -92,7 +92,7 @@ app.config['MAIL_ASCII_ATTACHMENTS'] = False
 s = URLSafeTimedSerializer('SecretKey?')
 mail = Mail(app)
 
-socketio = SocketIO(app)
+socketio = SocketIO(app, logger=True, engineio_logger=True)
 
 # Database connection MYSQL
 try:
@@ -139,14 +139,34 @@ def is_human(captcha_response):
 #    print('hello')
 #    pass
 #
-#@socketio.on('message')
-#def handlemessage(msg):
-#    print(f'{msg}')
-#    send(msg,broadcast=True)
+def pls():
+    print("Hello there motherfucker!")
+
+def executeplz():
+    print("The function here has been executed")
+
+@socketio.event('connect')
+def what():
+    print("Connected!")
 
 
+@socketio.on('message')
+def handlemessage(msg):
+    print(msg['data'])
+    pls()
+@socketio.on("Pepe")
+def evento():
+    print("PEPEPEPEPEPEPEPEE")
+
+
+@socketio.on('disconnect')
+def disconnect_details():
+    print("Wait so it disconnected")
+    executeplz()
 @app.route('/testsocket')
 def testtt():
+    print(session)
+
     return render_template('testsocketio.html')
 ## hong ji text message done ??? #####
 @app.route('/EmailOtpCheck')
@@ -3956,4 +3976,5 @@ def page_not_found(e):
 
 
 if __name__ == '__main__':
-    app.run(debug = True)
+    #app.run(debug = True)
+    socketio.run(app,debug=True)
