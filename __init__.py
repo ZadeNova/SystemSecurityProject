@@ -98,8 +98,7 @@ socketio = SocketIO(app, logger=True, engineio_logger=True)
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config[
-        'MYSQL_PASSWORD'] = 'ZadePrimeSQL69420'  # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = 'N0passwordatall'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -228,6 +227,8 @@ def EmailOtpCheck():
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
+
+
 @app.route('/EmailOtpdisable')
 def EmailOtpdisable():
     if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
@@ -250,6 +251,7 @@ def EmailOtpdisable():
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
+
 
 @app.route('/validate', methods=['GET', 'POST'])
 def validate():
@@ -313,6 +315,8 @@ def backupcode():
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
+
+
 @app.route("/Backupcodedisable")
 def backupcode_disable():
     if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
@@ -339,6 +343,7 @@ def backupcode_disable():
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
 
+
 ### 2fa login ##
 @app.route('/2fa', methods=['GET', 'POST'])
 def two_fa():
@@ -349,6 +354,8 @@ def two_fa():
     account1 = cursor.fetchone()
 
     return render_template("2fa.html",status_text=account1['Text_Message_Status'],status_auth=account1['Authenticator_Status'],status_psuh=account1['Push_Base_Status'],status_back=account1['Backup_Code_Status'])
+
+
 @app.route('/twofaemail', methods=['GET', 'POST'])
 def two_fa_email():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -375,6 +382,7 @@ def two_fa_email():
     else:
         return redirect(url_for("two_fa"))
 
+
 @app.route('/twofaemailcheck', methods=['GET', 'POST'])
 def two_fa_email_check():
     user_otp = request.form['otp']
@@ -392,6 +400,7 @@ def two_fa_email_check():
             flash('Incorrect Otp , please try again !','danger')
         return redirect(url_for("two_fa_email"))
 
+
 @app.route('/twofabackupcode', methods=['GET', 'POST'])
 def two_fa_backupcode():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -407,6 +416,7 @@ def two_fa_backupcode():
             return redirect(url_for("two_fa"))
     else:
         return redirect(url_for("two_fa"))
+
 
 @app.route('/twofabackupcodecheck', methods=['GET', 'POST'])
 def two_fa_backupcode_check():
@@ -429,6 +439,7 @@ def two_fa_backupcode_check():
         flash('Incorrect Opt ,please check again !')
         return redirect(url_for("two_fa"))
 
+
 @app.route('/twofaauthen', methods=['GET', 'POST'])
 def two_fa_authen():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -446,6 +457,7 @@ def two_fa_authen():
     else:
         return redirect(url_for("two_fa"))
 
+
 @app.route('/twofaauthencheck', methods=['GET', 'POST'])
 def two_fa_authen_check():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -462,6 +474,8 @@ def two_fa_authen_check():
         # inform users if OTP is invalid
         flash("You have supplied an invalid 2FA token!", "danger")
         return redirect(url_for("two_fa"))
+
+
 ### end of 2fa login ###
 @app.route("/login/2fadisable/")
 def login_2fa_disable():
@@ -514,6 +528,7 @@ def login_2fa():
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
 
+
 @app.route("/login/2fa/", methods=["POST"])
 def login_2fa_form():
     if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
@@ -547,6 +562,7 @@ def login_2fa_form():
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
+
 
 # email test
 @app.route('/userprofile')
@@ -620,10 +636,10 @@ def deleteaccoutcheck():
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
 
+
 @app.route('/Settings', methods=['GET', 'POST'])
 def Changesettings():
     if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
-
         ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
         global dataforemailupdate, IDUpdate
         formupdateuser = UpdateUserForm(request.form)
@@ -632,40 +648,96 @@ def Changesettings():
         account = cursor.fetchone()
         cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
         account1 = cursor.fetchone()
-        role=account['role']
-        print(account)
-        formupdateuser.Username.data = account['Username']
-        formupdateuser.NRIC.data = account['NRIC']
-        formupdateuser.DOB.data = account['Date_of_Birth']
-        formupdateuser.Gender.data = account['Gender']
-        formupdateuser.Phone_Number.data = account['Phone_Number']
-        formupdateuser.Email.data = account['Email']
-        formupdateuser.Security_Questions_1.data = account['Security_Question_1']
-        formupdateuser.Security_Questions_2.data = account['Security_Question_2']
-        formupdateuser.Answers_1.data = account['Answer_1']
-        formupdateuser.Answers_2.data = account['Answer_2']
-        formupdateuser.Address.data = account['Address']
-
-
+        role = account['role']
+        key = account['SymmetricKey']
+        fkey = Fernet(key)
+        decryptedaddress_Binary = fkey.decrypt(account['Address'].encode())
+        decryptedPhoneNo_Binary = fkey.decrypt(account['Phone_Number'].encode())
+        decryptedNRIC_Binary = fkey.decrypt(account['NRIC'].encode())
+        decryptedaddress = decryptedaddress_Binary.decode('utf8')
+        decryptedNRIC = decryptedNRIC_Binary.decode('utf-8')
+        decryptedPhoneNo = decryptedPhoneNo_Binary.decode('utf-8')
         if request.method == 'POST':
             IDUpdate = session['ID']
+            cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+            account = cursor.fetchone()
+            counter = 0
+            if formupdateuser.Username.data != account['Username']:
+                cursor.execute("UPDATE accounts SET Username=%s  WHERE id=%s ", (formupdateuser.Username.data, [session['ID']]))
+                mysql.connection.commit()
+                counter += 1
+            if formupdateuser.NRIC.data != decryptedNRIC:
+                EncryptedNRIC = fkey.encrypt(formupdateuser.NRIC.data.encode())
+                cursor.execute("UPDATE accounts SET NRIC=%s  WHERE id=%s ", (EncryptedNRIC, [session['ID']]))
+                mysql.connection.commit()
+                counter += 1
+            if formupdateuser.DOB.data != account['Date_of_Birth']:
+                cursor.execute("UPDATE accounts SET Date_of_Birth=%s  WHERE id=%s ", (formupdateuser.DOB.data, [session['ID']]))
+                mysql.connection.commit()
+                counter += 1
+            if formupdateuser.Gender.data != account['Gender']:
+                cursor.execute("UPDATE accounts SET Gender=%s  WHERE id=%s ", (formupdateuser.Gender.data, [session['ID']]))
+                mysql.connection.commit()
+                counter += 1
+            if formupdateuser.Phone_Number.data != decryptedPhoneNo:
+                EncryptPhoneNo = fkey.encrypt(formupdateuser.Phone_Number.data.encode())
+                cursor.execute("UPDATE accounts SET Phone_Number=%s  WHERE id=%s ", (EncryptPhoneNo, [session['ID']]))
+                mysql.connection.commit()
+                counter += 1
+            if formupdateuser.Email.data != account['Email']:
+                cursor.execute("UPDATE accounts SET Email=%s  WHERE id=%s ", (formupdateuser.Email.data, [session['ID']]))
+                mysql.connection.commit()
+                counter += 1
+            if formupdateuser.Security_Questions_1.data != account['Security_Question_1']:
+                cursor.execute("UPDATE accounts SET Security_Question_1=%s  WHERE id=%s ", (formupdateuser.Security_Questions_1.data, [session['ID']]))
+                mysql.connection.commit()
+                counter += 1
+            if formupdateuser.Security_Questions_2.data != account['Security_Question_2']:
+                cursor.execute("UPDATE accounts SET Security_Question_2=%s  WHERE id=%s ", (formupdateuser.Security_Questions_2.data, [session['ID']]))
+                mysql.connection.commit()
+                counter += 1
+            if formupdateuser.Answers_1.data != account['Answer_1']:
+                cursor.execute("UPDATE accounts SET Answer_1=%s  WHERE id=%s ", (formupdateuser.Answers_1.data, [session['ID']]))
+                mysql.connection.commit()
+                counter += 1
+            if formupdateuser.Answers_2.data != account['Answer_2']:
+                cursor.execute("UPDATE accounts SET Answer_2=%s  WHERE id=%s ", (formupdateuser.Answers_2.data, [session['ID']]))
+                mysql.connection.commit()
+                counter += 1
+            if formupdateuser.Address.data != decryptedaddress:
+                encryptedaddress = fkey.encrypt(formupdateuser.Address.data.encode())
+                cursor.execute("UPDATE accounts SET Address=%s  WHERE id=%s ", (encryptedaddress, [session['ID']]))
+                mysql.connection.commit()
+                counter += 1
+            if counter > 0 :
+                cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+                cursor.execute("""SELECT distinct Log_In_IP_Address FROM account_log_ins WHERE Account_ID = %s;""", [session['ID']])
+                account1 = cursor.fetchone()
+                counter = str(counter)
+                print(type(counter))
+                msg = Message("Update of Account", recipients=account['Email'].split())
+                msg.html = render_template('UpdateEmail.html', counter=str(counter), Ipaddress=request.remote_addr)
+                mail.send(msg)
+                flash("You have just updated {} item/s in your account. An email has been send out as a notification.".format(counter))
+            return redirect(url_for('Changesettings'))
+        else:
+            formupdateuser.Username.data = account['Username']
+            formupdateuser.NRIC.data = decryptedNRIC
+            formupdateuser.DOB.data = account['Date_of_Birth']
+            formupdateuser.Gender.data = account['Gender']
+            formupdateuser.Phone_Number.data = decryptedPhoneNo
+            formupdateuser.Email.data = account['Email']
+            formupdateuser.Security_Questions_1.data = account['Security_Question_1']
+            formupdateuser.Security_Questions_2.data = account['Security_Question_2']
+            formupdateuser.Answers_1.data = account['Answer_1']
+            formupdateuser.Answers_2.data = account['Answer_2']
+            formupdateuser.Address.data = decryptedaddress
 
-            email = request.form['Email']
-            token = s.dumps(email, salt='Email-confirm')
-
-            print('It posted')
-            print(request.form)
-            msg = Message("Email Confirmation", recipients=[email])
-            dataforemailupdate = request.form
-            link = url_for('confirm_email_update', token=token, _external=True)
-            msg.body = 'Your link is {}'.format(link)
-            mail.send(msg)
-            return redirect(url_for('login'))
-
-        return render_template('Settings.html', account=account, form=formupdateuser,ip=ip,role=role,status_text=account1['Text_Message_Status'],status_auth=account1['Authenticator_Status'],status_psuh=account1['Push_Base_Status'],status_back=account1['Backup_Code_Status'])
+        return render_template('Settings.html', account=account, form=formupdateuser, ip=ip, role=role, status_text=account1['Text_Message_Status'], status_auth=account1['Authenticator_Status'], status_psuh=account1['Push_Base_Status'], status_back=account1['Backup_Code_Status'])
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
+
 
 def updatedatabase():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -683,11 +755,11 @@ def confirm_email_update(token):
             cursor.execute('SELECT * FROM accounts WHERE id = %(ID)s', {'ID':IDUpdate})
             account = cursor.fetchone()
             print(account)
-            email = s.loads(token,salt='Email-confirm',max_age=180)
+            email = s.loads(token, salt='Email-confirm', max_age=180)
 
             sql = "UPDATE accounts SET Username = %s,NRIC = %s,Date_of_Birth = %s,Gender = %s , Phone_Number = %s , Email = %s , Security_Question_1 = %s, Security_Question_2 = %s,Answer_1 = %s,Answer_2 = %s,Address = %s"
-            value = (data['Username'],data['NRIC'],data['DOB'],data['Gender'],data['Phone_Number'],data['Email'],data['Security_Questions_1'],data['Security_Questions_2'],data['Answers_1'],data['Answers_2'],data['Address'])
-            cursor.execute(sql,value)
+            value = (data['Username'], data['NRIC'], data['DOB'], data['Gender'], data['Phone_Number'], data['Email'], data['Security_Questions_1'], data['Security_Questions_2'], data['Answers_1'], data['Answers_2'], data['Address'])
+            cursor.execute(sql, value)
             mysql.connection.commit()
             return redirect(url_for('Managerprofile'))
         except SignatureExpired:
@@ -695,6 +767,8 @@ def confirm_email_update(token):
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
+
+
 @app.route('/managerprofile')
 def Managerprofile():
     if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
@@ -719,6 +793,8 @@ def Managerprofile():
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
+
+
 def get_location(ip_address):
     if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
 
@@ -732,6 +808,8 @@ def get_location(ip_address):
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
+
+
 @app.route('/IPmap')
 def Ipmap():
     if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
@@ -749,6 +827,8 @@ def Ipmap():
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
+
+
 @app.route('/dashboard')
 def ViewDashboard():
     if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
@@ -762,6 +842,7 @@ def ViewDashboard():
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
+
 
 @app.route('/AuditLog')
 def Audit():
@@ -806,9 +887,6 @@ def ManageAccount():
         return redirect(url_for("two_fa"))
 
 
-
-
-
 @app.route('/ActivityLogUser', methods = ['GET','POST'])
 def UserLogsActivity():
     if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
@@ -819,12 +897,12 @@ def UserLogsActivity():
         cursor.execute("""SELECT distinct a.Account_ID,u.LoginType,a.Log_In_IP_Address,b.Log_Out_Time 
         FROM account_log_ins a inner join account_log_out AS b ON b.Account_ID = a.Account_ID 
         INNER JOIN useractions AS u ON u.Account_ID = a.Account_ID
-        WHERE u.LoginType = 'Logout' and a.Account_ID = %s;""",[session['ID']])
+        WHERE u.LoginType = 'Logout' and a.Account_ID = %s;""", [session['ID']])
         userlogouts = cursor.fetchall()
         cursor.execute("""SELECT distinct a.Account_ID,u.LoginType,a.Log_In_IP_Address,a.Account_Log_In_Time 
         FROM account_log_ins a inner join account_log_out AS b ON b.Account_ID = a.Account_ID 
         INNER JOIN useractions AS u ON u.Account_ID = a.Account_ID
-        WHERE u.LoginType = 'Login' and a.Account_ID = %s;""",[session['ID']])
+        WHERE u.LoginType = 'Login' and a.Account_ID = %s;""", [session['ID']])
         userlogins = cursor.fetchall()
         for i in userlogouts:
             print(i)
@@ -883,7 +961,6 @@ def ForgottenUsername():
             return render_template('ForgetUsername.html')
     except:
         print('error')
-        #return render_template('error404.html')
 
 
 @app.route('/ForgetPassword', methods=['GET', 'POST'])
@@ -962,7 +1039,6 @@ def login():
             account = cursor.fetchone()
             print(account)
 
-
             if account:
 
                 key = account['SymmetricKey']
@@ -976,7 +1052,6 @@ def login():
                 print(decryptedaddress)
                 print(decryptedNRIC)
                 print(decryptedPhoneNo)
-
 
                 hashandsalt = account['Password']
                 # This means that you have logged in
@@ -997,17 +1072,16 @@ def login():
                     print(account)
 
                     # Update UserActions table for login!
-                    cursor.execute("""INSERT INTO UserActions VALUES (NULL,%s,%s) """,(session['ID'],"Login"))
+                    cursor.execute("""INSERT INTO UserActions VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
                     mysql.connection.commit()
-
 
                     cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
                     account1 = cursor.fetchone()
-                    cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""",(session['ID'],datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),request.remote_addr))
+                    cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),request.remote_addr))
                     mysql.connection.commit()
                     if account1['Text_Message_Status'] ==True or account1['Authenticator_Status']==True or account1['Push_Base_Status']==True or account1['Backup_Code_Status']==True:
                         session['2fa_status']='Fail'
-                        return render_template("2fa.html",status_text=account1['Text_Message_Status'],status_auth=account1['Authenticator_Status'],status_psuh=account1['Push_Base_Status'],status_back=account1['Backup_Code_Status'])
+                        return render_template("2fa.html", status_text=account1['Text_Message_Status'], status_auth=account1['Authenticator_Status'], status_psuh=account1['Push_Base_Status'], status_back=account1['Backup_Code_Status'])
                     else:
                         if account['role'] == 'Admin':
                             return redirect(url_for('Managerprofile'))
@@ -1041,14 +1115,14 @@ def accountlogout():
         #account = cursor.fetchone()
         if session:
             #Record into database that user log out
-            cursor.execute("""INSERT INTO UserActions VALUES (NULL,%s,%s) """,(session['ID'],"Logout"))
-            cursor.execute("""INSERT INTO account_log_out VALUES (NULL,%s,%s) """,(session['ID'],datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+            cursor.execute("""INSERT INTO UserActions VALUES (NULL,%s,%s) """, (session['ID'], "Logout"))
+            cursor.execute("""INSERT INTO account_log_out VALUES (NULL,%s,%s) """, (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
             mysql.connection.commit()
             sqlcode = """UPDATE account_log_ins INNER JOIN account_log_out ON account_log_ins.Account_ID = 
             account_log_out.Account_ID SET account_log_ins.Log_Out_ID = account_log_out.Log_Out_ID WHERE 
             account_log_ins.Account_ID = %s AND account_log_ins.Log_Out_ID IS NULL AND account_log_out.Log_Out_ID = (SELECT max(account_log_out.Log_Out_ID) from account_log_out where account_log_out.Account_ID = %s)"""
-            values = (session['ID'],session['ID'])
-            cursor.execute(sqlcode,values)
+            values = (session['ID'], session['ID'])
+            cursor.execute(sqlcode, values)
             mysql.connection.commit()
             print(session)
             session.clear()
@@ -1057,6 +1131,7 @@ def accountlogout():
             return redirect(url_for('login'))
     except:
         return render_template('error404.html')
+
 
 @app.route('/Createloginuser', methods=['GET', 'POST'])
 def create_login_user():
@@ -1107,7 +1182,7 @@ def create_login_user():
 
             # Check if account exists using MySQL
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-            print(username, phone_no, NRIC, DOB, gender, email, password, address, role,UUID)
+            print(username, phone_no, NRIC, DOB, gender, email, password, address, role, UUID)
             cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': username})
             account = cursor.fetchone()
             # If account exists show error and validation checks(do this at the form for this function)
@@ -1122,7 +1197,7 @@ def create_login_user():
                 cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                                , (username, EncryptedNRIC, DOB, hash_password, gender, EncryptPhoneNo, email, security_questions_1,
                                   security_questions_2, answer_1, answer_2, encryptedaddress, role, account_creation_time,
-                                  email_confirm,key,UUID,Account_Status))
+                                  email_confirm, key, UUID, Account_Status))
                 mysql.connection.commit()
                 msg = 'You have successfully registered! '
                 print("working")
@@ -1265,6 +1340,7 @@ def create_login_admin():
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
+
 
 # End of new stuff
 @app.route('/Inventory')
@@ -1862,8 +1938,7 @@ def OrdersCreate(id):
         elif inventory.get_Category() == 'Necessities':
             OrderCreationForm.Supplier.choices = [CondimentsSupplierChoice[a] for a in range(CondimentsSupplierLength)]
         elif inventory.get_Category() == 'Condiments':
-            OrderCreationForm.Supplier.choices = [NecessitiesSupplierChoice[a] for a in
-                                                  range(NecessitiesSupplierLength)]
+            OrderCreationForm.Supplier.choices = [NecessitiesSupplierChoice[a] for a in range(NecessitiesSupplierLength)]
 
         InvDataBase.close()
 
@@ -1880,11 +1955,9 @@ def OrdersCreate(id):
             Order = OrderCreation.Orders(id, OrderCreationForm.Quantity.data, OrderCreationForm.Date.data,
                                          OrderCreationForm.ExpectedDeliveryDate.data,
                                          OrderCreationForm.Supplier.data)
-
             print(OrderCreationForm.ExpectedDeliveryDate.data)
             OrderProgress[id] = True
             InvDataBase['OngoingOrders'] = OrderProgress
-
             Order_dict[Order.get_ID()] = Order
             InvDataBase['Orders'] = Order_dict
 
@@ -1929,8 +2002,7 @@ def ViewOrders():
 
         return render_template("error404.html")
 
-    return render_template('ViewOrders.html', OrderCount=len(Order_List), Order_List=Order_List, name=username,
-                           role=role)
+    return render_template('ViewOrders.html', OrderCount=len(Order_List), Order_List=Order_List, name=username, role=role)
 
 
 @app.route("/Deliver/<int:id>", methods=['GET', 'POST'])
@@ -4009,9 +4081,5 @@ def page_not_found(e):
 # @app.errorhandler(404)
 # def page_not_found(e):
 # return render_template('error404.html'), 404
-
-
-
 if __name__ == '__main__':
-    #app.run(debug = True)
     socketio.run(app,debug=True)

@@ -134,8 +134,18 @@ body{
               <div class="tab-pane active" id="profile">
                 <h6>YOUR PROFILE INFORMATION</h6>
                 <hr>
-
-                  <form method="POST" action="" enctype="multipart/form-data">
+                <p>
+                  {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-primary" role="alert">
+                            {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                  {% endwith %}
+                </p>
+                <form method="POST" action="" enctype="multipart/form-data">
 
                     <div class="form-group">
                       {{ render_field(form.Username, class="form-control") }}
@@ -192,8 +202,6 @@ body{
 
                     <button type="submit" class="btn btn-primary">Update Profile</button>
                     </div>
-
-
                 </form>
               </div>
               <div class="tab-pane" id="account">
