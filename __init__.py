@@ -11,8 +11,11 @@ import bcrypt
 import pyotp
 import requests
 from cryptography.fernet import Fernet
-from flask import Flask, render_template, request, redirect, url_for, flash, json
-from flask import session
+from flask import Flask, render_template, request, redirect, url_for, flash, json , after_this_request , session
+# New things added by Zade
+import redis
+from flask_session import Session
+# End of new items
 from flask_socketio import SocketIO, emit , send , disconnect
 from flask_mail import Mail, Message
 # SQL stuff
@@ -76,7 +79,17 @@ from itsdangerous import URLSafeSerializer, SignatureExpired, URLSafeTimedSerial
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Project'
 
-# Flask-Mail
+##Flask - session stuff # FURTHER TESTING IS REQUIRED
+#app.config['SESSION_TYPE'] = 'redis'
+#app.config['SESSION_PERMANENT'] = False
+#app.config['SESSION_USE_SIGNER'] = True
+#app.config['SESSION_REDIS'] = redis.from_url('redis://localhost:6379')
+#server_session = Session(app)
+
+#End of flask-session
+
+
+# Flask-Mail and app.config stuff
 # These are default values dont anyhow change
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
@@ -89,6 +102,7 @@ app.config['MAIL_DEFAULT_SENDER'] = 'Projectsec6@gmail.com'
 app.config['MAIL_MAX_EMAILS'] = None
 app.config['MAIL_SUPPRESS_SEND'] = False
 app.config['MAIL_ASCII_ATTACHMENTS'] = False
+#app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(minutes=1)
 s = URLSafeTimedSerializer('SecretKey?')
 mail = Mail(app)
 
@@ -98,7 +112,7 @@ socketio = SocketIO(app, logger=True, engineio_logger=True)
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'N0passwordatall'  # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = 'ZadePrimeSQL69420'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -122,6 +136,7 @@ def is_human(captcha_response):
     response_text = json.loads(response.text)
     return response_text['success']
 
+#Start of Testing Area
 
 # Hong ji this email shit is yours
 #@app.route('/EmailTest')
@@ -140,30 +155,31 @@ def is_human(captcha_response):
 #
 
 # Just dont touch anything plz
-def popsession():
-    try:
-        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        #cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': session['Username']})
-        #account = cursor.fetchone()
-        if session:
-            #Record into database that user log out
-            cursor.execute("""INSERT INTO UserActions VALUES (NULL,%s,%s) """,(session['ID'],"Logout"))
-            cursor.execute("""INSERT INTO account_log_out VALUES (NULL,%s,%s) """,(session['ID'],datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
-            mysql.connection.commit()
-            sqlcode = """UPDATE account_log_ins INNER JOIN account_log_out ON account_log_ins.Account_ID = 
-            account_log_out.Account_ID SET account_log_ins.Log_Out_ID = account_log_out.Log_Out_ID WHERE 
-            account_log_ins.Account_ID = %s AND account_log_ins.Log_Out_ID IS NULL AND account_log_out.Log_Out_ID = (SELECT max(account_log_out.Log_Out_ID) from account_log_out where account_log_out.Account_ID = %s)"""
-            values = (session['ID'],session['ID'])
-            cursor.execute(sqlcode,values)
-            mysql.connection.commit()
-            print(session)
-            session.clear()
-            print(session)
-            print("Log out complete sir!")
-        else:
-            print("User is not logged in")
-    except:
-        return render_template("error404.html")
+#def sessionchecker():
+#    try:
+#        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+#        #cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': session['Username']})
+#        #account = cursor.fetchone()
+#
+#        if not(session):
+#            #Record into database that user log out
+#            cursor.execute("""INSERT INTO UserActions VALUES (NULL,%s,%s) """,(session['ID'],"Logout"))
+#            cursor.execute("""INSERT INTO account_log_out VALUES (NULL,%s,%s) """,(session['ID'],datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+#            mysql.connection.commit()
+#            sqlcode = """UPDATE account_log_ins INNER JOIN account_log_out ON account_log_ins.Account_ID =
+#            account_log_out.Account_ID SET account_log_ins.Log_Out_ID = account_log_out.Log_Out_ID WHERE
+#            account_log_ins.Account_ID = %s AND account_log_ins.Log_Out_ID IS NULL AND account_log_out.Log_Out_ID = (SELECT max(account_log_out.Log_Out_ID) from account_log_out where account_log_out.Account_ID = %s)"""
+#            values = (session['ID'],session['ID'])
+#            cursor.execute(sqlcode,values)
+#            mysql.connection.commit()
+#            print(session)
+#            session.clear()
+#            print(session)
+#            print("Log out complete sir!")
+#        else:
+#            print("User is not logged in")
+#    except:
+#        return render_template("error404.html")
 #def pls():
 #    print("Hello there motherfucker!")
 #
@@ -186,10 +202,12 @@ def popsession():
 #    print("PEPEPEPEPEPEPEPEE")
 #
 #
-@socketio.on('disconnect')
-def disconnect_details():
-    print("Wait so it disconnected")
-    popsession()
+#@socketio.on('disconnect')
+#def disconnect_details():
+#    print("Wait so it disconnected")
+#    popsession()
+
+
 
 
 @app.route('/testsocket')
@@ -204,6 +222,17 @@ def test2():
     print(session)
 
     return render_template('testsocketio2.html')
+
+#@app.after_request
+#def after_request(response):
+#    executeplz()
+#    session.clear()
+#    return response
+
+#End of Testing Area
+
+
+
 ## hong ji text message done ??? #####
 @app.route('/EmailOtpCheck')
 def EmailOtpCheck():
@@ -771,6 +800,7 @@ def confirm_email_update(token):
 
 @app.route('/managerprofile')
 def Managerprofile():
+
     if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
         if 'loggedin' in session:
             # We need all the account info for the user so we can display it on the profile page
@@ -846,6 +876,13 @@ def ViewDashboard():
 
 @app.route('/AuditLog')
 def Audit():
+
+    #Security Logs (Event log basically)
+    # Log user login failure   (Also try to detect if there huge amounts of login failures across all users)
+    # Warning
+    # Error Messages
+    # Alert Thresholds
+
     if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
         if session['role'] == 'Admin':
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -1068,6 +1105,7 @@ def login():
                     session['Phone_No'] = decryptedPhoneNo
                     session['2fa_status']='Nil'
                     session['role']=account['role']
+
                     print(session)
                     print(account)
 
@@ -1078,6 +1116,15 @@ def login():
                     cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
                     account1 = cursor.fetchone()
                     cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),request.remote_addr))
+
+
+
+
+
+                    mysql.connection.commit()
+                    cursor.execute("""SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",[session['ID']])
+                    login_ID = cursor.fetchone()
+                    cursor.execute("""INSERT INTO usersloggedin VALUES (NULL,%s,%s)""",(session['ID'],login_ID['Log_in_ID']))
                     mysql.connection.commit()
                     if account1['Text_Message_Status'] ==True or account1['Authenticator_Status']==True or account1['Push_Base_Status']==True or account1['Backup_Code_Status']==True:
                         session['2fa_status']='Fail'
@@ -1123,12 +1170,15 @@ def accountlogout():
             account_log_ins.Account_ID = %s AND account_log_ins.Log_Out_ID IS NULL AND account_log_out.Log_Out_ID = (SELECT max(account_log_out.Log_Out_ID) from account_log_out where account_log_out.Account_ID = %s)"""
             values = (session['ID'], session['ID'])
             cursor.execute(sqlcode, values)
+            cursor.execute("""DELETE FROM usersloggedin WHERE Account_ID = %s """,[session['ID']])
             mysql.connection.commit()
             print(session)
             session.clear()
             print(session)
 
             return redirect(url_for('login'))
+        else:
+            print("Session cant be used by 2 user")
     except:
         return render_template('error404.html')
 
