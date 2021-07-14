@@ -3,9 +3,9 @@
 {% block content %}
 {% from "includes/_formsHelper.html" import render_field %}
 
-
 <h1 class="display-4">Create new admin</h1>
 <link href="static/css/create_login_user_form.css" rel="stylesheet">
+<script src="https://www.google.com/recaptcha/api.js"></script>
  {% if msg %}
         <div class="alert alert-danger">
               <strong>{{msg}}</strong>
@@ -73,6 +73,7 @@
     </div>
   </div>
 
+  <div class="g-recaptcha" data-sitekey="{{ sitekey }}"></div> <br>
 
    <input type="submit" value="Submit" class="btn btn-primary"/>
   <td><a href="/login" class="btn btn-warning">Return</a></td>
