@@ -112,7 +112,7 @@ socketio = SocketIO(app, logger=True, engineio_logger=True)
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'Dragonnight1002'  # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = 'ZadePrime'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -446,7 +446,7 @@ def two_fa_backupcode():
     else:
         return redirect(url_for("two_fa"))
 
-
+# This is the checking.
 @app.route('/twofabackupcodecheck', methods=['GET', 'POST'])
 def two_fa_backupcode_check():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -690,57 +690,75 @@ def Changesettings():
             IDUpdate = session['ID']
             cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
             account = cursor.fetchone()
-            counter = 0
+            counter,Updated = 0 , 1
+
+            cursor.execute("""INSERT INTO UserUpdateActions (Account_ID) VALUES (%s) """,[session['ID']])
+
+
+
+
+
             if formupdateuser.Username.data != account['Username']:
                 cursor.execute("UPDATE accounts SET Username=%s  WHERE id=%s ", (formupdateuser.Username.data, [session['ID']]))
+                cursor.execute("""UPDATE UserUpdateActions SET Username = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""",[Updated,session['ID']])
                 mysql.connection.commit()
                 counter += 1
             if formupdateuser.NRIC.data != decryptedNRIC:
                 EncryptedNRIC = fkey.encrypt(formupdateuser.NRIC.data.encode())
                 cursor.execute("UPDATE accounts SET NRIC=%s  WHERE id=%s ", (EncryptedNRIC, [session['ID']]))
+                cursor.execute("""UPDATE UserUpdateActions SET NRIC = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
                 mysql.connection.commit()
                 counter += 1
             if formupdateuser.DOB.data != account['Date_of_Birth']:
                 cursor.execute("UPDATE accounts SET Date_of_Birth=%s  WHERE id=%s ", (formupdateuser.DOB.data, [session['ID']]))
+                cursor.execute("""UPDATE UserUpdateActions SET Date_Of_Birth = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
                 mysql.connection.commit()
                 counter += 1
             if formupdateuser.Gender.data != account['Gender']:
                 cursor.execute("UPDATE accounts SET Gender=%s  WHERE id=%s ", (formupdateuser.Gender.data, [session['ID']]))
+                cursor.execute("""UPDATE UserUpdateActions SET Gender = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
                 mysql.connection.commit()
                 counter += 1
             if formupdateuser.Phone_Number.data != decryptedPhoneNo:
                 EncryptPhoneNo = fkey.encrypt(formupdateuser.Phone_Number.data.encode())
                 cursor.execute("UPDATE accounts SET Phone_Number=%s  WHERE id=%s ", (EncryptPhoneNo, [session['ID']]))
+                cursor.execute("""UPDATE UserUpdateActions SET Phone_Number = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
                 mysql.connection.commit()
                 counter += 1
             if formupdateuser.Email.data != account['Email']:
                 cursor.execute("UPDATE accounts SET Email=%s  WHERE id=%s ", (formupdateuser.Email.data, [session['ID']]))
+                cursor.execute("""UPDATE UserUpdateActions SET Email = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
                 mysql.connection.commit()
                 counter += 1
             if formupdateuser.Security_Questions_1.data != account['Security_Question_1']:
                 cursor.execute("UPDATE accounts SET Security_Question_1=%s  WHERE id=%s ", (formupdateuser.Security_Questions_1.data, [session['ID']]))
+                cursor.execute("""UPDATE UserUpdateActions SET Security_Question_1 = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
                 mysql.connection.commit()
                 counter += 1
             if formupdateuser.Security_Questions_2.data != account['Security_Question_2']:
                 cursor.execute("UPDATE accounts SET Security_Question_2=%s  WHERE id=%s ", (formupdateuser.Security_Questions_2.data, [session['ID']]))
+                cursor.execute("""UPDATE UserUpdateActions SET Security_Question_2 = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
                 mysql.connection.commit()
                 counter += 1
             if formupdateuser.Answers_1.data != account['Answer_1']:
                 cursor.execute("UPDATE accounts SET Answer_1=%s  WHERE id=%s ", (formupdateuser.Answers_1.data, [session['ID']]))
+                cursor.execute("""UPDATE UserUpdateActions SET Answer_1 = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
                 mysql.connection.commit()
                 counter += 1
             if formupdateuser.Answers_2.data != account['Answer_2']:
                 cursor.execute("UPDATE accounts SET Answer_2=%s  WHERE id=%s ", (formupdateuser.Answers_2.data, [session['ID']]))
+                cursor.execute("""UPDATE UserUpdateActions SET Answer_2 = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
                 mysql.connection.commit()
                 counter += 1
             if formupdateuser.Address.data != decryptedaddress:
                 encryptedaddress = fkey.encrypt(formupdateuser.Address.data.encode())
                 cursor.execute("UPDATE accounts SET Address=%s  WHERE id=%s ", (encryptedaddress, [session['ID']]))
+                cursor.execute("""UPDATE UserUpdateActions SET Address = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
                 mysql.connection.commit()
                 counter += 1
             if counter > 0 :
                 cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-                cursor.execute("""SELECT distinct Log_In_IP_Address FROM account_log_ins WHERE Account_ID = %s;""", [session['ID']])
+                cursor.execute("""SELECT distinct Log_In_IP_Address FROM account_log_ins WHERE Account_ID = %s""", [session['ID']])
                 account1 = cursor.fetchone()
                 counter = str(counter)
                 print(type(counter))
@@ -748,6 +766,9 @@ def Changesettings():
                 msg.html = render_template('UpdateEmail.html', counter=str(counter), Ipaddress=request.remote_addr)
                 mail.send(msg)
                 flash("You have just updated {} item/s in your account. An email has been send out as a notification.".format(counter))
+
+
+
             return redirect(url_for('Changesettings'))
         else:
             formupdateuser.Username.data = account['Username']
@@ -882,6 +903,7 @@ def Audit():
     # Warning
     # Error Messages
     # Alert Thresholds
+    # Admin should be able to see if user change email/password/update settings.
 
     if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
         if session['role'] == 'Admin':
@@ -949,15 +971,6 @@ def UserLogsActivity():
         return redirect(url_for("two_fa"))
 
 
-@app.route('/TwoFactorAuthentication', methods=['GET', 'POST'])
-def TWOFA():
-    try:
-
-        return render_template('UpdateAccountDetails.html')
-
-    except:
-
-        return render_template('error404.html')
 
 
 # @app.route('/UpdateAccount/<data>', methods=['GET', 'POST'])
@@ -1289,7 +1302,7 @@ def create_login_admin():
     if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
 
         if session['role'] == 'Admin':
-            username = session['Username']
+            username=session['Username']
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
             cursor.execute("SELECT * FROM accounts WHERE username = %(username)s",
@@ -1302,94 +1315,89 @@ def create_login_admin():
             msg = ''
             # Check if "username", "password" and "email" POST requests exist (user submitted form)
             if request.method == 'POST' and 'Username' in request.form and 'Password' in request.form and 'Email' in request.form and create_login_user_form.validate():
-                captcha_response = request.form.get('g-recaptcha-response')
-                if is_human(captcha_response):
-                    # Process request here
-                    status = ''
-                    # Create variables for easy access
-                    salt = bcrypt.gensalt(rounds=16)
+                # Create variables for easy access
+                salt = bcrypt.gensalt(rounds=16)
 
-                    print("is the form even working")
-                    print(request.form)
-                    username = request.form['Username']
-                    NRIC = request.form['NRIC']
-                    DOB = request.form['DOB']
-                    gender = request.form['Gender']
-                    password = request.form['Password']
-                    phone_no = request.form['Phone_Number']
-                    email = request.form['Email']
-                    security_questions_1 = request.form['Security_Questions_1']
-                    answer_1 = request.form['Answers_1']
-                    security_questions_2 = request.form['Security_Questions_2']
-                    answer_2 = request.form['Answers_2']
-                    address = request.form['Address']
-                    role = 'Admin'
+                print("is the form even working")
+                print(request.form)
+                username = request.form['Username']
+                NRIC = request.form['NRIC']
+                DOB = request.form['DOB']
+                gender = request.form['Gender']
+                password = request.form['Password']
+                phone_no = request.form['Phone_Number']
+                email = request.form['Email']
+                security_questions_1 = request.form['Security_Questions_1']
+                answer_1 = request.form['Answers_1']
+                security_questions_2 = request.form['Security_Questions_2']
+                answer_2 = request.form['Answers_2']
+                address = request.form['Address']
+                role = 'Admin'
 
-                    now = datetime.datetime.now()
-                    account_creation_time = now.strftime("%Y-%m-%d %H:%M:%S")
-                    email_confirm = 0
-                    UUID = uuid.uuid4().hex
-                    Account_Status='Active'
-                    hash_password = bcrypt.hashpw(password.encode(), salt)
-                    #Symmetric Key encryption
-                    key = Fernet.generate_key()
-                    #Loads the key into the crypto API
-                    fkey = Fernet(key)
-                    #Encrypt the stuff and convert to bytes by calling f.encrypt
-                    encryptedaddress = fkey.encrypt(address.encode())
-                    EncryptedNRIC = fkey.encrypt(NRIC.encode())
-                    EncryptPhoneNo = fkey.encrypt(phone_no.encode())
+                now = datetime.datetime.now()
+                account_creation_time = now.strftime("%Y-%m-%d %H:%M:%S")
+                email_confirm = 0
+                UUID = uuid.uuid4().hex
+                Account_Status='Active'
+                hash_password = bcrypt.hashpw(password.encode(), salt)
+                #Symmetric Key encryption
+                key = Fernet.generate_key()
+                #Loads the key into the crypto API
+                fkey = Fernet(key)
+                #Encrypt the stuff and convert to bytes by calling f.encrypt
+                encryptedaddress = fkey.encrypt(address.encode())
+                EncryptedNRIC = fkey.encrypt(NRIC.encode())
+                EncryptPhoneNo = fkey.encrypt(phone_no.encode())
 
 
-                    # Check if account exists using MySQL
-                    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-                    print(username, phone_no, NRIC, DOB, gender, email, password, address, role,UUID)
-                    cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': username})
-                    account = cursor.fetchone()
-                    # If account exists show error and validation checks(do this at the form for this function)
-                    if account:
-                        msg = 'Account already exists!'
-                    elif not username or not password or not email:
-                        print("3")
-                        msg = 'Please fill out the form!'
-                    else:
-
-                        # Account doesnt exists and the form data is valid, now insert new account into accounts table
-                        cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-                                       , (username, EncryptedNRIC, DOB, hash_password, gender, EncryptPhoneNo, email, security_questions_1,
-                                          security_questions_2, answer_1, answer_2, encryptedaddress, role, account_creation_time,
-                                          email_confirm,key,UUID,Account_Status))
-                        mysql.connection.commit()
-                        msg = 'You have successfully registered! '
-                        print("working")
-                        print('inserting authentication table')
-                        Text_Message_Status = False
-                        Authenticator_Status = False
-                        Authenticator_Key = 0
-                        Push_Base_Status = False
-                        Backup_Code_Status = False
-                        Backup_Code_Key = 0
-                        Backup_Code_No_Of_Use = 0
-                        #cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
-                        cursor.execute("""SELECT ID FROM accounts WHERE Username = %(username)s""", {'username': username})
-                        account = cursor.fetchone()
-                        Account_ID = account['ID']
-                        print(Account_ID, 'account id  ')
-                        cursor.execute("INSERT INTO authentication_table VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
-                                       , (Account_ID, Text_Message_Status, Authenticator_Status, Authenticator_Key,
-                                          Push_Base_Status, Backup_Code_Status, Backup_Code_Key, Backup_Code_No_Of_Use))
-                        mysql.connection.commit()
-                        print('insert successfully nocie ')
-
-                        return redirect('login')
+                # Check if account exists using MySQL
+                cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+                print(username, phone_no, NRIC, DOB, gender, email, password, address, role,UUID)
+                cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': username})
+                account = cursor.fetchone()
+                # If account exists show error and validation checks(do this at the form for this function)
+                if account:
+                    msg = 'Account already exists!'
+                elif not username or not password or not email:
+                    print("3")
+                    msg = 'Please fill out the form!'
                 else:
-                    msg = 'Please check the box "I am not a robot".'
-                    return render_template('create_login_admin_form.html', msg=msg, form=create_login_user_form, account=account, sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
+
+                    # Account doesnt exists and the form data is valid, now insert new account into accounts table
+                    cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                                   , (username, EncryptedNRIC, DOB, hash_password, gender, EncryptPhoneNo, email, security_questions_1,
+                                      security_questions_2, answer_1, answer_2, encryptedaddress, role, account_creation_time,
+                                      email_confirm,key,UUID,Account_Status))
+                    mysql.connection.commit()
+                    msg = 'You have successfully registered! '
+                    print("working")
+                    print('inserting authentication table')
+                    Text_Message_Status = False
+                    Authenticator_Status = False
+                    Authenticator_Key = 0
+                    Push_Base_Status = False
+                    Backup_Code_Status = False
+                    Backup_Code_Key = 0
+                    Backup_Code_No_Of_Use = 0
+                    #cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+                    cursor.execute("""SELECT ID FROM accounts WHERE Username = %(username)s""", {'username': username})
+                    account = cursor.fetchone()
+                    Account_ID = account['ID']
+                    print(Account_ID, 'account id  ')
+                    cursor.execute("INSERT INTO authentication_table VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
+                                   , (Account_ID, Text_Message_Status, Authenticator_Status, Authenticator_Key,
+                                      Push_Base_Status, Backup_Code_Status, Backup_Code_Key, Backup_Code_No_Of_Use))
+                    mysql.connection.commit()
+                    print('insert successfully nocie ')
+
+                    return redirect('login')
             elif request.method == 'POST':
+                # Form is empty... (no POST data)
                 print("not working")
                 print(request.form)
                 msg = 'Please fill out the form!'
-            return render_template('create_login_admin_form.html', msg=msg, form=create_login_user_form, account=account, sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
+            # Show registration form with message (if any)
+            return render_template('create_login_admin_form.html', msg=msg, form=create_login_user_form,account=account)
         else:
             return redirect(url_for('Userprofile'))
     else:
