@@ -49,23 +49,60 @@
       <th scope="row">{{ lol['ID'] }}</th>
       <td>{{ lol['Username'] }}</td>
       <td>{{ lol['account_creation_time'] }}</td>
-      <td><span class="badge badge-danger">{{ lol['Account_Status'] }}</span></td>
+
+        {% if lol['Account_Status'] == 'Banned' %}
+        <td><span class="badge badge-danger">{{ lol['Account_Status'] }}</span></td>
+        {% elif lol['Account_Status'] == 'Disabled' %}
+        <td><span class="badge badge-warning">{{ lol['Account_Status'] }}</span></td>
+        {% else %}
+        <td><span class="badge badge-success">{{ lol['Account_Status'] }}</span></td>
+        {% endif %}
       <td>{{ lol['role'] }}</td>
-      <td><button type="button" class="btn btn-warning"><i class="fas fa-users-cog"></i></button></td>
+      <td><button type="button" class="btn btn-warning" data-toggle="modal" data-target="#myModal{{ lol['ID'] }}"><i class="fas fa-users-cog"></i></button></td>
+
+              <!-- Modal -->
+        <div id="myModal{{ lol['ID'] }}" class="modal fade" role="dialog">
+          <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Modal Header</h4>
+              </div>
+              <div class="modal-body">
+                <p>Ban Account</p><a  class="btn btn-danger" href="{{ url_for('BanAccount',ID = lol['ID']) }}"><i class="fas fa-ban"></i></a>
+                <br>
+                <br>
+                <p>UnBan Account</p><a  class="btn btn-success" href="{{ url_for('UnBanAccount',ID = lol['ID']) }}"><i class="fas fa-unlock"></i></a>
+
+                <br>
+                <br>
+
+                <p>Force Password Change</p><a class="btn btn-dark" href="{{ url_for('ForcePasswordChangeAccount',ID = lol['ID']) }}"><i class="fas fa-key"></i></a>
+
+                <br>
+                <br>
+                <p>Delete Account</p><a  class="btn btn-warning" href="{{ url_for('DeleteAccountFunc',ID = lol['ID']) }}"><i class="fas fa-user-slash"></i></a>
+
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
     </tr>
   {% endfor %}
   </tbody>
 </table>
 </div>
 </div>
+
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
-<script>
-   $(document).ready(function(){
-            var socket = io();
 
-    });
-</script>
 
 <script>
 $(document).ready(function(){

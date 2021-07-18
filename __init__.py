@@ -76,6 +76,10 @@ from cryptography.fernet import Fernet
 import jwt
 from itsdangerous import URLSafeSerializer, SignatureExpired, URLSafeTimedSerializer
 
+# Form imports
+
+
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Project'
 
@@ -886,7 +890,7 @@ def Managerprofile():
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
-
+# Edit this - Zadesqlstuff
 
 def get_location(ip_address):
     if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
@@ -972,22 +976,55 @@ def Audit():
         return redirect(url_for("two_fa"))
 
 
-# Edit this - Zadesqlstuff
+
+
+@app.route('/UnbanaccountFunction/<int:ID>',methods = ['GET','POST'])
+def UnBanAccount(ID):
+    print("UnBan Account Function")
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute("""UPDATE accounts SET Account_Status = 'Active' WHERE ID = %s """,[ID])
+    mysql.connection.commit()
+    return redirect(url_for('ManageAccount'))
+
+
+
+
+@app.route('/BanAccountFunction/<int:ID>',methods = ['GET','POST'])
+def BanAccount(ID):
+    print("Ban Account Function")
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute("""UPDATE accounts SET Account_Status = 'Banned' WHERE ID = %s """,[ID])
+    mysql.connection.commit()
+    return redirect(url_for('ManageAccount'))
+
+@app.route('/DeleteAccountFunction/<int:ID>',methods = ['GET','POST'])
+def DeleteAccountFunc(ID):
+    print("Delete Account")
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute("""UPDATE accounts SET Account_Status = 'Disabled' WHERE ID = %s """, [ID])
+    mysql.connection.commit()
+    return redirect(url_for('ManageAccount'))
+
+
+@app.route('/ForcePasswordAccountFunction/<int:ID>',methods = ['GET','POST'])
+def ForcePasswordChangeAccount(ID):
+    print("Force Password Change Account")
+    # Jaydon this is yours
+    return redirect(url_for('ManageAccount'))
+
 
 
 @app.route('/ManageUserAccounts',methods = ['GET','POST'])
 def ManageAccount():
     if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
         if session['role'] == "Admin":
+
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute("""SELECT * FROM accounts""")
             account = cursor.fetchone()
             cursor.execute("""SELECT * FROM accounts""")
             allaccounts = cursor.fetchall()
 
-
-            for lol in allaccounts:
-                print(lol)
 
             return render_template('UserAccountManager.html',account=account,allaccounts=allaccounts)
         else:
@@ -1026,17 +1063,6 @@ def UserLogsActivity():
         return redirect(url_for("two_fa"))
 
 
-
-
-# @app.route('/UpdateAccount/<data>', methods=['GET', 'POST'])
-# def accountupdatefunc(data):
-#    try:
-#        print("It upate")
-#        print(data)
-#
-#        return 'something'
-#    except:
-#        return render_template('error404.html')
 
 @app.route('/Cantsignin', methods=['GET', 'POST'])
 def Cantsignin():
@@ -1164,44 +1190,53 @@ def login():
                 print(request.remote_addr)
 
                 if bcrypt.checkpw(password.encode(), hashandsalt.encode()):
-                    session['loggedin'] = True
-                    session['ID'] = account['ID']
-                    session['Username'] = account['Username']
-                    session['email'] = account['Email']
-                    session['NRIC'] = decryptedNRIC
-                    session['Address'] = decryptedaddress
-                    session['Phone_No'] = decryptedPhoneNo
-                    session['2fa_status']='Nil'
-                    session['role']=account['role']
+                    if account['Account_Status'] == "Banned":
+                        print("This account is banned")
+                        flash("This Account has been banned")
+                    elif account['Account_Status'] == "Disabled":
+                        print("Disabled")
+                        flash("Account has been disabled")
 
-                    print(session)
-                    print(account)
-
-                    # Update UserActions table for login!
-                    cursor.execute("""INSERT INTO UserLogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
-                    mysql.connection.commit()
-
-                    cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
-                    account1 = cursor.fetchone()
-                    cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),request.remote_addr))
-
-
-
-
-
-                    mysql.connection.commit()
-                    cursor.execute("""SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",[session['ID']])
-                    login_ID = cursor.fetchone()
-                    cursor.execute("""INSERT INTO usersloggedin VALUES (NULL,%s,%s)""",(session['ID'],login_ID['Log_in_ID']))
-                    mysql.connection.commit()
-                    if account1['Text_Message_Status'] ==True or account1['Authenticator_Status']==True or account1['Push_Base_Status']==True or account1['Backup_Code_Status']==True:
-                        session['2fa_status']='Fail'
-                        return render_template("2fa.html", status_text=account1['Text_Message_Status'], status_auth=account1['Authenticator_Status'], status_psuh=account1['Push_Base_Status'], status_back=account1['Backup_Code_Status'])
                     else:
-                        if account['role'] == 'Admin':
-                            return redirect(url_for('Managerprofile'))
+
+                        session['loggedin'] = True
+                        session['ID'] = account['ID']
+                        session['Username'] = account['Username']
+                        session['email'] = account['Email']
+                        session['NRIC'] = decryptedNRIC
+                        session['Address'] = decryptedaddress
+                        session['Phone_No'] = decryptedPhoneNo
+                        session['2fa_status']='Nil'
+                        session['role']=account['role']
+
+                        print(session)
+                        print(account)
+
+                        # Update UserActions table for login!
+                        cursor.execute("""INSERT INTO UserLogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
+                        mysql.connection.commit()
+
+                        cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
+                        account1 = cursor.fetchone()
+                        cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),request.remote_addr))
+
+
+
+
+
+                        mysql.connection.commit()
+                        cursor.execute("""SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",[session['ID']])
+                        login_ID = cursor.fetchone()
+                        cursor.execute("""INSERT INTO usersloggedin VALUES (NULL,%s,%s)""",(session['ID'],login_ID['Log_in_ID']))
+                        mysql.connection.commit()
+                        if account1['Text_Message_Status'] ==True or account1['Authenticator_Status']==True or account1['Push_Base_Status']==True or account1['Backup_Code_Status']==True:
+                            session['2fa_status']='Fail'
+                            return render_template("2fa.html", status_text=account1['Text_Message_Status'], status_auth=account1['Authenticator_Status'], status_psuh=account1['Push_Base_Status'], status_back=account1['Backup_Code_Status'])
                         else:
-                            return redirect(url_for('Userprofile'))
+                            if account['role'] == 'Admin':
+                                return redirect(url_for('Managerprofile'))
+                            else:
+                                return redirect(url_for('Userprofile'))
                 else:
                     msg = 'Incorrect Username/Password'
                     Username = account['Username']
