@@ -8,7 +8,7 @@
 <body>
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
-<script>
+<!--<script>
     $(document).ready(function(){
         $("#Plzwork").click(function(){
             var socket = io();
@@ -39,10 +39,34 @@
 
     });
 
+</script> -->
+
+<script>
+    $(document).ready(function(){
+    var PasswordField = $('#fnamed').val();
+     $("#Plzwork").click(function(){
+    alert("Text:" + $('#fnamed').val());
+    });
+
+
+    });
+
+
 </script>
+<form>
+  <label for="fnamed">First name:</label><br>
+  <input type="text" id="fnamed" name="fname"><br>
+</form>
+<ul>
+        <li>Contain at least one number</li>
+        <li>Contain at least one uppercase character</li>
+        <li>Contain at least one lowercase character</li>
+        <li>Contain at least one special symbol</li>
+        <li>Password must be between 8 to 20 characters long</li>
+      </ul>
 <p id="Hideme">TESTING LOL</p>
-<button id = "Plzwork">CLICK ME PLZ</button>
-<button id = "Wow">CLICK ME PLZ</button>
+<button id = "Plzwork">CLICK ME </button>
+
 <button id = "Disconnect">Disconenct plz</button>
 <p id = 'demo'></p>
 

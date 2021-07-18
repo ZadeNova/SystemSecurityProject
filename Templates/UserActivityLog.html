@@ -348,29 +348,21 @@ div.ex3 {
                                         </tr>
                                       </thead>
                                       <tbody id="MYTable">
-                                      {% for i in userlogouts %}
+
+                                      {% for i in userloginactivity %}
+
                                         <tr>
 
-                                          <th scope="row">1</th>
+                                          <th scope="row">{{ loop.index }}</th>
                                           <td><span class="badge badge-danger">Danger</span></td>
-                                          <td>{{ i['Log_Out_Time'] }}</td>
+                                          <td>{{ i['TimeOfActivity'] }}</td>
                                           <td>{{ i['LoginType'] }}</td>
-                                          <td>{{ i['Log_In_IP_Address'] }}</td>
+                                          <td>{{ i['IP_Address'] }}</td>
                                           <td>Location</td>
-                                        </tr>
-                                       {% endfor %}
-                                      {% for i in userlogins %}
-                                        <tr>
 
-                                          <th scope="row">1</th>
-                                          <td><span class="badge badge-danger">Danger</span></td>
-                                          <td>{{ i['Account_Log_In_Time'] }}</td>
-                                          <td>{{ i['LoginType'] }}</td>
-                                          <td>{{ i['Log_In_IP_Address'] }}</td>
-                                          <td>Location</td>
                                         </tr>
                                        {% endfor %}
-                                      </tbody>
+
                                     </table>
                                     </div>   <!-- div tag for table div -->
                                 </div>   <!-- whatever that is inside this div goes inside body -->

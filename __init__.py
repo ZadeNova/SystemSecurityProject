@@ -112,7 +112,7 @@ socketio = SocketIO(app, logger=True, engineio_logger=True)
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'ZadePrime'  # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = 'ZadePrimeSQL69420'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -686,13 +686,19 @@ def Changesettings():
         decryptedaddress = decryptedaddress_Binary.decode('utf8')
         decryptedNRIC = decryptedNRIC_Binary.decode('utf-8')
         decryptedPhoneNo = decryptedPhoneNo_Binary.decode('utf-8')
-        if request.method == 'POST':
+        if request.method == 'POST' and (formupdateuser.Username.data != account['Username'] or
+                                         formupdateuser.NRIC.data != decryptedNRIC or formupdateuser.DOB.data != account['Date_of_Birth'] or
+                                         formupdateuser.Gender.data != account['Gender'] or formupdateuser.Phone_Number.data != decryptedPhoneNo or
+                                         formupdateuser.Email.data != account['Email'] or formupdateuser.Security_Questions_1.data != account['Security_Question_1'] or
+                                         formupdateuser.Security_Questions_2.data != account['Security_Question_2'] or formupdateuser.Answers_1.data != account['Answer_1'] or
+                                         formupdateuser.Answers_2.data != account['Answer_2'] or formupdateuser.Address.data != decryptedaddress):
+
             IDUpdate = session['ID']
             cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
             account = cursor.fetchone()
             counter,Updated = 0 , 1
 
-            cursor.execute("""INSERT INTO UserUpdateActions (Account_ID) VALUES (%s) """,[session['ID']])
+            cursor.execute("""INSERT INTO UserUpdateTime (Account_ID) VALUES (%s) """,[session['ID']])
 
 
 
@@ -700,65 +706,71 @@ def Changesettings():
 
             if formupdateuser.Username.data != account['Username']:
                 cursor.execute("UPDATE accounts SET Username=%s  WHERE id=%s ", (formupdateuser.Username.data, [session['ID']]))
-                cursor.execute("""UPDATE UserUpdateActions SET Username = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""",[Updated,session['ID']])
+                #cursor.execute("""UPDATE UserUpdateTime SET Username = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""",[Updated,session['ID']])
                 mysql.connection.commit()
                 counter += 1
             if formupdateuser.NRIC.data != decryptedNRIC:
                 EncryptedNRIC = fkey.encrypt(formupdateuser.NRIC.data.encode())
                 cursor.execute("UPDATE accounts SET NRIC=%s  WHERE id=%s ", (EncryptedNRIC, [session['ID']]))
-                cursor.execute("""UPDATE UserUpdateActions SET NRIC = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
+                #cursor.execute("""UPDATE UserUpdateTime SET NRIC = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
                 mysql.connection.commit()
                 counter += 1
             if formupdateuser.DOB.data != account['Date_of_Birth']:
                 cursor.execute("UPDATE accounts SET Date_of_Birth=%s  WHERE id=%s ", (formupdateuser.DOB.data, [session['ID']]))
-                cursor.execute("""UPDATE UserUpdateActions SET Date_Of_Birth = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
+                #cursor.execute("""UPDATE UserUpdateTime SET Date_Of_Birth = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
                 mysql.connection.commit()
                 counter += 1
             if formupdateuser.Gender.data != account['Gender']:
                 cursor.execute("UPDATE accounts SET Gender=%s  WHERE id=%s ", (formupdateuser.Gender.data, [session['ID']]))
-                cursor.execute("""UPDATE UserUpdateActions SET Gender = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
+                #cursor.execute("""UPDATE UserUpdateTime SET Gender = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
                 mysql.connection.commit()
                 counter += 1
             if formupdateuser.Phone_Number.data != decryptedPhoneNo:
                 EncryptPhoneNo = fkey.encrypt(formupdateuser.Phone_Number.data.encode())
                 cursor.execute("UPDATE accounts SET Phone_Number=%s  WHERE id=%s ", (EncryptPhoneNo, [session['ID']]))
-                cursor.execute("""UPDATE UserUpdateActions SET Phone_Number = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
+                #cursor.execute("""UPDATE UserUpdateTime SET Phone_Number = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
                 mysql.connection.commit()
                 counter += 1
             if formupdateuser.Email.data != account['Email']:
                 cursor.execute("UPDATE accounts SET Email=%s  WHERE id=%s ", (formupdateuser.Email.data, [session['ID']]))
-                cursor.execute("""UPDATE UserUpdateActions SET Email = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
+                #cursor.execute("""UPDATE UserUpdateTime SET Email = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
                 mysql.connection.commit()
                 counter += 1
             if formupdateuser.Security_Questions_1.data != account['Security_Question_1']:
                 cursor.execute("UPDATE accounts SET Security_Question_1=%s  WHERE id=%s ", (formupdateuser.Security_Questions_1.data, [session['ID']]))
-                cursor.execute("""UPDATE UserUpdateActions SET Security_Question_1 = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
+                #cursor.execute("""UPDATE UserUpdateTime SET Security_Question_1 = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
                 mysql.connection.commit()
                 counter += 1
             if formupdateuser.Security_Questions_2.data != account['Security_Question_2']:
                 cursor.execute("UPDATE accounts SET Security_Question_2=%s  WHERE id=%s ", (formupdateuser.Security_Questions_2.data, [session['ID']]))
-                cursor.execute("""UPDATE UserUpdateActions SET Security_Question_2 = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
+                #cursor.execute("""UPDATE UserUpdateTime SET Security_Question_2 = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
                 mysql.connection.commit()
                 counter += 1
             if formupdateuser.Answers_1.data != account['Answer_1']:
                 cursor.execute("UPDATE accounts SET Answer_1=%s  WHERE id=%s ", (formupdateuser.Answers_1.data, [session['ID']]))
-                cursor.execute("""UPDATE UserUpdateActions SET Answer_1 = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
+                #cursor.execute("""UPDATE UserUpdateTime SET Answer_1 = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
                 mysql.connection.commit()
                 counter += 1
             if formupdateuser.Answers_2.data != account['Answer_2']:
                 cursor.execute("UPDATE accounts SET Answer_2=%s  WHERE id=%s ", (formupdateuser.Answers_2.data, [session['ID']]))
-                cursor.execute("""UPDATE UserUpdateActions SET Answer_2 = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
+                #cursor.execute("""UPDATE UserUpdateTime SET Answer_2 = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
                 mysql.connection.commit()
                 counter += 1
             if formupdateuser.Address.data != decryptedaddress:
                 encryptedaddress = fkey.encrypt(formupdateuser.Address.data.encode())
                 cursor.execute("UPDATE accounts SET Address=%s  WHERE id=%s ", (encryptedaddress, [session['ID']]))
-                cursor.execute("""UPDATE UserUpdateActions SET Address = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
+                #cursor.execute("""UPDATE UserUpdateTime SET Address = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
                 mysql.connection.commit()
                 counter += 1
             if counter > 0 :
                 cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
                 cursor.execute("""SELECT distinct Log_In_IP_Address FROM account_log_ins WHERE Account_ID = %s""", [session['ID']])
+                cursor.execute("""UPDATE UserUpdateTime SET UpdatedEvent = 'Update' WHERE Account_ID = %s ORDER BY ID DESC Limit 1;""",[session['ID']])
+                cursor.execute("""UPDATE UserUpdateTime SET Date_and_Time = current_timestamp() WHERE Account_ID = %s ORDER BY ID DESC Limit 1; """,[session['ID']])
+                cursor.execute(
+                    """UPDATE UserUpdateTime SET Ip_Address = %s WHERE Account_ID = %s ORDER BY ID DESC Limit 1""",
+                    [request.remote_addr,session['ID']])
+                mysql.connection.commit()
                 account1 = cursor.fetchone()
                 counter = str(counter)
                 print(type(counter))
@@ -912,6 +924,16 @@ def Audit():
             account = cursor.fetchone()
             cursor.execute("""SELECT * FROM accounts""")
             allaccounts = cursor.fetchall()
+            #cursor.execute("""SELECT Account_ID,LoginType,Log_In_IP_Address as IP_Address, Log_Out_Time as TimeOfActivity  FROM (SELECT distinct a.Account_ID,u.LoginType,a.Log_In_IP_Address,b.Log_Out_Time
+            #            FROM account_log_ins a inner join account_log_out AS b ON b.Account_ID = a.Account_ID
+            #            INNER JOIN UserLogin AS u ON u.Account_ID = a.Account_ID
+            #            WHERE u.LoginType = 'Logout' and a.Account_ID = %s) as Table1
+            #            UNION
+            #            SELECT * FROM (SELECT distinct a.Account_ID,u.LoginType,a.Log_In_IP_Address,a.Account_Log_In_Time
+            #            FROM account_log_ins a inner join account_log_out AS b ON b.Account_ID = a.Account_ID
+            #            INNER JOIN UserLogin AS u ON u.Account_ID = a.Account_ID
+            #            WHERE u.LoginType = 'Login' and a.Account_ID = %s) As Table2 UNION SELECT Account_ID,UpdatedEvent,Ip_Address,Date_and_Time
+            #            FROM userupdatetime ORDER BY TimeOfActivity""")
             return render_template('AuditLog.html',account=account,role = account['role'])#labels = labels,values = values)
         else:
             return redirect(url_for('Userprofile'))
@@ -953,19 +975,22 @@ def UserLogsActivity():
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
         account = cursor.fetchone()
-        cursor.execute("""SELECT distinct a.Account_ID,u.LoginType,a.Log_In_IP_Address,b.Log_Out_Time 
-        FROM account_log_ins a inner join account_log_out AS b ON b.Account_ID = a.Account_ID 
-        INNER JOIN useractions AS u ON u.Account_ID = a.Account_ID
-        WHERE u.LoginType = 'Logout' and a.Account_ID = %s;""", [session['ID']])
-        userlogouts = cursor.fetchall()
-        cursor.execute("""SELECT distinct a.Account_ID,u.LoginType,a.Log_In_IP_Address,a.Account_Log_In_Time 
-        FROM account_log_ins a inner join account_log_out AS b ON b.Account_ID = a.Account_ID 
-        INNER JOIN useractions AS u ON u.Account_ID = a.Account_ID
-        WHERE u.LoginType = 'Login' and a.Account_ID = %s;""", [session['ID']])
-        userlogins = cursor.fetchall()
-        for i in userlogouts:
-            print(i)
-        return render_template('UserActivityLog.html',account=account,role = account['role'],userlogouts = userlogouts,userlogins = userlogins)
+        cursor.execute("""SELECT Account_ID,LoginType,Log_In_IP_Address as IP_Address, Log_Out_Time as TimeOfActivity  FROM (SELECT distinct a.Account_ID,u.LoginType,a.Log_In_IP_Address,b.Log_Out_Time 
+                        FROM account_log_ins a inner join account_log_out AS b ON b.Account_ID = a.Account_ID 
+                        INNER JOIN UserLogin AS u ON u.Account_ID = a.Account_ID
+                        WHERE u.LoginType = 'Logout' and a.Account_ID = %s) as Table1
+                        UNION
+                        SELECT * FROM (SELECT distinct a.Account_ID,u.LoginType,a.Log_In_IP_Address,a.Account_Log_In_Time 
+                        FROM account_log_ins a inner join account_log_out AS b ON b.Account_ID = a.Account_ID 
+                        INNER JOIN UserLogin AS u ON u.Account_ID = a.Account_ID
+                        WHERE u.LoginType = 'Login' and a.Account_ID = %s) As Table2 UNION SELECT Account_ID,UpdatedEvent,Ip_Address,Date_and_Time 
+                        FROM userupdatetime ORDER BY TimeOfActivity """,[session['ID'],session['ID']])
+
+
+        userloginactivity = cursor.fetchall()
+
+        print(userloginactivity)
+        return render_template('UserActivityLog.html',account=account,role = account['role'],userloginactivity = userloginactivity )
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
@@ -1123,7 +1148,7 @@ def login():
                     print(account)
 
                     # Update UserActions table for login!
-                    cursor.execute("""INSERT INTO UserActions VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
+                    cursor.execute("""INSERT INTO UserLogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
                     mysql.connection.commit()
 
                     cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
@@ -1175,7 +1200,7 @@ def accountlogout():
         #account = cursor.fetchone()
         if session:
             #Record into database that user log out
-            cursor.execute("""INSERT INTO UserActions VALUES (NULL,%s,%s) """, (session['ID'], "Logout"))
+            cursor.execute("""INSERT INTO UserLogin VALUES (NULL,%s,%s) """, (session['ID'], "Logout"))
             cursor.execute("""INSERT INTO account_log_out VALUES (NULL,%s,%s) """, (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
             mysql.connection.commit()
             sqlcode = """UPDATE account_log_ins INNER JOIN account_log_out ON account_log_ins.Account_ID = 
