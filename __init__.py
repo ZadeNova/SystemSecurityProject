@@ -6,7 +6,9 @@ import shelve
 import string
 import uuid
 from random import randint  ###### email otp ####
+import logging
 
+from google.auth._default import default, load_credentials_from_file
 import bcrypt
 import pyotp
 import requests
@@ -75,13 +77,205 @@ import bcrypt
 from cryptography.fernet import Fernet
 import jwt
 from itsdangerous import URLSafeSerializer, SignatureExpired, URLSafeTimedSerializer
-
+## google login ##
+import os
+import pathlib
+from google.oauth2 import id_token
+from google_auth_oauthlib.flow import Flow
+from pip._vendor import cachecontrol
+import google.auth.transport.requests
+## google login end ###
 # Form imports
 
 
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Project'
+### google login key###
+__all__ = ["default", "load_credentials_from_file"]
+
+# Set default logging handler to avoid "No handler found" warnings.
+logging.getLogger(__name__).addHandler(logging.NullHandler())
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+GOOGLE_CLIENT_ID = "936577677720-jgdpckeedh3lt1otgf92ecp88lqpvc1o.apps.googleusercontent.com"
+client_secrets_file = os.path.join(pathlib.Path(__file__).parent, "client_secret.json")
+flow = Flow.from_client_secrets_file(
+    client_secrets_file=client_secrets_file,
+    scopes=["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email",
+            "openid"],
+    redirect_uri="http://127.0.0.1:5000/callback"
+)
+def login_is_required(function):
+    def wrapper(*args, **kwargs):
+        if "google_id" not in session:
+            return render_template('error401.html') # Authorization required
+        else:
+            return function()
+
+    return wrapper
+@app.route("/googleLog")
+def googlelog():
+    authorization_url, state = flow.authorization_url()
+    session["state"] = state
+    return redirect(authorization_url)
+
+@app.route("/callback")
+def callback():
+
+    flow.fetch_token(authorization_response=request.url)
+    if not session["state"] == request.args["state"]:
+        return render_template('error500.html')  # State does not match!
+
+    credentials = flow.credentials
+    request_session = requests.session()
+    cached_session = cachecontrol.CacheControl(request_session)
+    token_request = google.auth.transport.requests.Request(session=cached_session)
+    id_info = id_token.verify_oauth2_token(
+        id_token=credentials._id_token,
+        request=token_request,
+        audience=GOOGLE_CLIENT_ID
+    )
+    session["google_id"] = id_info.get("sub")
+    session["Username"] = id_info.get("name")
+    session['2fa_status'] = 'Pass'
+    session['google'] = True
+    username=session["Username"]
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': username})
+    account = cursor.fetchone()
+    # If account exists show error and validation checks(do this at the form for this function)
+    if account:
+        key = account['SymmetricKey']
+        fkey = Fernet(key)
+        decryptedaddress_Binary = fkey.decrypt(account['Address'].encode())
+        decryptedPhoneNo_Binary = fkey.decrypt(account['Phone_Number'].encode())
+        decryptedNRIC_Binary = fkey.decrypt(account['NRIC'].encode())
+        decryptedaddress = decryptedaddress_Binary.decode('utf8')
+        decryptedNRIC = decryptedNRIC_Binary.decode('utf-8')
+        decryptedPhoneNo = decryptedPhoneNo_Binary.decode('utf-8')
+        session['loggedin'] = True
+        session['ID'] = account['ID']
+        session["Username"] = username
+        session['2fa_status'] = 'Nil'
+        session['role'] = account['role']
+        session['email'] = account['Email']
+        session['NRIC'] =  decryptedNRIC
+        session['Address'] = decryptedaddress
+        session['Phone_No']= decryptedPhoneNo
+        cursor.execute("""INSERT INTO UserLogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
+        mysql.connection.commit()
+
+        cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
+        account1 = cursor.fetchone()
+        cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""",
+                       (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.remote_addr))
+
+        mysql.connection.commit()
+        cursor.execute(
+            """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
+            [session['ID']])
+        login_ID = cursor.fetchone()
+        cursor.execute("""INSERT INTO usersloggedin VALUES (NULL,%s,%s)""", (session['ID'], login_ID['Log_in_ID']))
+        mysql.connection.commit()
+        return redirect("/homepage")
+    else:
+        salt = bcrypt.gensalt(rounds=16)
+        username = id_info.get("name")
+        NRIC =  id_info.get("name")+'Nric'
+        DOB = False
+        gender = False
+        password = id_info.get("name")+'1234'
+        phone_no =  id_info.get("name")+'phn'
+        email = id_info.get("email")
+        security_questions_1 = False
+        answer_1 = False
+        security_questions_2 = False
+        answer_2 = False
+        address =  id_info.get("name")+'address'
+        role = 'Guest'
+        print(username)
+        print(email)
+        print(DOB)
+        now = datetime.datetime.now()
+        account_creation_time = now.strftime("%Y-%m-%d %H:%M:%S")
+        email_confirm = 0
+        UUID = uuid.uuid4().hex
+        Account_Status = 'Active'
+        hash_password = bcrypt.hashpw(password.encode(), salt)
+        # Symmetric Key encryption
+        key = Fernet.generate_key()
+        # Loads the key into the crypto API
+        fkey = Fernet(key)
+        # Encrypt the stuff and convert to bytes by calling f.encrypt
+        encryptedaddress = fkey.encrypt(address.encode())
+        EncryptedNRIC = fkey.encrypt(NRIC.encode())
+        EncryptPhoneNo = fkey.encrypt(phone_no.encode())
+
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': username})
+        account = cursor.fetchone()
+        cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                       , (username, EncryptedNRIC, DOB, hash_password, gender, EncryptPhoneNo, email, security_questions_1,
+                          security_questions_2, answer_1, answer_2, encryptedaddress, role, account_creation_time,
+                          email_confirm, key, UUID, Account_Status))
+        mysql.connection.commit()
+        cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""",
+                       (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.remote_addr))
+
+        mysql.connection.commit()
+        cursor.execute(
+            """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
+            [session['ID']])
+        login_ID = cursor.fetchone()
+        cursor.execute("""INSERT INTO usersloggedin VALUES (NULL,%s,%s)""", (session['ID'], login_ID['Log_in_ID']))
+        mysql.connection.commit()
+        msg = 'You have successfully registered! '
+        print("working")
+        print('inserting authentication table')
+        Text_Message_Status = False
+        Authenticator_Status = False
+        Authenticator_Key = 0
+        Push_Base_Status = False
+        Backup_Code_Status = False
+        Backup_Code_Key = 0
+        Backup_Code_No_Of_Use = 0
+        # cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+        cursor.execute("""SELECT ID FROM accounts WHERE Username = %(username)s""", {'username': username})
+        account = cursor.fetchone()
+        Account_ID = account['ID']
+        print(Account_ID, 'account id  ')
+        cursor.execute("INSERT INTO authentication_table VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
+                       , (Account_ID, Text_Message_Status, Authenticator_Status, Authenticator_Key,
+                          Push_Base_Status, Backup_Code_Status, Backup_Code_Key, Backup_Code_No_Of_Use))
+        mysql.connection.commit()
+        cursor.execute("""SELECT ID FROM accounts WHERE Username = %(username)s""", {'username': username})
+        account = cursor.fetchone()
+        session['loggedin'] = True
+        session['ID'] = account['ID']
+        session["Username"] = id_info.get("name")
+        session['2fa_status'] = 'Nil'
+        session['role'] = 'Guest'
+        cursor.execute("""INSERT INTO UserLogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
+        mysql.connection.commit()
+
+        cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
+        account1 = cursor.fetchone()
+        cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""",
+                       (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.remote_addr))
+
+        mysql.connection.commit()
+        cursor.execute(
+            """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
+            [session['ID']])
+        login_ID = cursor.fetchone()
+        cursor.execute("""INSERT INTO usersloggedin VALUES (NULL,%s,%s)""", (session['ID'], login_ID['Log_in_ID']))
+        mysql.connection.commit()
+        return redirect("/homepage")
+
+
+
+## google login key end ###
+
 
 ##Flask - session stuff # FURTHER TESTING IS REQUIRED
 #app.config['SESSION_TYPE'] = 'redis'
@@ -116,7 +310,7 @@ socketio = SocketIO(app, logger=True, engineio_logger=True)
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'N0passwordatall'  # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = '1234'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -609,7 +803,7 @@ def Userprofile():
             cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
             account = cursor.fetchone()
             # Show the profile page with account info
-            return render_template('userprofile.html', account=account, email=session['email'], NRIC=session['NRIC'], address=session['Address'], phone_no=session['Phone_No'])
+            return render_template('userprofile.html', account=account, email=session['email'],NRIC = session['NRIC'],address = session['Address'],phone_no = session['Phone_No'])
             # User is not loggedin redirect to login page
         return redirect(url_for('login'))
 
@@ -627,39 +821,41 @@ def Userprofile():
 #    return render_template('ipaddresscheck.html',data=data,account=account,role=account['role'])
 
 
-@app.route('/deleteaccount', methods=['GET', 'POST'])
+@app.route('/deleteaccount',methods=['GET','POST'])
 def deleteaccount():
     if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
         account = cursor.fetchone()
         flash('I want to delete my account')
-        return render_template("accountdelete.html", account=account, role=account['role'])
+        return render_template("accountdelete.html", account=account,role=account['role'])
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
 
 
-@app.route('/deleteaccountcheck', methods=['POST'])
+@app.route('/deleteaccountcheck',methods=['POST'])
 def deleteaccoutcheck():
     if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
         account = cursor.fetchone()
-        user_int = request.form['user_int']
+        user_int=request.form['user_int']
         if user_int == 'I want to delete my account':
             try:
-                username = account['Username']
-                Account_Status = 'Deleted'
-                cursor.execute("UPDATE accounts SET Account_Status=%s   WHERE Username=%s ", (Account_Status, username))
+                username=account['Username']
+                Account_Status='Disable'
+                cursor.execute(
+                    "UPDATE accounts SET Account_Status=%s   WHERE Account_ID=%s ",
+                    (Account_Status, [session['ID']]))
                 mysql.connection.commit()
                 print(cursor.rowcount, "record(s) deleted")
                 session.clear()
                 return redirect(url_for('login'))
             except:
-                return redirect(url_for('deleteaccountcheck'))
+                return render_template("error404.html")
         else:
-            msg = 'Wrong input , please follow word by word , including spacing , and capital !'
+            msg='Wrong input , please follow word by word , including spacing , and capital !'
             flash('I want to delete my account')
             #return redirect(url_for('deleteaccount',msg=msg))
             return render_template("accountdelete.html", account=account,msg=msg)
@@ -698,9 +894,9 @@ def Changesettings():
             IDUpdate = session['ID']
             cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
             account = cursor.fetchone()
-            counter, Updated = 0, 1
+            counter,Updated = 0 , 1
 
-            cursor.execute("""INSERT INTO UserUpdateTime (Account_ID) VALUES (%s) """, [session['ID']])
+            cursor.execute("""INSERT INTO UserUpdateTime (Account_ID) VALUES (%s) """,[session['ID']])
 
 
 
@@ -779,7 +975,7 @@ def Changesettings():
                 msg = Message("Update of Account", recipients=account['Email'].split())
                 msg.html = render_template('UpdateEmail.html', counter=str(counter), Ipaddress=request.remote_addr)
                 mail.send(msg)
-                flash("You have just updated {} item/s in your account. An email has been send out as a notification.".format(counter), 'category1')
+                flash("You have just updated {} item/s in your account. An email has been send out as a notification.".format(counter))
 
 
 
@@ -803,40 +999,8 @@ def Changesettings():
         return redirect(url_for("two_fa"))
 
 
-@app.route('/Settings_changepassword', methods=['GET', 'POST'])
-def Settings_changepassword():
-    if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
-        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
-        account = cursor.fetchone()
-        hashandsalt = account['Password']
-        UUID = account['UUID']
-        if request.method == 'POST':
-            Old_password = request.form['Old_password']
-            New_password = request.form['New_password']
-            Confirm_password = request.form['Confirm_password']
-            if bcrypt.checkpw(Old_password.encode(), hashandsalt.encode()):
-                if New_password == Confirm_password:
-                    salt = bcrypt.gensalt(rounds=16)
-                    hash_password = bcrypt.hashpw(New_password.encode(), salt)
-                    sql = "UPDATE accounts SET Password = %s WHERE UUID = %s "
-                    value = (hash_password, UUID)
-                    cursor.execute(sql, value)
-                    mysql.connection.commit()
-                    flash('Password have been updated', 'category2')
-                    return redirect(url_for("Changesettings"))
-                else:
-                    flash('New password is not the same as Confirm password', 'category2')
-                    return redirect(url_for("Changesettings"))
-            else:
-                flash('Old password is not the same as Current password', 'category2')
-                return redirect(url_for("Changesettings"))
-        else:
-            return redirect(url_for("Changesettings"))
-
-    else:
-        flash('Please complete your 2FA !', 'danger')
-        return redirect(url_for("two_fa"))
+def updatedatabase():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
 
 @app.route('/confirm_email_afterupdate/<token>')
@@ -1052,7 +1216,6 @@ def UserLogsActivity():
                         INNER JOIN UserLogin AS u ON u.Account_ID = a.Account_ID
                         WHERE u.LoginType = 'Login' and a.Account_ID = %s) As Table2 UNION SELECT Account_ID,UpdatedEvent,Ip_Address,Date_and_Time 
                         FROM userupdatetime ORDER BY TimeOfActivity """,[session['ID'],session['ID']])
-
 
         userloginactivity = cursor.fetchall()
 

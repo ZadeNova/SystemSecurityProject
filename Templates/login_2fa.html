@@ -30,6 +30,9 @@
           </ul>
         </div>
         <div class="form-group">
+                          <img src="https://chart.googleapis.com/chart?cht=qr&chl={{ secret }}&chs=200x200&chld=L|0" width="200px" alt="wallet address">
+
+
           <label for="secret">Secret Token</label>
           <input type="text" class="form-control" id="secret" value="{{ secret }}" readonly>
         </div>
@@ -38,6 +41,7 @@
         </div>
       </form>
     </div>
+
     <div class="col-lg-7">
       {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
