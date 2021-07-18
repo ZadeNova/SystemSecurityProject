@@ -143,13 +143,15 @@ body{
                 <h6>YOUR PROFILE INFORMATION</h6>
                 <hr>
                 <p>
-                  {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% with messages = get_flashed_messages(category_filter=["category1"]) %}
                     {% if messages %}
-                        {% for category, message in messages %}
+                        <ul class=flashes>
+                        {% for message in messages %}
                             <div class="alert alert-primary" role="alert">
-                            {{ message }}
+                                {{ message }}
                             </div>
                         {% endfor %}
+                        </ul>
                     {% endif %}
                   {% endwith %}
                 </p>
@@ -217,12 +219,6 @@ body{
                 <hr>
                 <form>
                   <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" class="form-control" id="username" aria-describedby="usernameHelp" placeholder="Enter your username" value="kennethvaldez">
-                    <small id="usernameHelp" class="form-text text-muted">After changing your username, your old username becomes available for anyone else to claim.</small>
-                  </div>
-                  <hr>
-                  <div class="form-group">
                     <label class="d-block text-danger">Delete Account</label>
                     <p class="text-muted font-size-sm">Once you delete your account, there is no going back. Please be certain.</p>
                   </div>
@@ -230,24 +226,29 @@ body{
                 </form>
               </div>
               <div class="tab-pane" id="security">
-                 {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-      {% for category, message in messages %}
-      <div class="alert alert-{{ category }}" role="alert">
-        {{ message }}
-      </div>
-      {% endfor %}
-      {% endif %}
-      {% endwith %}
+                {% with messages = get_flashed_messages(category_filter=["category2"]) %}
+                  {% if messages %}
+                    <ul class=flashes>
+                    {% for message in messages %}
+                      <div class="alert alert-primary" role="alert">
+                        {{ message }}
+                      </div>
+                    {% endfor %}
+                    </ul>
+                  {% endif %}
+                {% endwith %}
                 <h6>SECURITY SETTINGS</h6>
                 <hr>
-                <form>
-                  <div class="form-group">
-                    <label class="d-block">Change Password</label>
-                    <input type="text" class="form-control" placeholder="Enter your old password">
-                    <input type="text" class="form-control mt-1" placeholder="New password">
-                    <input type="text" class="form-control mt-1" placeholder="Confirm new password">
-                  </div>
+                <form action="/Settings_changepassword" method="POST">
+                    <div class="form-group">
+                      <label class="d-block">Change Password</label>
+                      <input type="password" class="form-control mt-1" placeholder="Enter your old password" id="Old_password" name="Old_password" required>
+                      <input type="password" class="form-control mt-1" placeholder="New password" id="New_password" name="New_password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,20}" required>
+                      <input type="password" class="form-control mt-1" placeholder="Confirm new password" id="Confirm_password" name="Confirm_password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,20}" required>
+                      <input id="show-passwords" type="checkbox" name="show-passwords"> Show Passwords
+                      <br>
+                      <input type="submit" value="Submit" class="btn btn-primary"/>
+                    </div>
                 </form>
                 <hr>
                 <form>
@@ -405,7 +406,52 @@ body{
       </div>
 
     </div>
+<script>
+//
+// Variables
+//
 
+// Get the password toggle
+const toggle = document.querySelector('#show-passwords');
+
+// Get the password fields
+const passwords = Array.from(
+  document.querySelectorAll('[type="password"]')
+);
+
+
+//
+// Functions
+//
+
+/**
+ * Toggle the visibility of a password field
+ * based on a checkbox's current state
+ *
+ * @param {HTMLInputElement} checkbox The checkbox
+ * @param {HTMLInputElement} field The password field
+ */
+function togglePassword (checkbox, field) {
+  field.type = checkbox.checked ? 'text' : 'password';
+}
+
+/**
+ * Handle change events
+ */
+function handleChange () {
+  passwords.forEach(password => {
+    togglePassword(this, password);
+  });
+}
+
+
+//
+// Inits & Event Listeners
+//
+
+// Handle change events
+toggle.addEventListener('change', handleChange);
+</script>
 
 
 {% endblock %}

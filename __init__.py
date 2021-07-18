@@ -112,7 +112,7 @@ socketio = SocketIO(app, logger=True, engineio_logger=True)
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'ZadePrimeSQL69420'  # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = 'N0passwordatall'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -605,7 +605,7 @@ def Userprofile():
             cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
             account = cursor.fetchone()
             # Show the profile page with account info
-            return render_template('userprofile.html', account=account, email=session['email'],NRIC = session['NRIC'],address = session['Address'],phone_no = session['Phone_No'])
+            return render_template('userprofile.html', account=account, email=session['email'], NRIC=session['NRIC'], address=session['Address'], phone_no=session['Phone_No'])
             # User is not loggedin redirect to login page
         return redirect(url_for('login'))
 
@@ -623,41 +623,39 @@ def Userprofile():
 #    return render_template('ipaddresscheck.html',data=data,account=account,role=account['role'])
 
 
-@app.route('/deleteaccount',methods=['GET','POST'])
+@app.route('/deleteaccount', methods=['GET', 'POST'])
 def deleteaccount():
     if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
         account = cursor.fetchone()
         flash('I want to delete my account')
-        return render_template("accountdelete.html", account=account,role=account['role'])
+        return render_template("accountdelete.html", account=account, role=account['role'])
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
 
 
-@app.route('/deleteaccountcheck',methods=['POST'])
+@app.route('/deleteaccountcheck', methods=['POST'])
 def deleteaccoutcheck():
     if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
         account = cursor.fetchone()
-        user_int=request.form['user_int']
+        user_int = request.form['user_int']
         if user_int == 'I want to delete my account':
             try:
-                username=account['Username']
-                Account_Status='Disable'
-                cursor.execute(
-                    "UPDATE accounts SET Account_Status=%s   WHERE Account_ID=%s ",
-                    (Account_Status, [session['ID']]))
+                username = account['Username']
+                Account_Status = 'Deleted'
+                cursor.execute("UPDATE accounts SET Account_Status=%s   WHERE Username=%s ", (Account_Status, username))
                 mysql.connection.commit()
                 print(cursor.rowcount, "record(s) deleted")
                 session.clear()
                 return redirect(url_for('login'))
             except:
-                return render_template("error404.html")
+                return redirect(url_for('deleteaccountcheck'))
         else:
-            msg='Wrong input , please follow word by word , including spacing , and capital !'
+            msg = 'Wrong input , please follow word by word , including spacing , and capital !'
             flash('I want to delete my account')
             #return redirect(url_for('deleteaccount',msg=msg))
             return render_template("accountdelete.html", account=account,msg=msg)
@@ -696,9 +694,9 @@ def Changesettings():
             IDUpdate = session['ID']
             cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
             account = cursor.fetchone()
-            counter,Updated = 0 , 1
+            counter, Updated = 0, 1
 
-            cursor.execute("""INSERT INTO UserUpdateTime (Account_ID) VALUES (%s) """,[session['ID']])
+            cursor.execute("""INSERT INTO UserUpdateTime (Account_ID) VALUES (%s) """, [session['ID']])
 
 
 
@@ -777,7 +775,7 @@ def Changesettings():
                 msg = Message("Update of Account", recipients=account['Email'].split())
                 msg.html = render_template('UpdateEmail.html', counter=str(counter), Ipaddress=request.remote_addr)
                 mail.send(msg)
-                flash("You have just updated {} item/s in your account. An email has been send out as a notification.".format(counter))
+                flash("You have just updated {} item/s in your account. An email has been send out as a notification.".format(counter), 'category1')
 
 
 
@@ -801,8 +799,40 @@ def Changesettings():
         return redirect(url_for("two_fa"))
 
 
-def updatedatabase():
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+@app.route('/Settings_changepassword', methods=['GET', 'POST'])
+def Settings_changepassword():
+    if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+        account = cursor.fetchone()
+        hashandsalt = account['Password']
+        UUID = account['UUID']
+        if request.method == 'POST':
+            Old_password = request.form['Old_password']
+            New_password = request.form['New_password']
+            Confirm_password = request.form['Confirm_password']
+            if bcrypt.checkpw(Old_password.encode(), hashandsalt.encode()):
+                if New_password == Confirm_password:
+                    salt = bcrypt.gensalt(rounds=16)
+                    hash_password = bcrypt.hashpw(New_password.encode(), salt)
+                    sql = "UPDATE accounts SET Password = %s WHERE UUID = %s "
+                    value = (hash_password, UUID)
+                    cursor.execute(sql, value)
+                    mysql.connection.commit()
+                    flash('Password have been updated', 'category2')
+                    return redirect(url_for("Changesettings"))
+                else:
+                    flash('New password is not the same as Confirm password', 'category2')
+                    return redirect(url_for("Changesettings"))
+            else:
+                flash('Old password is not the same as Current password', 'category2')
+                return redirect(url_for("Changesettings"))
+        else:
+            return redirect(url_for("Changesettings"))
+
+    else:
+        flash('Please complete your 2FA !', 'danger')
+        return redirect(url_for("two_fa"))
 
 
 @app.route('/confirm_email_afterupdate/<token>')
