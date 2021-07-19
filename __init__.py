@@ -162,22 +162,32 @@ def callback():
         session['NRIC'] =  decryptedNRIC
         session['Address'] = decryptedaddress
         session['Phone_No']= decryptedPhoneNo
-        cursor.execute("""INSERT INTO UserLogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
-        mysql.connection.commit()
+        if account['Account_Status'] == "Banned":
+            print("This account is banned")
+            flash("This Account has been banned")
+            return redirect("/login")
+        elif account['Account_Status'] == "Disabled":
+            print("Disabled")
+            flash("Account has been disabled")
+            return redirect("/login")
+        else:
+            cursor.execute("""INSERT INTO UserLogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
+            mysql.connection.commit()
 
-        cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
-        account1 = cursor.fetchone()
-        cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""",
-                       (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.remote_addr))
+            cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
+            account1 = cursor.fetchone()
+            cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""",
+                           (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.remote_addr))
 
-        mysql.connection.commit()
-        cursor.execute(
-            """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
-            [session['ID']])
-        login_ID = cursor.fetchone()
-        cursor.execute("""INSERT INTO usersloggedin VALUES (NULL,%s,%s)""", (session['ID'], login_ID['Log_in_ID']))
-        mysql.connection.commit()
-        return redirect("/homepage")
+            mysql.connection.commit()
+            cursor.execute(
+                """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
+                [session['ID']])
+            login_ID = cursor.fetchone()
+            cursor.execute("""INSERT INTO usersloggedin VALUES (NULL,%s,%s)""", (session['ID'], login_ID['Log_in_ID']))
+            mysql.connection.commit()
+
+            return redirect("/homepage")
     else:
 
         salt = bcrypt.gensalt(rounds=16)
@@ -213,71 +223,79 @@ def callback():
         EncryptedNRIC = fkey.encrypt(NRIC.encode())
         EncryptPhoneNo = fkey.encrypt(phone_no.encode())
 
+
+
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': username})
         account = cursor.fetchone()
-        cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-                       , (username, EncryptedNRIC, DOB, hash_password, gender, EncryptPhoneNo, email, security_questions_1,
-                          security_questions_2, answer_1, answer_2, encryptedaddress, role, account_creation_time,
-                          email_confirm, key, UUID, Account_Status))
-        mysql.connection.commit()
-        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': username})
+        cursor.execute("""SELECT * FROM accounts WHERE Email = %(email)s""", {'email': email})
         account12 = cursor.fetchone()
-        session['ID'] = account12['ID']
-        session["Username"] = username
-        cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""",
-                       (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.remote_addr))
+        if account12 :
+            flash('Email already exists! Try another Email !')
+            return redirect("/login")
+        else:
+            cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                           , (username, EncryptedNRIC, DOB, hash_password, gender, EncryptPhoneNo, email, security_questions_1,
+                              security_questions_2, answer_1, answer_2, encryptedaddress, role, account_creation_time,
+                              email_confirm, key, UUID, Account_Status))
+            mysql.connection.commit()
+            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': username})
+            account12 = cursor.fetchone()
+            session['ID'] = account12['ID']
+            session["Username"] = username
+            cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""",
+                           (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.remote_addr))
 
-        mysql.connection.commit()
-        cursor.execute(
-            """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
-            [session['ID']])
-        login_ID = cursor.fetchone()
-        cursor.execute("""INSERT INTO usersloggedin VALUES (NULL,%s,%s)""", (session['ID'], login_ID['Log_in_ID']))
-        mysql.connection.commit()
-        msg = 'You have successfully registered! '
-        print("working")
-        print('inserting authentication table')
-        Text_Message_Status = False
-        Authenticator_Status = False
-        Authenticator_Key = 0
-        Push_Base_Status = False
-        Backup_Code_Status = False
-        Backup_Code_Key = 0
-        Backup_Code_No_Of_Use = 0
-        # cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
-        cursor.execute("""SELECT ID FROM accounts WHERE Username = %(username)s""", {'username': username})
-        account = cursor.fetchone()
-        Account_ID = account['ID']
-        print(Account_ID, 'account id  ')
-        cursor.execute("INSERT INTO authentication_table VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
-                       , (Account_ID, Text_Message_Status, Authenticator_Status, Authenticator_Key,
-                          Push_Base_Status, Backup_Code_Status, Backup_Code_Key, Backup_Code_No_Of_Use))
-        mysql.connection.commit()
-        cursor.execute("""SELECT ID FROM accounts WHERE Username = %(username)s""", {'username': username})
-        account = cursor.fetchone()
-        session['loggedin'] = True
-        session['ID'] = account['ID']
-        session["Username"] = id_info.get("name")
-        session['2fa_status'] = 'Nil'
-        session['role'] = 'Guest'
-        cursor.execute("""INSERT INTO UserLogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
-        mysql.connection.commit()
+            mysql.connection.commit()
+            cursor.execute(
+                """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
+                [session['ID']])
+            login_ID = cursor.fetchone()
+            cursor.execute("""INSERT INTO usersloggedin VALUES (NULL,%s,%s)""", (session['ID'], login_ID['Log_in_ID']))
+            mysql.connection.commit()
+            msg = 'You have successfully registered! '
+            print("working")
+            print('inserting authentication table')
+            Text_Message_Status = False
+            Authenticator_Status = False
+            Authenticator_Key = 0
+            Push_Base_Status = False
+            Backup_Code_Status = False
+            Backup_Code_Key = 0
+            Backup_Code_No_Of_Use = 0
+            # cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+            cursor.execute("""SELECT ID FROM accounts WHERE Username = %(username)s""", {'username': username})
+            account = cursor.fetchone()
+            Account_ID = account['ID']
+            print(Account_ID, 'account id  ')
+            cursor.execute("INSERT INTO authentication_table VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
+                           , (Account_ID, Text_Message_Status, Authenticator_Status, Authenticator_Key,
+                              Push_Base_Status, Backup_Code_Status, Backup_Code_Key, Backup_Code_No_Of_Use))
+            mysql.connection.commit()
+            cursor.execute("""SELECT ID FROM accounts WHERE Username = %(username)s""", {'username': username})
+            account = cursor.fetchone()
+            session['loggedin'] = True
+            session['ID'] = account['ID']
+            session["Username"] = id_info.get("name")
+            session['2fa_status'] = 'Nil'
+            session['role'] = 'Guest'
+            cursor.execute("""INSERT INTO UserLogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
+            mysql.connection.commit()
 
-        cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
-        account1 = cursor.fetchone()
-        cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""",
-                       (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.remote_addr))
+            cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
+            account1 = cursor.fetchone()
+            cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""",
+                           (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.remote_addr))
 
-        mysql.connection.commit()
-        cursor.execute(
-            """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
-            [session['ID']])
-        login_ID = cursor.fetchone()
-        cursor.execute("""INSERT INTO usersloggedin VALUES (NULL,%s,%s)""", (session['ID'], login_ID['Log_in_ID']))
-        mysql.connection.commit()
-        return redirect("/homepage")
+            mysql.connection.commit()
+            cursor.execute(
+                """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
+                [session['ID']])
+            login_ID = cursor.fetchone()
+            cursor.execute("""INSERT INTO usersloggedin VALUES (NULL,%s,%s)""", (session['ID'], login_ID['Log_in_ID']))
+            mysql.connection.commit()
+            return redirect("/homepage")
 
 
 
