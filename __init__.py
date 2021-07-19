@@ -179,8 +179,10 @@ def callback():
         mysql.connection.commit()
         return redirect("/homepage")
     else:
+
         salt = bcrypt.gensalt(rounds=16)
         username = id_info.get("name")
+        session['ID'] = id_info.get("name")
         NRIC =  id_info.get("name")+'Nric'
         DOB = False
         gender = False
@@ -219,6 +221,11 @@ def callback():
                           security_questions_2, answer_1, answer_2, encryptedaddress, role, account_creation_time,
                           email_confirm, key, UUID, Account_Status))
         mysql.connection.commit()
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': username})
+        account12 = cursor.fetchone()
+        session['ID'] = account12['ID']
+        session["Username"] = username
         cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""",
                        (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.remote_addr))
 
@@ -310,7 +317,7 @@ socketio = SocketIO(app, logger=True, engineio_logger=True)
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'ZadePrimeSQL69420'  # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = '1234'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
