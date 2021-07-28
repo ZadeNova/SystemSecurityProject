@@ -186,8 +186,17 @@ def callback():
             login_ID = cursor.fetchone()
             cursor.execute("""INSERT INTO usersloggedin VALUES (NULL,%s,%s)""", (session['ID'], login_ID['Log_in_ID']))
             mysql.connection.commit()
-
-            return redirect("/homepage")
+            cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
+            account1 = cursor.fetchone()
+            if account1['Text_Message_Status'] == True or account1['Authenticator_Status'] == True or account1[
+                'Push_Base_Status'] == True or account1['Backup_Code_Status'] == True:
+                session['2fa_status'] = 'Fail'
+                return render_template("2fa.html", status_text=account1['Text_Message_Status'],
+                                       status_auth=account1['Authenticator_Status'],
+                                       status_psuh=account1['Push_Base_Status'],
+                                       status_back=account1['Backup_Code_Status'])
+            else:
+                return redirect("/homepage")
     else:
 
         salt = bcrypt.gensalt(rounds=16)
@@ -222,8 +231,6 @@ def callback():
         encryptedaddress = fkey.encrypt(address.encode())
         EncryptedNRIC = fkey.encrypt(NRIC.encode())
         EncryptPhoneNo = fkey.encrypt(phone_no.encode())
-
-
 
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': username})
@@ -1439,10 +1446,6 @@ def login():
                         cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
                         account1 = cursor.fetchone()
                         cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),request.remote_addr))
-
-
-
-
 
                         mysql.connection.commit()
                         cursor.execute("""SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",[session['ID']])
