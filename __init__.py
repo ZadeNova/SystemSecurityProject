@@ -343,7 +343,7 @@ socketio = SocketIO(app, logger=True, engineio_logger=True)
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'Dragonnight1002'  # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = 'ZadePrime'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -651,6 +651,32 @@ def two_fa_email_check():
     time_now = yy.strftime("%X")
     if session['otp'] == int(user_otp) and  time_pre>time_now:
         session['2fa_status']='Pass'
+
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute("""INSERT INTO UserLogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
+        mysql.connection.commit()
+        cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (
+            session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.remote_addr))
+        mysql.connection.commit()
+        cursor.execute(
+            """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
+            [session['ID']])
+        login_ID = cursor.fetchone()
+        cursor.execute("""INSERT INTO usersloggedin VALUES (NULL,%s,%s)""",
+                       (session['ID'], login_ID['Log_in_ID']))
+        mysql.connection.commit()
+
+        cursor.execute(
+            'SELECT * FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )',
+            [session['ID']])
+        logininfo = cursor.fetchone()
+
+        msg = Message("Login Notification", recipients=[account['Email']])
+        Username = account['Username']
+        IP = logininfo['Log_In_IP_Address']
+        Date = logininfo['Account_Log_In_Time']
+        msg.html = render_template('Login_Notification_Email.html', Username=Username, Date=Date, IP=IP)
+        mail.send(msg)
         return redirect(url_for("homepage"))
     else:
         if time_pre<time_now:
@@ -694,6 +720,29 @@ def two_fa_backupcode_check():
             "UPDATE authentication_table SET Backup_Code_Status=%s , Backup_Code_Key= %s ,Backup_Code_No_Of_Use=%s  WHERE Account_ID=%s ",
             (Backup_Code_Status, Backup_Code_Key, Backup_Code_No_Of_Use, [session['ID']]))
         mysql.connection.commit()
+        cursor.execute("""INSERT INTO UserLogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
+        mysql.connection.commit()
+        cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (
+            session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.remote_addr))
+        mysql.connection.commit()
+        cursor.execute(
+            """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
+            [session['ID']])
+        login_ID = cursor.fetchone()
+        cursor.execute("""INSERT INTO usersloggedin VALUES (NULL,%s,%s)""",
+                       (session['ID'], login_ID['Log_in_ID']))
+        mysql.connection.commit()
+        cursor.execute(
+            'SELECT * FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )',
+            [session['ID']])
+        logininfo = cursor.fetchone()
+
+        msg = Message("Login Notification", recipients=[account['Email']])
+        Username = account['Username']
+        IP = logininfo['Log_In_IP_Address']
+        Date = logininfo['Account_Log_In_Time']
+        msg.html = render_template('Login_Notification_Email.html', Username=Username, Date=Date, IP=IP)
+        mail.send(msg)
         return redirect(url_for("homepage"))
     else:
         flash('Incorrect Opt ,please check again !')
@@ -729,6 +778,33 @@ def two_fa_authen_check():
     secret=account1['Authenticator_Key']
     if pyotp.TOTP(secret).verify(otp):
         session['2fa_status'] = 'Pass'
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute("""INSERT INTO UserLogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
+        mysql.connection.commit()
+        cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (
+            session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.remote_addr))
+        mysql.connection.commit()
+        cursor.execute(
+            """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
+            [session['ID']])
+        login_ID = cursor.fetchone()
+        cursor.execute("""INSERT INTO usersloggedin VALUES (NULL,%s,%s)""",
+                       (session['ID'], login_ID['Log_in_ID']))
+        mysql.connection.commit()
+
+        msg = Message("Login Notification", recipients=[account['Email']])
+        Username = account['Username']
+        cursor.execute(
+            'SELECT * FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )',
+            [session['ID']])
+        logininfo = cursor.fetchone()
+
+        msg = Message("Login Notification", recipients=[account['Email']])
+        Username = account['Username']
+        IP = logininfo['Log_In_IP_Address']
+        Date = logininfo['Account_Log_In_Time']
+        msg.html = render_template('Login_Notification_Email.html', Username=Username, Date=Date, IP=IP)
+        mail.send(msg)
         return redirect(url_for("homepage"))
     else:
         # inform users if OTP is invalid
@@ -1068,32 +1144,32 @@ def Settings_changepassword():
         return redirect(url_for("two_fa"))
 
 
-@app.route('/confirm_email_afterupdate/<token>')
-def confirm_email_update(token):
-    if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
-
-        try:
-            print(dataforemailupdate,IDUpdate)
-            print(session)
-            data = dataforemailupdate
-            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-            cursor.execute('SELECT * FROM accounts WHERE id = %(ID)s', {'ID':IDUpdate})
-            account = cursor.fetchone()
-            print(account)
-            email = s.loads(token, salt='Email-confirm', max_age=180)
-
-            sql = "UPDATE accounts SET Username = %s,NRIC = %s,Date_of_Birth = %s,Gender = %s , Phone_Number = %s , Email = %s , Security_Question_1 = %s, Security_Question_2 = %s,Answer_1 = %s,Answer_2 = %s,Address = %s"
-            value = (data['Username'], data['NRIC'], data['DOB'], data['Gender'], data['Phone_Number'], data['Email'], data['Security_Questions_1'], data['Security_Questions_2'], data['Answers_1'], data['Answers_2'], data['Address'])
-            cursor.execute(sql, value)
-            mysql.connection.commit()
-            return redirect(url_for('Managerprofile'))
-        except SignatureExpired:
-            return 'Token is expired'
-    else:
-        flash('Please complete your 2FA !', 'danger')
-        return redirect(url_for("two_fa"))
-
-
+#@app.route('/confirm_email_afterupdate/<token>')
+#def confirm_email_update(token):
+#    if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
+#
+#        try:
+#            print(dataforemailupdate,IDUpdate)
+#            print(session)
+#            data = dataforemailupdate
+#            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+#            cursor.execute('SELECT * FROM accounts WHERE id = %(ID)s', {'ID':IDUpdate})
+#            account = cursor.fetchone()
+#            print(account)
+#            email = s.loads(token, salt='Email-confirm', max_age=180)
+#
+#            sql = "UPDATE accounts SET Username = %s,NRIC = %s,Date_of_Birth = %s,Gender = %s , Phone_Number = %s , Email = %s , Security_Question_1 = %s, Security_Question_2 = %s,Answer_1 = %s,Answer_2 = %s,Address = %s"
+#            value = (data['Username'], data['NRIC'], data['DOB'], data['Gender'], data['Phone_Number'], data['Email'], data['Security_Questions_1'], data['Security_Questions_2'], data['Answers_1'], data['Answers_2'], data['Address'])
+#            cursor.execute(sql, value)
+#            mysql.connection.commit()
+#            return redirect(url_for('Managerprofile'))
+#        except SignatureExpired:
+#            return 'Token is expired'
+#    else:
+#        flash('Please complete your 2FA !', 'danger')
+#        return redirect(url_for("two_fa"))
+#
+#
 @app.route('/managerprofile')
 def Managerprofile():
 
@@ -1186,23 +1262,23 @@ def Audit():
             cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
             account = cursor.fetchone()
             cursor.execute("""SELECT * FROM accounts""")
+
+            cursor.execute("""SELECT Distinct A.Account_ID,A.Account_Log_In_Time AS TimeOfActivity,UL.LoginType AS EventType ,A.Log_In_Ip_Address AS Ip_Address from account_log_ins A 
+                            INNER JOIN userlogin AS UL ON UL.Account_ID = A.Account_ID WHERE UL.LoginType = 'Login'
+                            UNION SELECT * FROM
+                            (SELECT Distinct ACO.Account_ID,ACO.Log_Out_Time,UL.LoginType,ACO.Log_Out_IP_Address FROM account_log_out ACO
+                            INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout') AS TABLE2 
+                            UNION SELECT * FROM (SELECT Account_ID,Date_and_Time,UpdatedEvent,Ip_Address FROM userupdatetime) AS TABLE3
+                            ORDER BY TimeOfActivity; """)
             allaccounts = cursor.fetchall()
-            #cursor.execute("""SELECT Account_ID,LoginType,Log_In_IP_Address as IP_Address, Log_Out_Time as TimeOfActivity  FROM (SELECT distinct a.Account_ID,u.LoginType,a.Log_In_IP_Address,b.Log_Out_Time
-            #            FROM account_log_ins a inner join account_log_out AS b ON b.Account_ID = a.Account_ID
-            #            INNER JOIN UserLogin AS u ON u.Account_ID = a.Account_ID
-            #            WHERE u.LoginType = 'Logout' and a.Account_ID = %s) as Table1
-            #            UNION
-            #            SELECT * FROM (SELECT distinct a.Account_ID,u.LoginType,a.Log_In_IP_Address,a.Account_Log_In_Time
-            #            FROM account_log_ins a inner join account_log_out AS b ON b.Account_ID = a.Account_ID
-            #            INNER JOIN UserLogin AS u ON u.Account_ID = a.Account_ID
-            #            WHERE u.LoginType = 'Login' and a.Account_ID = %s) As Table2 UNION SELECT Account_ID,UpdatedEvent,Ip_Address,Date_and_Time
-            #            FROM userupdatetime ORDER BY TimeOfActivity""")
-            return render_template('AuditLog.html',account=account,role = account['role'])#labels = labels,values = values)
+            return render_template('AuditLog.html',account=account,role = account['role'],allaccounts = allaccounts)#labels = labels,values = values)
         else:
             return redirect(url_for('Userprofile'))
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
+
+
 
 
 @app.route('/UnbanaccountFunction/<int:ID>',methods = ['GET','POST'])
@@ -1214,6 +1290,8 @@ def UnBanAccount(ID):
     return redirect(url_for('ManageAccount'))
 
 
+
+
 @app.route('/BanAccountFunction/<int:ID>',methods = ['GET','POST'])
 def BanAccount(ID):
     print("Ban Account Function")
@@ -1221,7 +1299,6 @@ def BanAccount(ID):
     cursor.execute("""UPDATE accounts SET Account_Status = 'Banned' WHERE ID = %s """,[ID])
     mysql.connection.commit()
     return redirect(url_for('ManageAccount'))
-
 
 @app.route('/DeleteAccountFunction/<int:ID>',methods = ['GET','POST'])
 def DeleteAccountFunc(ID):
@@ -1237,6 +1314,7 @@ def ForcePasswordChangeAccount(ID):
     print("Force Password Change Account")
     # Jaydon this is yours
     return redirect(url_for('ManageAccount'))
+
 
 
 @app.route('/ManageUserAccounts',methods = ['GET','POST'])
@@ -1421,6 +1499,7 @@ def login():
                 # This means that you have logged in
                 print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
                 print(request.remote_addr)
+
                 if bcrypt.checkpw(password.encode(), hashandsalt.encode()):
                     #compare the current date and time with the last password update time
                     if account['password_update_time'] + datetime.timedelta(days=365) <= datetime.datetime.now().replace(microsecond=0):
@@ -1448,22 +1527,42 @@ def login():
                         print(account)
 
                         # Update UserActions table for login!
-                        cursor.execute("""INSERT INTO UserLogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
-                        mysql.connection.commit()
+
 
                         cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
                         account1 = cursor.fetchone()
-                        cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),request.remote_addr))
 
-                        mysql.connection.commit()
-                        cursor.execute("""SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",[session['ID']])
-                        login_ID = cursor.fetchone()
-                        cursor.execute("""INSERT INTO usersloggedin VALUES (NULL,%s,%s)""",(session['ID'],login_ID['Log_in_ID']))
-                        mysql.connection.commit()
-                        if account1['Text_Message_Status'] == True or account1['Authenticator_Status']==True or account1['Push_Base_Status']==True or account1['Backup_Code_Status']==True:
+
+
+                        if account1['Text_Message_Status'] ==True or account1['Authenticator_Status']==True or account1['Push_Base_Status']==True or account1['Backup_Code_Status']==True:
                             session['2fa_status']='Fail'
                             return render_template("2fa.html", status_text=account1['Text_Message_Status'], status_auth=account1['Authenticator_Status'], status_psuh=account1['Push_Base_Status'], status_back=account1['Backup_Code_Status'])
                         else:
+
+                            cursor.execute("""INSERT INTO UserLogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
+                            mysql.connection.commit()
+                            cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (
+                            session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.remote_addr))
+                            mysql.connection.commit()
+                            cursor.execute(
+                                """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
+                                [session['ID']])
+                            login_ID = cursor.fetchone()
+                            cursor.execute("""INSERT INTO usersloggedin VALUES (NULL,%s,%s)""",
+                                           (session['ID'], login_ID['Log_in_ID']))
+                            mysql.connection.commit()
+                            cursor.execute('SELECT * FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )',[session['ID']])
+                            logininfo = cursor.fetchone()
+
+
+
+                            msg = Message("Login Notification", recipients=[account['Email']])
+                            Username = account['Username']
+                            IP = logininfo['Log_In_IP_Address']
+                            Date = logininfo['Account_Log_In_Time']
+                            msg.html = render_template('Login_Notification_Email.html', Username=Username,Date = Date , IP = IP)
+                            mail.send(msg)
+
                             if account['role'] == 'Admin':
                                 return redirect(url_for('Managerprofile'))
                             else:
