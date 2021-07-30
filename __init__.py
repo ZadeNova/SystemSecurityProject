@@ -219,6 +219,7 @@ def callback():
         print(DOB)
         now = datetime.datetime.now()
         account_creation_time = now.strftime("%Y-%m-%d %H:%M:%S")
+        password_update_time = now.replace(microsecond=0)
         email_confirm = 0
         UUID = uuid.uuid4().hex
         Account_Status = 'Active'
@@ -241,10 +242,10 @@ def callback():
             flash('Email already exists! Try another Email !')
             return redirect("/login")
         else:
-            cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+            cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                            , (username, EncryptedNRIC, DOB, hash_password, gender, EncryptPhoneNo, email, security_questions_1,
                               security_questions_2, answer_1, answer_2, encryptedaddress, role, account_creation_time,
-                              email_confirm, key, UUID, Account_Status))
+                              email_confirm, key, UUID, Account_Status, password_update_time))
             mysql.connection.commit()
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': username})
@@ -342,7 +343,7 @@ socketio = SocketIO(app, logger=True, engineio_logger=True)
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = '1234'  # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = 'Dragonnight1002'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -1204,8 +1205,6 @@ def Audit():
         return redirect(url_for("two_fa"))
 
 
-
-
 @app.route('/UnbanaccountFunction/<int:ID>',methods = ['GET','POST'])
 def UnBanAccount(ID):
     print("UnBan Account Function")
@@ -1215,8 +1214,6 @@ def UnBanAccount(ID):
     return redirect(url_for('ManageAccount'))
 
 
-
-
 @app.route('/BanAccountFunction/<int:ID>',methods = ['GET','POST'])
 def BanAccount(ID):
     print("Ban Account Function")
@@ -1224,6 +1221,7 @@ def BanAccount(ID):
     cursor.execute("""UPDATE accounts SET Account_Status = 'Banned' WHERE ID = %s """,[ID])
     mysql.connection.commit()
     return redirect(url_for('ManageAccount'))
+
 
 @app.route('/DeleteAccountFunction/<int:ID>',methods = ['GET','POST'])
 def DeleteAccountFunc(ID):
@@ -1239,7 +1237,6 @@ def ForcePasswordChangeAccount(ID):
     print("Force Password Change Account")
     # Jaydon this is yours
     return redirect(url_for('ManageAccount'))
-
 
 
 @app.route('/ManageUserAccounts',methods = ['GET','POST'])
@@ -1349,33 +1346,41 @@ def ForgottenPassword():
 
 @app.route('/Resetpassword/<path:UUID>', methods=['GET', 'POST'])
 def Resetpassword(UUID):
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute("SELECT * FROM accounts WHERE UUID = %(UUID)s", {'UUID': UUID})
-    account = cursor.fetchone()
-    if account:
-        captcha_response = request.form.get('g-recaptcha-response')
-        if request.method == 'POST' and 'password' in request.form and 'confirm password' in request.form:
-            if is_human(captcha_response):
-                password = request.form['password']
-                confirm_password = request.form['confirm password']
-                if password != confirm_password:
-                    flash("Your Password isn't the same as your confirm password. Please Try Again..")
-                    return render_template('Resetpassword.html', sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute("SELECT * FROM accounts WHERE UUID = %(UUID)s", {'UUID': UUID})
+        account = cursor.fetchone()
+        if account:
+            captcha_response = request.form.get('g-recaptcha-response')
+            if request.method == 'POST' and 'password' in request.form and 'confirm password' in request.form:
+                if is_human(captcha_response):
+                    password = request.form['password']
+                    confirm_password = request.form['confirm password']
+                    if password != confirm_password:
+                        flash("Your Password isn't the same as your confirm password. Please Try Again..")
+                        return render_template('Resetpassword.html', sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
+                    else:
+                        now = datetime.datetime.now().replace(microsecond=0)
+                        sql = "UPDATE accounts SET password_update_time = %s WHERE UUID = %s "
+                        value = (now, UUID)
+                        print(value)
+                        cursor.execute(sql, value)
+                        salt = bcrypt.gensalt(rounds=16)
+                        hash_password = bcrypt.hashpw(password.encode(), salt)
+                        sql2 = "UPDATE accounts SET Password = %s WHERE UUID = %s "
+                        value2 = (hash_password, UUID)
+                        cursor.execute(sql2, value2)
+                        UUID2 = uuid.uuid4().hex
+                        sql3 = "UPDATE accounts SET UUID = %s WHERE UUID = %s "
+                        value3 = (UUID2, UUID)
+                        cursor.execute(sql3, value3)
+                        mysql.connection.commit()
+                        return redirect(url_for('login'))
                 else:
-                    salt = bcrypt.gensalt(rounds=16)
-                    hash_password = bcrypt.hashpw(password.encode(), salt)
-                    sql = "UPDATE accounts SET Password = %s WHERE UUID = %s "
-                    value = (hash_password, UUID)
-                    cursor.execute(sql, value)
-                    UUID2 = uuid.uuid4().hex
-                    sql2 = "UPDATE accounts SET UUID = %s WHERE UUID = %s "
-                    value2 = (UUID2, UUID)
-                    cursor.execute(sql2, value2)
-                    mysql.connection.commit()
-                    return redirect(url_for('login'))
-        return render_template('Resetpassword.html', sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
-    else:
-        return redirect(url_for('login'))
+                    flash('Sorry ! Please Check Im not a robot.')
+                    return redirect(url_for('Resetpassword', UUID=UUID))
+            return render_template('Resetpassword.html', sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
+        else:
+            return redirect(url_for('login'))
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -1407,6 +1412,7 @@ def login():
                 decryptedaddress = decryptedaddress_Binary.decode('utf8')
                 decryptedNRIC = decryptedNRIC_Binary.decode('utf-8')
                 decryptedPhoneNo = decryptedPhoneNo_Binary.decode('utf-8')
+
                 print(decryptedaddress)
                 print(decryptedNRIC)
                 print(decryptedPhoneNo)
@@ -1415,9 +1421,11 @@ def login():
                 # This means that you have logged in
                 print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
                 print(request.remote_addr)
-
                 if bcrypt.checkpw(password.encode(), hashandsalt.encode()):
-                    if account['Account_Status'] == "Banned":
+                    #compare the current date and time with the last password update time
+                    if account['password_update_time'] + datetime.timedelta(days=365) <= datetime.datetime.now().replace(microsecond=0):
+                        return redirect(url_for('Resetpassword', UUID=account['UUID']))
+                    elif account['Account_Status'] == "Banned":
                         print("This account is banned")
                         flash("This Account has been banned")
                     elif account['Account_Status'] == "Disabled":
@@ -1452,7 +1460,7 @@ def login():
                         login_ID = cursor.fetchone()
                         cursor.execute("""INSERT INTO usersloggedin VALUES (NULL,%s,%s)""",(session['ID'],login_ID['Log_in_ID']))
                         mysql.connection.commit()
-                        if account1['Text_Message_Status'] ==True or account1['Authenticator_Status']==True or account1['Push_Base_Status']==True or account1['Backup_Code_Status']==True:
+                        if account1['Text_Message_Status'] == True or account1['Authenticator_Status']==True or account1['Push_Base_Status']==True or account1['Backup_Code_Status']==True:
                             session['2fa_status']='Fail'
                             return render_template("2fa.html", status_text=account1['Text_Message_Status'], status_auth=account1['Authenticator_Status'], status_psuh=account1['Push_Base_Status'], status_back=account1['Backup_Code_Status'])
                         else:
@@ -1542,6 +1550,7 @@ def create_login_user():
             print(DOB)
             now = datetime.datetime.now()
             account_creation_time = now.strftime("%Y-%m-%d %H:%M:%S")
+            password_update_time = now.replace(microsecond=0)
             email_confirm = 0
             UUID = uuid.uuid4().hex
             Account_Status='Active'
@@ -1570,10 +1579,10 @@ def create_login_user():
             else:
 
                 # Account doesnt exists and the form data is valid, now insert new account into accounts table
-                cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                                , (username, EncryptedNRIC, DOB, hash_password, gender, EncryptPhoneNo, email, security_questions_1,
                                   security_questions_2, answer_1, answer_2, encryptedaddress, role, account_creation_time,
-                                  email_confirm, key, UUID, Account_Status))
+                                  email_confirm, key, UUID, Account_Status, password_update_time))
                 mysql.connection.commit()
                 msg = 'You have successfully registered! '
                 print("working")
@@ -1649,6 +1658,7 @@ def create_login_admin():
 
                 now = datetime.datetime.now()
                 account_creation_time = now.strftime("%Y-%m-%d %H:%M:%S")
+                password_update_time = now.replace(microsecond=0)
                 email_confirm = 0
                 UUID = uuid.uuid4().hex
                 Account_Status='Active'
@@ -1677,10 +1687,10 @@ def create_login_admin():
                 else:
 
                     # Account doesnt exists and the form data is valid, now insert new account into accounts table
-                    cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                    cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                                    , (username, EncryptedNRIC, DOB, hash_password, gender, EncryptPhoneNo, email, security_questions_1,
                                       security_questions_2, answer_1, answer_2, encryptedaddress, role, account_creation_time,
-                                      email_confirm,key,UUID,Account_Status))
+                                      email_confirm, key, UUID, Account_Status, password_update_time))
                     mysql.connection.commit()
                     msg = 'You have successfully registered! '
                     print("working")
