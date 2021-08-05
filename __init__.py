@@ -171,7 +171,7 @@ def callback():
             flash("Account has been disabled")
             return redirect("/login")
         else:
-            cursor.execute("""INSERT INTO UserLogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
+            cursor.execute("""INSERT INTO userlogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
             mysql.connection.commit()
 
             cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
@@ -206,6 +206,7 @@ def callback():
         DOB = False
         gender = False
         password = id_info.get("name")+'1234'
+        print(password)
         phone_no =  id_info.get("name")+'phn'
         email = id_info.get("email")
         security_questions_1 = False
@@ -288,7 +289,7 @@ def callback():
             session["Username"] = id_info.get("name")
             session['2fa_status'] = 'Nil'
             session['role'] = 'Guest'
-            cursor.execute("""INSERT INTO UserLogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
+            cursor.execute("""INSERT INTO userlogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
             mysql.connection.commit()
 
             cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
@@ -653,7 +654,7 @@ def two_fa_email_check():
         session['2fa_status']='Pass'
 
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute("""INSERT INTO UserLogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
+        cursor.execute("""INSERT INTO userlogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
         mysql.connection.commit()
         cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (
             session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.remote_addr))
@@ -720,7 +721,7 @@ def two_fa_backupcode_check():
             "UPDATE authentication_table SET Backup_Code_Status=%s , Backup_Code_Key= %s ,Backup_Code_No_Of_Use=%s  WHERE Account_ID=%s ",
             (Backup_Code_Status, Backup_Code_Key, Backup_Code_No_Of_Use, [session['ID']]))
         mysql.connection.commit()
-        cursor.execute("""INSERT INTO UserLogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
+        cursor.execute("""INSERT INTO userlogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
         mysql.connection.commit()
         cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (
             session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.remote_addr))
@@ -737,7 +738,7 @@ def two_fa_backupcode_check():
             [session['ID']])
         logininfo = cursor.fetchone()
 
-        msg = Message("Login Notification", recipients=[session['Email']])
+        msg = Message("Login Notification", recipients=[account1['Email']])
         Username = session['Username']
         IP = logininfo['Log_In_IP_Address']
         Date = logininfo['Account_Log_In_Time']
@@ -779,7 +780,7 @@ def two_fa_authen_check():
     if pyotp.TOTP(secret).verify(otp):
         session['2fa_status'] = 'Pass'
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute("""INSERT INTO UserLogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
+        cursor.execute("""INSERT INTO userlogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
         mysql.connection.commit()
         cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (
             session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.remote_addr))
@@ -912,7 +913,21 @@ def Userprofile():
             cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
             account = cursor.fetchone()
             # Show the profile page with account info
-            return render_template('userprofile.html', account=account, email=session['email'],NRIC = session['NRIC'],address = session['Address'],phone_no = session['Phone_No'])
+            key = account['SymmetricKey']
+            fkey = Fernet(key)
+            decrypted_phone_binary = fkey.decrypt(account['Phone_Number'].encode())
+            decrypted_address_binary = fkey.decrypt(account['Address'].encode())
+            decrypted_NRIC_binary =  fkey.decrypt(account['NRIC'].encode())
+
+
+            print(decrypted_phone_binary)
+
+            decrypted_phone = decrypted_phone_binary.decode('utf-8')
+            decrypted_address = decrypted_address_binary.decode('utf-8')
+            decrypted_NRIC = decrypted_address_binary.decode('utf-8')
+
+
+            return render_template('userprofile.html', account=account, email=account['Email'],NRIC = decrypted_NRIC,address = decrypted_address,phone_no = decrypted_phone)
             # User is not loggedin redirect to login page
         return redirect(url_for('login'))
 
@@ -1084,7 +1099,7 @@ def Changesettings():
                 msg = Message("Update of Account", recipients=account['Email'].split())
                 msg.html = render_template('UpdateEmail.html', counter=str(counter), Ipaddress=request.remote_addr)
                 mail.send(msg)
-                flash("You have just updated {} item/s in your account. An email has been send out as a notification.".format(counter))
+                flash("You have just updated {} item/s in your account. An email has been send out as a notification.".format(counter), 'category1')
 
 
 
@@ -1263,13 +1278,15 @@ def Audit():
             account = cursor.fetchone()
             cursor.execute("""SELECT * FROM accounts""")
 
-            cursor.execute("""SELECT Distinct A.Account_ID,A.Account_Log_In_Time AS TimeOfActivity,UL.LoginType AS EventType ,A.Log_In_Ip_Address AS Ip_Address from account_log_ins A 
-                            INNER JOIN userlogin AS UL ON UL.Account_ID = A.Account_ID WHERE UL.LoginType = 'Login'
-                            UNION SELECT * FROM
-                            (SELECT Distinct ACO.Account_ID,ACO.Log_Out_Time,UL.LoginType,ACO.Log_Out_IP_Address FROM account_log_out ACO
+            cursor.execute("""SELECT DISTINCT Acc.ID , Acc.Username , ALI.Account_Log_In_Time AS TimeOfActivity ,ALI.Log_In_IP_Address AS IP_Address , UL.LoginType AS EventType FROM account_log_ins ALI INNER JOIN accounts AS Acc ON Acc.ID = ALI.Account_ID
+                            INNER JOIN userlogin AS UL ON UL.Account_ID = ALI.Account_ID WHERE UL.LoginType = 'Login'
+                            UNION SELECT * FROM (SELECT Distinct ACO.Account_ID,ACC.Username,ACO.Log_Out_Time,ACO.Log_Out_IP_Address,UL.LoginType FROM account_log_out ACO 
+                            INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
                             INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout') AS TABLE2 
-                            UNION SELECT * FROM (SELECT Account_ID,Date_and_Time,UpdatedEvent,Ip_Address FROM userupdatetime) AS TABLE3
+                            UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID) AS TABLE3
                             ORDER BY TimeOfActivity; """)
+
+
             allaccounts = cursor.fetchall()
             return render_template('AuditLog.html',account=account,role = account['role'],allaccounts = allaccounts)#labels = labels,values = values)
         else:
@@ -1345,16 +1362,13 @@ def UserLogsActivity():
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
         account = cursor.fetchone()
-        cursor.execute("""SELECT Account_ID,LoginType,Log_In_IP_Address as IP_Address, Log_Out_Time as TimeOfActivity  FROM (SELECT distinct a.Account_ID,u.LoginType,a.Log_In_IP_Address,b.Log_Out_Time 
-                        FROM account_log_ins a inner join account_log_out AS b ON b.Account_ID = a.Account_ID 
-                        INNER JOIN UserLogin AS u ON u.Account_ID = a.Account_ID
-                        WHERE u.LoginType = 'Logout' and a.Account_ID = %s) as Table1
-                        UNION
-                        SELECT * FROM (SELECT distinct a.Account_ID,u.LoginType,a.Log_In_IP_Address,a.Account_Log_In_Time 
-                        FROM account_log_ins a inner join account_log_out AS b ON b.Account_ID = a.Account_ID 
-                        INNER JOIN UserLogin AS u ON u.Account_ID = a.Account_ID
-                        WHERE u.LoginType = 'Login' and a.Account_ID = %s) As Table2 UNION SELECT Account_ID,UpdatedEvent,Ip_Address,Date_and_Time 
-                        FROM userupdatetime ORDER BY TimeOfActivity """,[session['ID'],session['ID']])
+        cursor.execute("""SELECT DISTINCT Acc.ID , Acc.Username , ALI.Account_Log_In_Time AS TimeOfActivity ,ALI.Log_In_IP_Address AS IP_Address , UL.LoginType AS EventType FROM account_log_ins ALI INNER JOIN accounts AS Acc ON Acc.ID = ALI.Account_ID
+                            INNER JOIN userlogin AS UL ON UL.Account_ID = ALI.Account_ID WHERE UL.LoginType = 'Login' AND Acc.Username = %s
+                            UNION SELECT * FROM (SELECT Distinct ACO.Account_ID,ACC.Username,ACO.Log_Out_Time,ACO.Log_Out_IP_Address,UL.LoginType FROM account_log_out ACO 
+                            INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
+                            INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout' AND ACC.Username = %s) AS TABLE2 
+                            UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID WHERE accounts.Username = %s) AS TABLE3
+                            ORDER BY TimeOfActivity;               """,[session['Username'],session['Username'],session['Username']])
 
         userloginactivity = cursor.fetchall()
 
@@ -1539,7 +1553,7 @@ def login():
                             return render_template("2fa.html", status_text=account1['Text_Message_Status'], status_auth=account1['Authenticator_Status'], status_psuh=account1['Push_Base_Status'], status_back=account1['Backup_Code_Status'])
                         else:
 
-                            cursor.execute("""INSERT INTO UserLogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
+                            cursor.execute("""INSERT INTO userlogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
                             mysql.connection.commit()
                             cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (
                             session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.remote_addr))
@@ -1589,14 +1603,16 @@ def login():
 
 @app.route('/logout')
 def accountlogout():
-    try:
+    #try:
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         #cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': session['Username']})
         #account = cursor.fetchone()
         if session:
             #Record into database that user log out
-            cursor.execute("""INSERT INTO UserLogin VALUES (NULL,%s,%s) """, (session['ID'], "Logout"))
-            cursor.execute("""INSERT INTO account_log_out VALUES (NULL,%s,%s) """, (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+            cursor.execute("""INSERT INTO userlogin VALUES (NULL,%s,%s) """, (session['ID'], "Logout"))
+            ip_address = request.remote_addr
+            cursor.execute("""INSERT INTO account_log_out VALUES (NULL,%s,%s,%s) """, (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),ip_address))
+
             mysql.connection.commit()
             sqlcode = """UPDATE account_log_ins INNER JOIN account_log_out ON account_log_ins.Account_ID = 
             account_log_out.Account_ID SET account_log_ins.Log_Out_ID = account_log_out.Log_Out_ID WHERE 
@@ -1612,7 +1628,7 @@ def accountlogout():
             return redirect(url_for('login'))
         else:
             print("Session cant be used by 2 user")
-    except:
+    #except:
         return render_template('error404.html')
 
 
