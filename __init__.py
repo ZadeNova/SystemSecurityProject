@@ -1196,6 +1196,18 @@ def Managerprofile():
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
+
+
+
+
+
+
+
+
+
+
+
+
 # Edit this - Zadesqlstuff
 
 def get_location(ip_address):
@@ -1230,6 +1242,19 @@ def Ipmap():
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
+
+# Zade Security Notification
+
+def SecurityAlgo():
+    # Write down conditions for when to notify user if security threshold exceeds some amount.
+    return 'dew it'
+
+
+
+
+
+
+
 
 
 @app.route('/dashboard')
@@ -1490,7 +1515,7 @@ def login():
                 decryptedaddress = decryptedaddress_Binary.decode('utf8')
                 decryptedNRIC = decryptedNRIC_Binary.decode('utf-8')
                 decryptedPhoneNo = decryptedPhoneNo_Binary.decode('utf-8')
-
+                print("All print statements here are testcode")
                 print(decryptedaddress)
                 print(decryptedNRIC)
                 print(decryptedPhoneNo)
@@ -1499,7 +1524,7 @@ def login():
                 # This means that you have logged in
                 print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
                 print(request.remote_addr)
-
+                print("End of print testcode")
                 if bcrypt.checkpw(password.encode(), hashandsalt.encode()):
                     #compare the current date and time with the last password update time
                     if account['password_update_time'] + datetime.timedelta(days=365) <= datetime.datetime.now().replace(microsecond=0):
@@ -1572,9 +1597,15 @@ def login():
                     Username = account['Username']
                     if Username == request.form['username']:
                         print("Attempted failed log in! ")
+                        # Jaythams/Quadrafall/Jett main this is your area to do you fucker
+                        #cursor.execute(INSERT INTO Jaydon you do this shit urself)
+
+
+
                     return render_template('login.html', msg=msg, sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
             else:
                 msg ='Incorrect Username/Password'
+
 
                 return render_template('login.html', msg=msg, sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
 
@@ -1720,6 +1751,11 @@ def create_login_user():
 
 @app.route('/Createloginadmin', methods=['GET', 'POST'])
 def create_login_admin():
+
+
+    # Write the code somewhere in this function to record down create admin user event. Log it into audit log?
+
+
     if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
 
         if session['role'] == 'Admin':
@@ -2604,13 +2640,11 @@ def DeliverOrder(id):
 
 # Hong ji's Code
 
-app.secret_key = 'somesecretkeythatonlyishouldknow'
 
 
-##login ###
-# import session
 
-# Edit this - Zadesqlstuff
+
+
 
 
 @app.route('/mang_update_dinein/<int:id>/', methods=['GET', 'POST'])
