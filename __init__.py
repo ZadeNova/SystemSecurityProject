@@ -344,7 +344,7 @@ socketio = SocketIO(app, logger=True, engineio_logger=True)
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'ZadePrime'  # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = 'ZadePrimeSQL69420'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -721,7 +721,7 @@ def two_fa_backupcode_check():
             "UPDATE authentication_table SET Backup_Code_Status=%s , Backup_Code_Key= %s ,Backup_Code_No_Of_Use=%s  WHERE Account_ID=%s ",
             (Backup_Code_Status, Backup_Code_Key, Backup_Code_No_Of_Use, [session['ID']]))
         mysql.connection.commit()
-        cursor.execute("""INSERT INTO userlogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
+        cursor.execute("""INSERT INTO UserLogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
         mysql.connection.commit()
         cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (
             session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.remote_addr))
@@ -738,7 +738,7 @@ def two_fa_backupcode_check():
             [session['ID']])
         logininfo = cursor.fetchone()
 
-        msg = Message("Login Notification", recipients=[account1['Email']])
+        msg = Message("Login Notification", recipients=[session['Email']])
         Username = session['Username']
         IP = logininfo['Log_In_IP_Address']
         Date = logininfo['Account_Log_In_Time']
@@ -780,7 +780,7 @@ def two_fa_authen_check():
     if pyotp.TOTP(secret).verify(otp):
         session['2fa_status'] = 'Pass'
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute("""INSERT INTO userlogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
+        cursor.execute("""INSERT INTO UserLogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
         mysql.connection.commit()
         cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (
             session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.remote_addr))
@@ -913,21 +913,7 @@ def Userprofile():
             cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
             account = cursor.fetchone()
             # Show the profile page with account info
-            key = account['SymmetricKey']
-            fkey = Fernet(key)
-            decrypted_phone_binary = fkey.decrypt(account['Phone_Number'].encode())
-            decrypted_address_binary = fkey.decrypt(account['Address'].encode())
-            decrypted_NRIC_binary =  fkey.decrypt(account['NRIC'].encode())
-
-
-            print(decrypted_phone_binary)
-
-            decrypted_phone = decrypted_phone_binary.decode('utf-8')
-            decrypted_address = decrypted_address_binary.decode('utf-8')
-            decrypted_NRIC = decrypted_address_binary.decode('utf-8')
-
-
-            return render_template('userprofile.html', account=account, email=account['Email'],NRIC = decrypted_NRIC,address = decrypted_address,phone_no = decrypted_phone)
+            return render_template('userprofile.html', account=account, email=session['email'],NRIC = session['NRIC'],address = session['Address'],phone_no = session['Phone_No'])
             # User is not loggedin redirect to login page
         return redirect(url_for('login'))
 
@@ -1099,7 +1085,7 @@ def Changesettings():
                 msg = Message("Update of Account", recipients=account['Email'].split())
                 msg.html = render_template('UpdateEmail.html', counter=str(counter), Ipaddress=request.remote_addr)
                 mail.send(msg)
-                flash("You have just updated {} item/s in your account. An email has been send out as a notification.".format(counter), 'category1')
+                flash("You have just updated {} item/s in your account. An email has been send out as a notification.".format(counter))
 
 
 
@@ -1603,16 +1589,14 @@ def login():
 
 @app.route('/logout')
 def accountlogout():
-    #try:
+    try:
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         #cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': session['Username']})
         #account = cursor.fetchone()
         if session:
             #Record into database that user log out
-            cursor.execute("""INSERT INTO userlogin VALUES (NULL,%s,%s) """, (session['ID'], "Logout"))
-            ip_address = request.remote_addr
-            cursor.execute("""INSERT INTO account_log_out VALUES (NULL,%s,%s,%s) """, (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),ip_address))
-
+            cursor.execute("""INSERT INTO UserLogin VALUES (NULL,%s,%s) """, (session['ID'], "Logout"))
+            cursor.execute("""INSERT INTO account_log_out VALUES (NULL,%s,%s,%s) """, (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),request.remote_addr))
             mysql.connection.commit()
             sqlcode = """UPDATE account_log_ins INNER JOIN account_log_out ON account_log_ins.Account_ID = 
             account_log_out.Account_ID SET account_log_ins.Log_Out_ID = account_log_out.Log_Out_ID WHERE 
@@ -1628,7 +1612,7 @@ def accountlogout():
             return redirect(url_for('login'))
         else:
             print("Session cant be used by 2 user")
-    #except:
+    except:
         return render_template('error404.html')
 
 
