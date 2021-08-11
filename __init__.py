@@ -264,10 +264,10 @@ def callback():
             flash('Email already exists! Try another Email !')
             return redirect("/login")
         else:
-            cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+            cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                            , (username, EncryptedNRIC, DOB, hash_password, gender, EncryptPhoneNo, email, security_questions_1,
                               security_questions_2, answer_1, answer_2, encryptedaddress, role, account_creation_time,
-                              email_confirm, key, UUID, Account_Status, password_update_time,Account_Login_Notification))
+                              email_confirm, key, UUID, Account_Status, password_update_time,Account_Login_Notification, 0))
             mysql.connection.commit()
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': username})
@@ -389,7 +389,7 @@ socketio = SocketIO(app, logger=True, engineio_logger=True)
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'Dragonnight1002'  # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = 'N0passwordatall'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -1637,7 +1637,9 @@ def login():
                         flash("Account has been disabled")
 
                     else:
-
+                        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+                        cursor.execute("UPDATE accounts SET Attempts = 0 WHERE username = %(username)s", {'username': username})
+                        mysql.connection.commit()
                         session['loggedin'] = True
                         session['ID'] = account['ID']
                         session['Username'] = account['Username']
@@ -1657,8 +1659,6 @@ def login():
 
                         cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
                         account1 = cursor.fetchone()
-
-
 
                         if account1['Text_Message_Status'] ==True or account1['Authenticator_Status']==True or account1['Push_Base_Status']==True or account1['Backup_Code_Status']==True:
                             session['2fa_status']='Fail'
@@ -1704,29 +1704,31 @@ def login():
                                     return redirect(url_for('Userprofile'))
 
 
-
-
                 else:  # This else statement executes when password verification fails.
                     msg = 'Incorrect Username/Password'
                     Username = account['Username']
                     if Username == request.form['username']:
-                        print("Attempted failed log in! ")
-                        # Jaythams/Quadrafall/Jett main this is your area to do you fucker
-                        #cursor.execute(INSERT INTO Jaydon you do this shit urself)
-
-
-
+                        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+                        cursor.execute("SELECT Attempts FROM accounts WHERE username = %(username)s", {'username': username})
+                        Original = cursor.fetchone()
+                        Attempts = Original['Attempts']
+                        if Attempts == 3:
+                            cursor.execute("UPDATE accounts SET Account_Status = 'Disabled' WHERE username = %(username)s", {'username': username})
+                            mysql.connection.commit()
+                        else:
+                            Attempts += 1
+                            sql2 = "UPDATE accounts SET Attempts = %s WHERE username = %s "
+                            value2 = (Attempts, Username)
+                            cursor.execute(sql2, value2)
+                            mysql.connection.commit()
                     return render_template('login.html', msg=msg, sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
             else:
                 msg ='Incorrect Username/Password'
-
-
                 return render_template('login.html', msg=msg, sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
 
         else:
             # Log invalid attempts
             status = "Sorry ! Please Check Im not a robot."
-
         flash(status)
 
     return render_template('login.html', sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
@@ -1825,10 +1827,10 @@ def create_login_user():
                 else:
 
                     # Account doesnt exists and the form data is valid, now insert new account into accounts table
-                    cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                    cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                                    , (username, EncryptedNRIC, DOB, hash_password, gender, EncryptPhoneNo, email, security_questions_1,
                                       security_questions_2, answer_1, answer_2, encryptedaddress, role, account_creation_time,
-                                      email_confirm, key, UUID, Account_Status, password_update_time,Account_Login_Notification))
+                                      email_confirm, key, UUID, Account_Status, password_update_time, Account_Login_Notification, 0))
                     mysql.connection.commit()
                     msg = 'You have successfully registered! '
                     print("working")
@@ -1919,7 +1921,7 @@ def create_login_admin():
                 password_update_time = now.replace(microsecond=0)
                 email_confirm = 0
                 UUID = uuid.uuid4().hex
-                Account_Status='Active'
+                Account_Status = 'Active'
                 hash_password = bcrypt.hashpw(password.encode(), salt)
                 #Symmetric Key encryption
                 key = Fernet.generate_key()
@@ -1945,10 +1947,10 @@ def create_login_admin():
                 else:
 
                     # Account doesnt exists and the form data is valid, now insert new account into accounts table
-                    cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                    cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                                    , (username, EncryptedNRIC, DOB, hash_password, gender, EncryptPhoneNo, email, security_questions_1,
                                       security_questions_2, answer_1, answer_2, encryptedaddress, role, account_creation_time,
-                                      email_confirm, key, UUID, Account_Status, password_update_time,Account_Login_Notification))
+                                      email_confirm, key, UUID, Account_Status, password_update_time, Account_Login_Notification, 0))
                     mysql.connection.commit()
                     msg = 'You have successfully registered! '
                     print("working")
