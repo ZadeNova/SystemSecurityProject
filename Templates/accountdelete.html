@@ -24,23 +24,40 @@
     font-size:30px;
     }
 </style>
-<h1 class="display-4">Delete account</h1>
-<br>
-<div id="MyClockDisplay" class="clock" onload="showTime()"></div>
-<body onload="showTime()">
-<p>The following will be deleted : </p>
-<ul>
-    <li><b>username :</b> <b>{{ account['Username'] }}  </b></li>
-    <li><b>role :</b> <b>{{ account['role'] }}  </b></li>
-
-</ul>
-<br>
-
- <p>
 
 
-<p>Please type the following sentences word :</p>
-        {% if msg %}
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-lg-12">
+      <div class="jumbotron text-center p-4">
+
+        <h4>Deleting current Account </h4>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <form>
+        <div>
+          <h5>The following account will be deleted  </h5>
+          <ul>
+
+              <li><b>username :</b> <b>{{ account['Username'] }}  </b></li>
+                <li><b>role :</b> <b>{{ account['role'] }}  </b></li>
+          </ul>
+        </div>
+          <div>
+          <h5>Instructions!  </h5>
+          <ul>
+              <li>I want to delete my account</li>
+              <li>Type the above sentence , word by word including spacing</li>
+
+          </ul>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="col-lg-7">
+    {% if msg %}
         <div class="alert alert-danger">
               <strong>{{msg}}</strong>
           </div>
@@ -57,9 +74,23 @@
           {% endif %}
           {% endwith %}
           </p>
+      <form action="/deleteaccountcheck"     method="POST">
+        <div class="form-group">
+          <label for="otp">Type the sentence here :  </label>
+          <input type="text" class="form-control" id="otp"  name="otp" required>
 
-<form  action="/deleteaccountcheck" method="post">
-    Type the sentences above , word by word including spacing : <input type="text" name="user_int">
-    <input type="submit" value="Submit">
-</form>
+
+        </div>
+        <div class="text-center">
+
+          <button type="submit" class="btn btn-primary">confirm</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<a href="/Settings"><button class="btn btn-primary" type="button">Return</button></a>
+
+
+
 {% endblock %}

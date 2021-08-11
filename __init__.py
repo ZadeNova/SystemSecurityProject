@@ -111,7 +111,6 @@ def login_is_required(function):
             return render_template('error401.html') # Authorization required
         else:
             return function()
-
     return wrapper
 @app.route("/googleLog")
 def googlelog():
@@ -199,7 +198,6 @@ def callback():
                                        status_auth=account1['Authenticator_Status'],
                                        status_psuh=account1['Push_Base_Status'],
                                        status_back=account1['Backup_Code_Status'])
-
             else:
                 cursor.execute(
                     'SELECT * FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )',
@@ -1697,10 +1695,7 @@ def login():
 
                         print(session)
                         print(account)
-
                         # Update UserActions table for login!
-
-
                         cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
                         account1 = cursor.fetchone()
 
@@ -1723,8 +1718,6 @@ def login():
                             mysql.connection.commit()
                             cursor.execute('SELECT * FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )',[session['ID']])
                             logininfo = cursor.fetchone()
-
-
                             if session['Account_Login_Notification'] == 1:              # This means account got login notification.
 
                                 msg = Message("Login Notification", recipients=[account['Email']])
@@ -1737,16 +1730,11 @@ def login():
                                     return redirect(url_for('Managerprofile'))
                                 else:
                                     return redirect(url_for('Userprofile'))
-
-
-
-
                             else:   # This means no Login notification
                                 if account['role'] == 'Admin':
                                     return redirect(url_for('Managerprofile'))
                                 else:
                                     return redirect(url_for('Userprofile'))
-
 
                 else:  # This else statement executes when password verification fails.
                     msg = 'Incorrect Username/Password'
