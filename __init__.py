@@ -162,6 +162,9 @@ def callback():
         session['NRIC'] =  decryptedNRIC
         session['Address'] = decryptedaddress
         session['Phone_No']= decryptedPhoneNo
+
+        session['Account_Login_Notification'] = account['Account_Login_Notification']
+        print( session["Account_Login_Notification"])
         if account['Account_Status'] == "Banned":
             print("This account is banned")
             flash("This Account has been banned")
@@ -184,6 +187,7 @@ def callback():
                 """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
                 [session['ID']])
             login_ID = cursor.fetchone()
+
             cursor.execute("""INSERT INTO usersloggedin VALUES (NULL,%s,%s)""", (session['ID'], login_ID['Log_in_ID']))
             mysql.connection.commit()
             cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
@@ -231,6 +235,7 @@ def callback():
         answer_2 = False
         address =  id_info.get("name")+'address'
         role = 'Guest'
+        Account_Login_Notification =0
         print(username)
         print(email)
         print(DOB)
@@ -259,10 +264,10 @@ def callback():
             flash('Email already exists! Try another Email !')
             return redirect("/login")
         else:
-            cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+            cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                            , (username, EncryptedNRIC, DOB, hash_password, gender, EncryptPhoneNo, email, security_questions_1,
                               security_questions_2, answer_1, answer_2, encryptedaddress, role, account_creation_time,
-                              email_confirm, key, UUID, Account_Status, password_update_time))
+                              email_confirm, key, UUID, Account_Status, password_update_time,Account_Login_Notification))
             mysql.connection.commit()
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': username})
@@ -300,12 +305,16 @@ def callback():
             mysql.connection.commit()
             cursor.execute("""SELECT ID FROM accounts WHERE Username = %(username)s""", {'username': username})
             account = cursor.fetchone()
+
             session['loggedin'] = True
             session['ID'] = account['ID']
+
             session["Username"] = id_info.get("name")
             session['2fa_status'] = 'Nil'
             session['role'] = 'Guest'
-            session['email']=account['Email']
+            session['email']=email
+            session['Account_Login_Notification'] = account12['Account_Login_Notification']
+            print(session["Account_Login_Notification"])
             cursor.execute("""INSERT INTO userlogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
             mysql.connection.commit()
 
@@ -380,7 +389,7 @@ socketio = SocketIO(app, logger=True, engineio_logger=True)
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'ZadePrime'  # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = '1234'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -777,7 +786,7 @@ def two_fa_backupcode_check():
             [session['ID']])
         logininfo = cursor.fetchone()
         if session["Account_Login_Notification"] == 1:  # If login notif true
-            msg = Message("Login Notification", recipients=[session['Email']])
+            msg = Message("Login Notification", recipients=[session['email']])
             Username = session['Username']
             IP = logininfo['Log_In_IP_Address']
             Date = logininfo['Account_Log_In_Time']
@@ -1780,6 +1789,7 @@ def create_login_user():
                 answer_2 = request.form['Answers_2']
                 address = request.form['Address']
                 role = 'Guest'
+                Account_Login_Notification =0
                 print(DOB)
                 now = datetime.datetime.now()
                 account_creation_time = now.strftime("%Y-%m-%d %H:%M:%S")
@@ -1812,10 +1822,10 @@ def create_login_user():
                 else:
 
                     # Account doesnt exists and the form data is valid, now insert new account into accounts table
-                    cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                    cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                                    , (username, EncryptedNRIC, DOB, hash_password, gender, EncryptPhoneNo, email, security_questions_1,
                                       security_questions_2, answer_1, answer_2, encryptedaddress, role, account_creation_time,
-                                      email_confirm, key, UUID, Account_Status, password_update_time))
+                                      email_confirm, key, UUID, Account_Status, password_update_time,Account_Login_Notification))
                     mysql.connection.commit()
                     msg = 'You have successfully registered! '
                     print("working")
@@ -1896,7 +1906,7 @@ def create_login_admin():
                 answer_2 = request.form['Answers_2']
                 address = request.form['Address']
                 role = 'Admin'
-
+                Account_Login_Notification =0
                 now = datetime.datetime.now()
                 account_creation_time = now.strftime("%Y-%m-%d %H:%M:%S")
                 password_update_time = now.replace(microsecond=0)
@@ -1928,10 +1938,10 @@ def create_login_admin():
                 else:
 
                     # Account doesnt exists and the form data is valid, now insert new account into accounts table
-                    cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                    cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                                    , (username, EncryptedNRIC, DOB, hash_password, gender, EncryptPhoneNo, email, security_questions_1,
                                       security_questions_2, answer_1, answer_2, encryptedaddress, role, account_creation_time,
-                                      email_confirm, key, UUID, Account_Status, password_update_time))
+                                      email_confirm, key, UUID, Account_Status, password_update_time,Account_Login_Notification))
                     mysql.connection.commit()
                     msg = 'You have successfully registered! '
                     print("working")
