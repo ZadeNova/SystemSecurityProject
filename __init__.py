@@ -195,10 +195,21 @@ def callback():
                                        status_auth=account1['Authenticator_Status'],
                                        status_psuh=account1['Push_Base_Status'],
                                        status_back=account1['Backup_Code_Status'])
+
             else:
+                cursor.execute(
+                    'SELECT * FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )',
+                    [session['ID']])
+                logininfo = cursor.fetchone()
+
+                msg = Message("Login Notification", recipients=[account['Email']])
+                Username = account['Username']
+                IP = logininfo['Log_In_IP_Address']
+                Date = logininfo['Account_Log_In_Time']
+                msg.html = render_template('Login_Notification_Email.html', Username=Username, Date=Date, IP=IP)
+                mail.send(msg)
                 return redirect("/homepage")
     else:
-
         salt = bcrypt.gensalt(rounds=16)
         username = id_info.get("name")
         session['ID'] = id_info.get("name")
@@ -289,6 +300,7 @@ def callback():
             session["Username"] = id_info.get("name")
             session['2fa_status'] = 'Nil'
             session['role'] = 'Guest'
+            session['email']=account['Email']
             cursor.execute("""INSERT INTO userlogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
             mysql.connection.commit()
 
@@ -304,6 +316,19 @@ def callback():
             login_ID = cursor.fetchone()
             cursor.execute("""INSERT INTO usersloggedin VALUES (NULL,%s,%s)""", (session['ID'], login_ID['Log_in_ID']))
             mysql.connection.commit()
+            cursor.execute(
+                'SELECT * FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )',
+                [session['ID']])
+            logininfo = cursor.fetchone()
+            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': username})
+            account = cursor.fetchone()
+            msg = Message("Login Notification", recipients=[account['Email']])
+            Username = account['Username']
+            IP = logininfo['Log_In_IP_Address']
+            Date = logininfo['Account_Log_In_Time']
+            msg.html = render_template('Login_Notification_Email.html', Username=Username, Date=Date, IP=IP)
+            mail.send(msg)
             return redirect("/homepage")
 
 
@@ -344,7 +369,7 @@ socketio = SocketIO(app, logger=True, engineio_logger=True)
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'N0passwordatall'  # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = '1234'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -672,7 +697,7 @@ def two_fa_email_check():
             [session['ID']])
         logininfo = cursor.fetchone()
 
-        msg = Message("Login Notification", recipients=[session['Email']])
+        msg = Message("Login Notification", recipients=[session['email']])
         Username = session['Username']
         IP = logininfo['Log_In_IP_Address']
         Date = logininfo['Account_Log_In_Time']
@@ -738,7 +763,7 @@ def two_fa_backupcode_check():
             [session['ID']])
         logininfo = cursor.fetchone()
 
-        msg = Message("Login Notification", recipients=[session['Email']])
+        msg = Message("Login Notification", recipients=[session['email']])
         Username = session['Username']
         IP = logininfo['Log_In_IP_Address']
         Date = logininfo['Account_Log_In_Time']
@@ -793,7 +818,7 @@ def two_fa_authen_check():
                        (session['ID'], login_ID['Log_in_ID']))
         mysql.connection.commit()
 
-        msg = Message("Login Notification", recipients=[account['Email']])
+        msg = Message("Login Notification", recipients=[session['email']])
         Username = account['Username']
         cursor.execute(
             'SELECT * FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )',

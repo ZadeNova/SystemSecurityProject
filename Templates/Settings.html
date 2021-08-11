@@ -29,7 +29,7 @@ body{
 
 .card {
     position: relative;
-    display: flex;
+
     flex-direction: column;
     min-width: 0;
     word-wrap: break-word;
@@ -259,8 +259,7 @@ body{
                       <li class="list-group-item has-icon">
                         Text Message
                         <div class="custom-control custom-control-nolabel custom-switch ml-auto">
-                          <input type="checkbox" class="custom-control-input" id="customSwitch6"  checked="">
-                          <label class="custom-control-label" for="customSwitch6"></label>
+
                           {%if status_text == 0 %}
                           <a href="/EmailOtpCheck"><button class="btn btn-light btn-sm ml-auto" type="button">Enable</button></a>
                           {%else%}
@@ -271,8 +270,7 @@ body{
                       <li class="list-group-item has-icon">
                         Authenticator App
                         <div class="custom-control custom-control-nolabel custom-switch ml-auto">
-                          <input type="checkbox"  class="custom-control-input" id="customSwitch7" checked="">
-                          <label class="custom-control-label" for="customSwitch7"></label>
+
                           {%if status_auth == 0 %}
                           <a href="/login/2fa/"><button class="btn btn-light btn-sm ml-auto" type="button">Enable</button></a>
                           {%else%}
@@ -283,8 +281,7 @@ body{
                       <li class="list-group-item has-icon">
                         Push-based
                         <div class="custom-control custom-control-nolabel custom-switch ml-auto">
-                          <input type="checkbox" class="custom-control-input" id="customSwitch8" checked="">
-                          <label class="custom-control-label" for="customSwitch8"></label>
+
                           {%if status_push == 0 %}
                           <a href="/login/2fa/"><button class="btn btn-light btn-sm ml-auto" type="button">Enable</button></a>
                           {%else%}
@@ -297,8 +294,7 @@ body{
                       <li class="list-group-item has-icon">
                         Backup Codes
                         <div class="custom-control custom-control-nolabel custom-switch ml-auto">
-                          <input type="checkbox" class="custom-control-input" id="customSwitch10">
-                          <label class="custom-control-label" for="customSwitch10"></label>
+
                           {%if status_back == 0 %}
                           <a href="/Backupcode"><button class="btn btn-light btn-sm ml-auto" type="button">Enable</button></a>
                           {%else  %}
