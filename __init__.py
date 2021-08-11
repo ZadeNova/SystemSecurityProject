@@ -344,7 +344,7 @@ socketio = SocketIO(app, logger=True, engineio_logger=True)
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'Dragonnight1002'  # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = 'N0passwordatall'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -1085,7 +1085,7 @@ def Changesettings():
                 msg = Message("Update of Account", recipients=account['Email'].split())
                 msg.html = render_template('UpdateEmail.html', counter=str(counter), Ipaddress=request.remote_addr)
                 mail.send(msg)
-                flash("You have just updated {} item/s in your account. An email has been send out as a notification.".format(counter))
+                flash("You have just updated {} item/s in your account. An email has been send out as a notification.".format(counter), 'category1')
 
 
 
