@@ -201,14 +201,19 @@ def callback():
                     'SELECT * FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )',
                     [session['ID']])
                 logininfo = cursor.fetchone()
+                if session["Account_Login_Notification"] == 1: # If True send email
+                    msg = Message("Login Notification", recipients=[account['Email']])
+                    Username = account['Username']
+                    IP = logininfo['Log_In_IP_Address']
+                    Date = logininfo['Account_Log_In_Time']
+                    msg.html = render_template('Login_Notification_Email.html', Username=Username, Date=Date, IP=IP)
+                    mail.send(msg)
+                    return redirect("/homepage")
 
-                msg = Message("Login Notification", recipients=[account['Email']])
-                Username = account['Username']
-                IP = logininfo['Log_In_IP_Address']
-                Date = logininfo['Account_Log_In_Time']
-                msg.html = render_template('Login_Notification_Email.html', Username=Username, Date=Date, IP=IP)
-                mail.send(msg)
-                return redirect("/homepage")
+                else:
+                    return redirect('/homepage')
+
+
     else:
         salt = bcrypt.gensalt(rounds=16)
         username = id_info.get("name")
@@ -323,13 +328,19 @@ def callback():
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': username})
             account = cursor.fetchone()
-            msg = Message("Login Notification", recipients=[account['Email']])
-            Username = account['Username']
-            IP = logininfo['Log_In_IP_Address']
-            Date = logininfo['Account_Log_In_Time']
-            msg.html = render_template('Login_Notification_Email.html', Username=Username, Date=Date, IP=IP)
-            mail.send(msg)
-            return redirect("/homepage")
+
+
+            if account["Account_Login_Notification"] == 1:
+
+                msg = Message("Login Notification", recipients=[account['Email']])
+                Username = account['Username']
+                IP = logininfo['Log_In_IP_Address']
+                Date = logininfo['Account_Log_In_Time']
+                msg.html = render_template('Login_Notification_Email.html', Username=Username, Date=Date, IP=IP)
+                mail.send(msg)
+                return redirect("/homepage")
+            else:
+                return redirect("/homepage")
 
 
 
@@ -369,7 +380,7 @@ socketio = SocketIO(app, logger=True, engineio_logger=True)
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'N0passwordatall'  # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = 'ZadePrime'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -696,14 +707,17 @@ def two_fa_email_check():
             'SELECT * FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )',
             [session['ID']])
         logininfo = cursor.fetchone()
+        if session["Account_Login_Notification"] == 1:  # If login notif true
 
-        msg = Message("Login Notification", recipients=[session['email']])
-        Username = session['Username']
-        IP = logininfo['Log_In_IP_Address']
-        Date = logininfo['Account_Log_In_Time']
-        msg.html = render_template('Login_Notification_Email.html', Username=Username, Date=Date, IP=IP)
-        mail.send(msg)
-        return redirect(url_for("homepage"))
+            msg = Message("Login Notification", recipients=[session['email']])
+            Username = session['Username']
+            IP = logininfo['Log_In_IP_Address']
+            Date = logininfo['Account_Log_In_Time']
+            msg.html = render_template('Login_Notification_Email.html', Username=Username, Date=Date, IP=IP)
+            mail.send(msg)
+            return redirect(url_for("homepage"))
+        else:
+            return redirect(url_for("homepage"))
     else:
         if time_pre<time_now:
             flash('Opt expired !','danger')
@@ -762,14 +776,16 @@ def two_fa_backupcode_check():
             'SELECT * FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )',
             [session['ID']])
         logininfo = cursor.fetchone()
-
-        msg = Message("Login Notification", recipients=[session['email']])
-        Username = session['Username']
-        IP = logininfo['Log_In_IP_Address']
-        Date = logininfo['Account_Log_In_Time']
-        msg.html = render_template('Login_Notification_Email.html', Username=Username, Date=Date, IP=IP)
-        mail.send(msg)
-        return redirect(url_for("homepage"))
+        if session["Account_Login_Notification"] == 1:  # If login notif true
+            msg = Message("Login Notification", recipients=[session['Email']])
+            Username = session['Username']
+            IP = logininfo['Log_In_IP_Address']
+            Date = logininfo['Account_Log_In_Time']
+            msg.html = render_template('Login_Notification_Email.html', Username=Username, Date=Date, IP=IP)
+            mail.send(msg)
+            return redirect(url_for("homepage"))
+        else:
+            return redirect(url_for("homepage"))
     else:
         flash('Incorrect Opt ,please check again !')
         return redirect(url_for("two_fa"))
@@ -818,20 +834,22 @@ def two_fa_authen_check():
                        (session['ID'], login_ID['Log_in_ID']))
         mysql.connection.commit()
 
-        msg = Message("Login Notification", recipients=[session['email']])
+        msg = Message("Login Notification", recipients=[account['Email']])
         Username = account['Username']
         cursor.execute(
             'SELECT * FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )',
             [session['ID']])
         logininfo = cursor.fetchone()
-
-        msg = Message("Login Notification", recipients=[account['Email']])
-        Username = account['Username']
-        IP = logininfo['Log_In_IP_Address']
-        Date = logininfo['Account_Log_In_Time']
-        msg.html = render_template('Login_Notification_Email.html', Username=Username, Date=Date, IP=IP)
-        mail.send(msg)
-        return redirect(url_for("homepage"))
+        if session["Account_Login_Notification"] == 1:  # If login notif true
+            msg = Message("Login Notification", recipients=[account['Email']])
+            Username = account['Username']
+            IP = logininfo['Log_In_IP_Address']
+            Date = logininfo['Account_Log_In_Time']
+            msg.html = render_template('Login_Notification_Email.html', Username=Username, Date=Date, IP=IP)
+            mail.send(msg)
+            return redirect(url_for("homepage"))
+        else:
+            return redirect(url_for("homepage"))
     else:
         # inform users if OTP is invalid
         flash("You have supplied an invalid 2FA token!", "danger")
@@ -1250,6 +1268,36 @@ def get_location(ip_address):
         return redirect(url_for("two_fa"))
 
 
+@app.route('/EmailLoginNotification',methods=['GET','POST'])
+def LoginNotification():
+
+    T,F = 1,0
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute("""SELECT * FROM accounts WHERE ID = %s AND Username = %s""",[session['ID'],session['Username']])
+    account = cursor.fetchone()
+
+    if session["Account_Login_Notification"] == 0:   # This means u on account login notification.
+        cursor.execute("""UPDATE accounts SET Account_Login_Notification = %s WHERE ID = %s """,[T,session['ID']])
+        session["Account_Login_Notification"] = 1
+        mysql.connection.commit()
+        print(session)
+        print('True')
+        return redirect(url_for('Changesettings'))
+    else:
+        cursor.execute("""UPDATE accounts SET Account_Login_Notification = %s WHERE ID = %s """, [F, session['ID']])
+        mysql.connection.commit()
+        session["Account_Login_Notification"] = 0
+        print(session)
+        print('False ')
+        return redirect(url_for('Changesettings'))
+
+
+
+
+
+
+
+
 @app.route('/IPmap')
 def Ipmap():
     if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
@@ -1306,30 +1354,32 @@ def Audit():
     # Error Messages
     # Alert Thresholds
     # Admin should be able to see if user change email/password/update settings.
+    try:
+        if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
+            if session['role'] == 'Admin':
+                cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+                cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+                account = cursor.fetchone()
+                cursor.execute("""SELECT * FROM accounts""")
 
-    if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
-        if session['role'] == 'Admin':
-            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-            cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
-            account = cursor.fetchone()
-            cursor.execute("""SELECT * FROM accounts""")
-
-            cursor.execute("""SELECT DISTINCT Acc.ID , Acc.Username , ALI.Account_Log_In_Time AS TimeOfActivity ,ALI.Log_In_IP_Address AS IP_Address , UL.LoginType AS EventType FROM account_log_ins ALI INNER JOIN accounts AS Acc ON Acc.ID = ALI.Account_ID
-                            INNER JOIN userlogin AS UL ON UL.Account_ID = ALI.Account_ID WHERE UL.LoginType = 'Login'
-                            UNION SELECT * FROM (SELECT Distinct ACO.Account_ID,ACC.Username,ACO.Log_Out_Time,ACO.Log_Out_IP_Address,UL.LoginType FROM account_log_out ACO 
-                            INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
-                            INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout') AS TABLE2 
-                            UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID) AS TABLE3
-                            ORDER BY TimeOfActivity; """)
+                cursor.execute("""SELECT DISTINCT Acc.ID , Acc.Username , ALI.Account_Log_In_Time AS TimeOfActivity ,ALI.Log_In_IP_Address AS IP_Address , UL.LoginType AS EventType FROM account_log_ins ALI INNER JOIN accounts AS Acc ON Acc.ID = ALI.Account_ID
+                                INNER JOIN userlogin AS UL ON UL.Account_ID = ALI.Account_ID WHERE UL.LoginType = 'Login'
+                                UNION SELECT * FROM (SELECT Distinct ACO.Account_ID,ACC.Username,ACO.Log_Out_Time,ACO.Log_Out_IP_Address,UL.LoginType FROM account_log_out ACO 
+                                INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
+                                INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout') AS TABLE2 
+                                UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID) AS TABLE3
+                                ORDER BY TimeOfActivity; """)
 
 
-            allaccounts = cursor.fetchall()
-            return render_template('AuditLog.html',account=account,role = account['role'],allaccounts = allaccounts)#labels = labels,values = values)
+                allaccounts = cursor.fetchall()
+                return render_template('AuditLog.html',account=account,role = account['role'],allaccounts = allaccounts)#labels = labels,values = values)
+            else:
+                return redirect(url_for('Userprofile'))
         else:
-            return redirect(url_for('Userprofile'))
-    else:
-        flash('Please complete your 2FA !', 'danger')
-        return redirect(url_for("two_fa"))
+            flash('Please complete your 2FA !', 'danger')
+            return redirect(url_for("two_fa"))
+    except:
+        return render_template('error404.html')
 
 
 
@@ -1585,6 +1635,7 @@ def login():
                         session['Phone_No'] = decryptedPhoneNo
                         session['2fa_status']='Nil'
                         session['role']=account['role']
+                        session['Account_Login_Notification'] = account['Account_Login_Notification']
 
                         print(session)
                         print(account)
@@ -1618,19 +1669,32 @@ def login():
                             logininfo = cursor.fetchone()
 
 
+                            if session['Account_Login_Notification'] == 1:              # This means account got login notification.
 
-                            msg = Message("Login Notification", recipients=[account['Email']])
-                            Username = account['Username']
-                            IP = logininfo['Log_In_IP_Address']
-                            Date = logininfo['Account_Log_In_Time']
-                            msg.html = render_template('Login_Notification_Email.html', Username=Username,Date = Date , IP = IP)
-                            mail.send(msg)
+                                msg = Message("Login Notification", recipients=[account['Email']])
+                                Username = account['Username']
+                                IP = logininfo['Log_In_IP_Address']
+                                Date = logininfo['Account_Log_In_Time']
+                                msg.html = render_template('Login_Notification_Email.html', Username=Username,Date = Date , IP = IP)
+                                mail.send(msg)
+                                if account['role'] == 'Admin':
+                                    return redirect(url_for('Managerprofile'))
+                                else:
+                                    return redirect(url_for('Userprofile'))
 
-                            if account['role'] == 'Admin':
-                                return redirect(url_for('Managerprofile'))
-                            else:
-                                return redirect(url_for('Userprofile'))
-                else:
+
+
+
+                            else:   # This means no Login notification
+                                if account['role'] == 'Admin':
+                                    return redirect(url_for('Managerprofile'))
+                                else:
+                                    return redirect(url_for('Userprofile'))
+
+
+
+
+                else:  # This else statement executes when password verification fails.
                     msg = 'Incorrect Username/Password'
                     Username = account['Username']
                     if Username == request.form['username']:
@@ -1722,7 +1786,7 @@ def create_login_user():
                 password_update_time = now.replace(microsecond=0)
                 email_confirm = 0
                 UUID = uuid.uuid4().hex
-                Account_Status = 'Active'
+                Account_Status='Active'
                 hash_password = bcrypt.hashpw(password.encode(), salt)
                 #Symmetric Key encryption
                 key = Fernet.generate_key()
