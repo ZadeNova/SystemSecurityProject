@@ -369,7 +369,7 @@ socketio = SocketIO(app, logger=True, engineio_logger=True)
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = '1234'  # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = 'N0passwordatall'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -1423,50 +1423,63 @@ def Cantsignin():
 
 @app.route('/ForgetUsername', methods=['GET', 'POST'])
 def ForgottenUsername():
-    try:
+    #try:
         if request.method == 'POST' and 'email' in request.form:
-            email = request.form['email']
-            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-            cursor.execute("SELECT * FROM accounts WHERE Email = %(email)s", {'email': email})
-            account = cursor.fetchone()
-            print(account)
-            if account:
-                msg = Message("Forget Username", recipients=[email])
-                Username = account['Username']
-                msg.html = render_template('forgetusernameemail.html', Username=Username)
-                mail.send(msg)
-                print('sended')
+            captcha_response = request.form.get('g-recaptcha-response')
+            if is_human(captcha_response):
+                status = ''
+                email = request.form['email']
+                cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+                cursor.execute("SELECT * FROM accounts WHERE Email = %(email)s", {'email': email})
+                account = cursor.fetchone()
+                print(account)
+                if account:
+                    msg = Message("Forget Username", recipients=[email])
+                    Username = account['Username']
+                    msg.html = render_template('forgetusernameemail.html', Username=Username)
+                    mail.send(msg)
+                    print('sended')
+                else:
+                    print('It doesnt exit')
+                flash('If your email matches an existing account we will send a password reset email within a few minutes.')
+                return render_template('ForgetUsername.html', sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
             else:
-                print('It doesnt exit')
-            flash('If your email matches an existing account we will send a password reset email within a few minutes.')
-            return render_template('ForgetUsername.html')
+                flash('Sorry ! Please Check Im not a robot.')
+                return render_template('ForgetUsername.html', sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
         else:
-            return render_template('ForgetUsername.html')
-    except:
-        print('error')
+            return render_template('ForgetUsername.html', sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
+    #except:
+        #print('error')
+        #return render_template('error404.html')
 
 
 @app.route('/ForgetPassword', methods=['GET', 'POST'])
 def ForgottenPassword():
     try:
         if request.method == 'POST' and 'email' in request.form:
-            email = request.form['email']
-            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-            cursor.execute("SELECT * FROM accounts WHERE Email = %(email)s", {'email': email})
-            account = cursor.fetchone()
-            print(account)
-            if account:
-                msg = Message("Forget Password Link", recipients=[email])
-                UUID = account['UUID']
-                msg.html = render_template('forgotpasswordemail.html', UUID=UUID)
-                mail.send(msg)
-                print('sended')
+            captcha_response = request.form.get('g-recaptcha-response')
+            if is_human(captcha_response):
+                status = ''
+                email = request.form['email']
+                cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+                cursor.execute("SELECT * FROM accounts WHERE Email = %(email)s", {'email': email})
+                account = cursor.fetchone()
+                print(account)
+                if account:
+                    msg = Message("Forget Password Link", recipients=[email])
+                    UUID = account['UUID']
+                    msg.html = render_template('forgotpasswordemail.html', UUID=UUID)
+                    mail.send(msg)
+                    print('sended')
+                else:
+                    print('It doesnt exit')
+                flash('If your email matches an existing account we will send a password reset email within a few minutes.')
+                return render_template('ForgetPassword.html', sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
             else:
-                print('It doesnt exit')
-            flash('If your email matches an existing account we will send a password reset email within a few minutes.')
-            return render_template('ForgetPassword.html')
+                flash('Sorry ! Please Check Im not a robot.')
+                return render_template('ForgetPassword.html', sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
         else:
-            return render_template('ForgetPassword.html')
+            return render_template('ForgetPassword.html', sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
     except:
         print('error')
         return render_template('error404.html')
@@ -1709,7 +1722,7 @@ def create_login_user():
                 password_update_time = now.replace(microsecond=0)
                 email_confirm = 0
                 UUID = uuid.uuid4().hex
-                Account_Status='Active'
+                Account_Status = 'Active'
                 hash_password = bcrypt.hashpw(password.encode(), salt)
                 #Symmetric Key encryption
                 key = Fernet.generate_key()
