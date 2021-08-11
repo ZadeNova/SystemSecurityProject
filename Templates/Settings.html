@@ -261,9 +261,9 @@ body{
                         <div class="custom-control custom-control-nolabel custom-switch ml-auto">
 
                           {%if status_text == 0 %}
-                          <a href="/EmailOtpCheck"><button class="btn btn-light btn-sm ml-auto" type="button">Enable</button></a>
+                          <a href="/EmailOtpCheck"><button class="btn btn-success" type="button">Enable</button></a>
                           {%else%}
-                          <a href="/EmailOtpdisable"><button class="btn btn-light btn-sm ml-auto" type="button">Disable</button></a>
+                          <a href="/EmailOtpdisable"><button class="btn btn-danger" type="button">Disable</button></a>
                           {% endif %}
                         </div>
                       </li>
@@ -272,9 +272,9 @@ body{
                         <div class="custom-control custom-control-nolabel custom-switch ml-auto">
 
                           {%if status_auth == 0 %}
-                          <a href="/login/2fa/"><button class="btn btn-light btn-sm ml-auto" type="button">Enable</button></a>
+                          <a href="/login/2fa/"><button class="btn btn-success" type="button">Enable</button></a>
                           {%else%}
-                          <a href="/login/2fadisable/"><button class="btn btn-light btn-sm ml-auto" type="button">Disable</button></a>
+                          <a href="/login/2fadisable/"><button class="btn btn-danger" type="button">Disable</button></a>
                            {% endif %}
                         </div>
                       </li>
@@ -283,9 +283,9 @@ body{
                         <div class="custom-control custom-control-nolabel custom-switch ml-auto">
 
                           {%if status_push == 0 %}
-                          <a href="/login/2fa/"><button class="btn btn-light btn-sm ml-auto" type="button">Enable</button></a>
+                          <a href="/login/2fa/"><button class="btn btn-success" type="button">Enable</button></a>
                           {%else%}
-                          <a href="/login/2fadisable/"><button class="btn btn-light btn-sm ml-auto" type="button">Disable</button></a>
+                          <a href="/login/2fadisable/"><button class="btn btn-danger" type="button">Disable</button></a>
                           {% endif %}
 
                         </div>
@@ -296,9 +296,9 @@ body{
                         <div class="custom-control custom-control-nolabel custom-switch ml-auto">
 
                           {%if status_back == 0 %}
-                          <a href="/Backupcode"><button class="btn btn-light btn-sm ml-auto" type="button">Enable</button></a>
+                          <a href="/Backupcode"><button class="btn btn-success" type="button">Enable</button></a>
                           {%else  %}
-                          <a href="/Backupcodedisable"><button class="btn btn-light btn-sm ml-auto" type="button">Disable</button></a>
+                          <a href="/Backupcodedisable"><button class="btn btn-danger" type="button">Disable</button></a>
                           {% endif %}
 
                         </div>
@@ -309,9 +309,9 @@ body{
                         <div class="custom-control custom-control-nolabel custom-switch ml-auto">
 
                           {% if account["Account_Login_Notification"] == 0 %}
-                          <a href="{{ url_for('LoginNotification') }}"><button class="btn btn-light btn-sm ml-auto" type="button">Enable</button></a>
+                          <a href="{{ url_for('LoginNotification') }}"><button class="btn btn-success" type="button">Enable</button></a>
                           {% else %}
-                          <a href="{{ url_for('LoginNotification') }}"><button class="btn btn-light btn-sm ml-auto" type="button">Disable</button></a>
+                          <a href="{{ url_for('LoginNotification') }}"><button class="btn btn-danger" type="button">Disable</button></a>
 
                           {% endif %}
 

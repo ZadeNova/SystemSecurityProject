@@ -433,7 +433,7 @@ socketio = SocketIO(app, logger=True, engineio_logger=True)
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'N0passwordatall'  # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = '1234'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -1009,7 +1009,7 @@ def Userprofile():
             cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
             account = cursor.fetchone()
             # Show the profile page with account info
-            return render_template('userprofile.html', account=account, email=session['email'],NRIC = session['NRIC'],address = session['Address'],phone_no = session['Phone_No'])
+            return render_template('userprofile.html', account=account, email=account['Email'],NRIC = account['NRIC'],address = account['Address'],phone_no = account['Phone_Number'])
             # User is not loggedin redirect to login page
         return redirect(url_for('login'))
 
