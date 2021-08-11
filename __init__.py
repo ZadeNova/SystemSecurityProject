@@ -205,19 +205,23 @@ def callback():
                     'SELECT * FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )',
                     [session['ID']])
                 logininfo = cursor.fetchone()
-                if session["Account_Login_Notification"] == 1: # If True send email
-                    msg = Message("Login Notification", recipients=[account['Email']])
-                    Username = account['Username']
-                    IP = logininfo['Log_In_IP_Address']
-                    Date = logininfo['Account_Log_In_Time']
-                    msg.html = render_template('Login_Notification_Email.html', Username=Username, Date=Date, IP=IP)
-                    mail.send(msg)
-                    return redirect("/homepage")
 
+                if account['Password'] == '0':
+                    return redirect("Forcepassword")
                 else:
-                    return redirect('/homepage')
-
-
+                    if session["Account_Login_Notification"] == 1: # If True send email
+                        msg = Message("Login Notification", recipients=[account['Email']])
+                        Username = account['Username']
+                        IP = logininfo['Log_In_IP_Address']
+                        Date = logininfo['Account_Log_In_Time']
+                        msg.html = render_template('Login_Notification_Email.html', Username=Username, Date=Date, IP=IP)
+                        mail.send(msg)
+                        return redirect("/homepage")
+                    else:
+                        if account['Password'] == '0':
+                            return redirect("Forcepassword")
+                        else:
+                             return redirect('/homepage')
     else:
         salt = bcrypt.gensalt(rounds=16)
         username = id_info.get("name")
@@ -225,7 +229,7 @@ def callback():
         NRIC =  id_info.get("name")+'Nric'
         DOB = False
         gender = False
-        password = id_info.get("name")+'1234'
+        password = '0'
         print(password)
         phone_no =  id_info.get("name")+'phn'
         email = id_info.get("email")
@@ -245,7 +249,7 @@ def callback():
         email_confirm = 0
         UUID = uuid.uuid4().hex
         Account_Status = 'Active'
-        hash_password = bcrypt.hashpw(password.encode(), salt)
+        #hash_password = bcrypt.hashpw(password.encode(), salt)
         # Symmetric Key encryption
         key = Fernet.generate_key()
         # Loads the key into the crypto API
@@ -265,7 +269,7 @@ def callback():
             return redirect("/login")
         else:
             cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-                           , (username, EncryptedNRIC, DOB, hash_password, gender, EncryptPhoneNo, email, security_questions_1,
+                           , (username, EncryptedNRIC, DOB, password, gender, EncryptPhoneNo, email, security_questions_1,
                               security_questions_2, answer_1, answer_2, encryptedaddress, role, account_creation_time,
                               email_confirm, key, UUID, Account_Status, password_update_time,Account_Login_Notification, 0))
             mysql.connection.commit()
@@ -338,19 +342,59 @@ def callback():
             cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': username})
             account = cursor.fetchone()
 
-
-            if account["Account_Login_Notification"] == 1:
-
-                msg = Message("Login Notification", recipients=[account['Email']])
-                Username = account['Username']
-                IP = logininfo['Log_In_IP_Address']
-                Date = logininfo['Account_Log_In_Time']
-                msg.html = render_template('Login_Notification_Email.html', Username=Username, Date=Date, IP=IP)
-                mail.send(msg)
-                return redirect("/homepage")
+            if account['Password'] == '0':
+                return redirect("Forcepassword")
             else:
-                return redirect("/homepage")
+                if account["Account_Login_Notification"] == 1:
+                    msg = Message("Login Notification", recipients=[account['Email']])
+                    Username = account['Username']
+                    IP = logininfo['Log_In_IP_Address']
+                    Date = logininfo['Account_Log_In_Time']
+                    msg.html = render_template('Login_Notification_Email.html', Username=Username, Date=Date, IP=IP)
+                    mail.send(msg)
+                    return redirect("/homepage")
+                else:
+                    if account['Password'] == '0':
+                        return redirect("Forcepassword")
+                    else:
+                        return redirect("/homepage")
 
+
+@app.route('/Forcepassword', methods=['GET', 'POST'])
+def Forcepassword():
+    username=session['Username']
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': username})
+    account = cursor.fetchone()
+    captcha_response = request.form.get('g-recaptcha-response')
+    if request.method == 'POST' and 'password' in request.form and 'confirm password' in request.form:
+        if is_human(captcha_response):
+            password = request.form['password']
+            confirm_password = request.form['confirm password']
+            if password != confirm_password:
+                flash("Your Password isn't the same as your confirm password. Please Try Again..")
+                return render_template('ForcePassword.html',
+                                       sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
+            else:
+
+                now = datetime.datetime.now().replace(microsecond=0)
+                sql = "UPDATE accounts SET password_update_time = %s WHERE username = %s "
+                value = (now, username)
+                print(value)
+                cursor.execute(sql, value)
+                salt = bcrypt.gensalt(rounds=16)
+                hash_password = bcrypt.hashpw(password.encode(), salt)
+                sql2 = "UPDATE accounts SET Password = %s WHERE username = %s "
+                value2 = (hash_password, username)
+                cursor.execute(sql2, value2)
+                mysql.connection.commit()
+                return redirect(url_for('homepage'))
+        else:
+            flash('Sorry ! Please Check Im not a robot.')
+            return render_template('ForcePassword.html',
+                                   sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
+
+    return render_template('ForcePassword.html', sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
 
 
 ## google login key end ###
