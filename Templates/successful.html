@@ -1,6 +1,5 @@
-{% if role == "Staff" %}
-    {% extends "base.html" %}
-{% elif role == "Admin" %}
+
+{% if role == "Admin" %}
     {% extends "base.html" %}
 {% else %}
     {% extends "base2.html" %}
@@ -10,7 +9,39 @@
 
 {% block content %}
 {% from "includes/_formsHelper.html" import render_field %}
-{% with messages = get_flashed_messages(with_categories=true) %}
+
+<!--<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
+<script>
+   $(document).ready(function(){
+            var socket = io();
+
+    });
+</script>-->
+
+
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-lg-12">
+      <div class="jumbotron text-center p-4">
+
+        <h4>Setup and Email Authenticate  </h4>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <form>
+        <div>
+          <h5>Succefully!</h5>
+          <ul>
+            <li>You have enable Email otp !  </li>
+          </ul>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="col-lg-7">
+      {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
       {% for category, message in messages %}
       <div class="alert alert-{{ category }}" role="alert">
@@ -19,11 +50,11 @@
       {% endfor %}
       {% endif %}
       {% endwith %}
-<br>
-<br>
-<p>Email verification successfully !:) </p>
-<a href="/Settings"> <button class="btn btn-light btn-sm ml-auto" type="button">Back to Settings</button></a>
 
+    </div>
+  </div>
+</div>
+<a href="/Settings"><button class="btn btn-primary" type="button">Return</button></a>
 
 
 {% endblock %}

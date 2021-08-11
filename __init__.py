@@ -1423,7 +1423,7 @@ def Cantsignin():
 
 @app.route('/ForgetUsername', methods=['GET', 'POST'])
 def ForgottenUsername():
-    #try:
+    try:
         if request.method == 'POST' and 'email' in request.form:
             captcha_response = request.form.get('g-recaptcha-response')
             if is_human(captcha_response):
@@ -1448,9 +1448,9 @@ def ForgottenUsername():
                 return render_template('ForgetUsername.html', sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
         else:
             return render_template('ForgetUsername.html', sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
-    #except:
-        #print('error')
-        #return render_template('error404.html')
+    except:
+        print('error')
+        return render_template('error404.html')
 
 
 @app.route('/ForgetPassword', methods=['GET', 'POST'])
