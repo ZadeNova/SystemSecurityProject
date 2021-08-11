@@ -389,7 +389,7 @@ socketio = SocketIO(app, logger=True, engineio_logger=True)
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = '1234'  # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = 'Dragonnight1002'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -1626,6 +1626,9 @@ def login():
                     #compare the current date and time with the last password update time
                     if account['password_update_time'] + datetime.timedelta(days=365) <= datetime.datetime.now().replace(microsecond=0):
                         return redirect(url_for('Resetpassword', UUID=account['UUID']))
+                    elif account['Account_Status'] == "Pending":
+                        print("This account is unactivated")
+                        flash("This Account has not been activated. Please go to your email to activate the account.")
                     elif account['Account_Status'] == "Banned":
                         print("This account is banned")
                         flash("This Account has been banned")
@@ -1796,7 +1799,7 @@ def create_login_user():
                 password_update_time = now.replace(microsecond=0)
                 email_confirm = 0
                 UUID = uuid.uuid4().hex
-                Account_Status='Active'
+                Account_Status = 'Pending'
                 hash_password = bcrypt.hashpw(password.encode(), salt)
                 #Symmetric Key encryption
                 key = Fernet.generate_key()
@@ -1847,7 +1850,11 @@ def create_login_user():
                                       Push_Base_Status, Backup_Code_Status, Backup_Code_Key, Backup_Code_No_Of_Use))
                     mysql.connection.commit()
                     print('insert successfully nocie ')
-
+                    msg = Message("Account Verification Link", recipients=[email])
+                    msg.html = render_template('account_verification_email.html', UUID=UUID)
+                    mail.send(msg)
+                    print('sended')
+                    flash('An account verification email have been sent, please verify and activate account')
                     return redirect('login')
             else:
                 msg = 'Please check the box "I am not a robot".'
@@ -1982,6 +1989,19 @@ def create_login_admin():
 @app.route('/TermsandConditions')
 def TermsAndConditions():
     return render_template('TermsAndConditions.html')
+
+
+@app.route('/AccountVerification1/<path:UUID>')
+def AccountVerification1(UUID):
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute("UPDATE accounts SET Account_Status = 'Active' WHERE UUID = %(UUID)s", {'UUID': UUID})
+    UUID2 = uuid.uuid4().hex
+    sql3 = "UPDATE accounts SET UUID = %s WHERE UUID = %s "
+    value3 = (UUID2, UUID)
+    cursor.execute(sql3, value3)
+    mysql.connection.commit()
+    flash('Your account have been successfully activated')
+    return redirect(url_for("login"))
 
 
 # End of new stuff
