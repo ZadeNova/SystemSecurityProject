@@ -164,14 +164,24 @@ def callback():
 
         session['Account_Login_Notification'] = account['Account_Login_Notification']
         print( session["Account_Login_Notification"])
-        if account['Account_Status'] == "Banned":
+        if account['password_update_time'] + datetime.timedelta(days=365) <= datetime.datetime.now().replace(microsecond=0):
+            return redirect(url_for('Resetpassword', UUID=account['UUID']))
+        elif account['Account_Status'] == "Pending":
+            print("This account is unactivated")
+            flash("This Account has not been activated. Please go to your email to activate the account.")
+        elif account['Account_Status'] == "Banned":
             print("This account is banned")
             flash("This Account has been banned")
-            return redirect("/login")
         elif account['Account_Status'] == "Disabled":
             print("Disabled")
-            flash("Account has been disabled")
-            return redirect("/login")
+            flash("Account has been disabled, please contact the helpdesk for further assistance")
+        elif account['Account_Status'] == "Deleted":
+            print("Deleted")
+            flash("Account has been deleted, please contact the helpdesk for further assistance")
+        elif account['Account_Status'] == "Force":
+            print("Force")
+            flash("Please reset your password, your password has been compromised ")
+            return redirect(url_for('Resetpassword', UUID=account['UUID']))
         else:
             cursor.execute("""INSERT INTO userlogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
             mysql.connection.commit()
@@ -199,9 +209,7 @@ def callback():
                                        status_psuh=account1['Push_Base_Status'],
                                        status_back=account1['Backup_Code_Status'])
             else:
-                cursor.execute(
-                    'SELECT * FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )',
-                    [session['ID']])
+                cursor.execute('SELECT * FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )', [session['ID']])
                 logininfo = cursor.fetchone()
 
                 if account['Password'] == '0':
@@ -431,7 +439,7 @@ socketio = SocketIO(app, logger=True, engineio_logger=True)
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'Dragonnight1002'  # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = 'N0passwordatall'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -591,10 +599,10 @@ def EmailOtpdisable():
                 "UPDATE authentication_table SET Text_Message_Status=%s  WHERE Account_ID=%s ",
                 (Text_Message_Status, [session['ID']]))
             mysql.connection.commit()
-            flash('Text message  disable ! ','primary')
+            flash('Text message  disable ! ', 'primary')
             return redirect(url_for('Changesettings'))
         else:
-            flash('Text message is not activated ','danger')
+            flash('Text message is not activated ', 'danger')
         return redirect(url_for('Changesettings'))
     else:
         flash('Please complete your 2FA !', 'danger')
@@ -1164,7 +1172,7 @@ def Changesettings():
                 #cursor.execute("""UPDATE UserUpdateTime SET Address = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
                 mysql.connection.commit()
                 counter += 1
-            if counter > 0 :
+            if counter > 0:
                 cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
                 cursor.execute("""SELECT distinct Log_In_IP_Address FROM account_log_ins WHERE Account_ID = %s""", [session['ID']])
                 cursor.execute("""UPDATE UserUpdateTime SET UpdatedEvent = 'Update' WHERE Account_ID = %s ORDER BY ID DESC Limit 1;""",[session['ID']])
@@ -1215,19 +1223,24 @@ def Settings_changepassword():
             Old_password = request.form['Old_password']
             New_password = request.form['New_password']
             Confirm_password = request.form['Confirm_password']
+
             if bcrypt.checkpw(Old_password.encode(), hashandsalt.encode()):
-                if New_password == Confirm_password:
-                    salt = bcrypt.gensalt(rounds=16)
-                    hash_password = bcrypt.hashpw(New_password.encode(), salt)
-                    sql = "UPDATE accounts SET Password = %s WHERE UUID = %s "
-                    value = (hash_password, UUID)
-                    cursor.execute(sql, value)
-                    mysql.connection.commit()
-                    flash('Password have been updated', 'category2')
+                if New_password == Old_password:
+                    flash('Please use a different password', 'category2')
                     return redirect(url_for("Changesettings"))
+                elif New_password == Confirm_password:
+                     salt = bcrypt.gensalt(rounds=16)
+                     hash_password = bcrypt.hashpw(New_password.encode(), salt)
+                     sql = "UPDATE accounts SET Password = %s WHERE UUID = %s "
+                     value = (hash_password, UUID)
+                     cursor.execute(sql, value)
+                     mysql.connection.commit()
+
+                     flash('Password have been updated', 'category2')
+                     return redirect(url_for("Changesettings"))
                 else:
-                    flash('New password is not the same as Confirm password', 'category2')
-                    return redirect(url_for("Changesettings"))
+                     flash('New password is not the same as Confirm password', 'category2')
+                     return redirect(url_for("Changesettings"))
             else:
                 flash('Old password is not the same as Current password', 'category2')
                 return redirect(url_for("Changesettings"))
@@ -1433,8 +1446,6 @@ def Audit():
         return render_template('error404.html')
 
 
-
-
 @app.route('/UnbanaccountFunction/<int:ID>',methods = ['GET','POST'])
 def UnBanAccount(ID):
     print("UnBan Account Function")
@@ -1444,34 +1455,33 @@ def UnBanAccount(ID):
     return redirect(url_for('ManageAccount'))
 
 
-
-
-@app.route('/BanAccountFunction/<int:ID>',methods = ['GET','POST'])
+@app.route('/BanAccountFunction/<int:ID>', methods=['GET', 'POST'])
 def BanAccount(ID):
     print("Ban Account Function")
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute("""UPDATE accounts SET Account_Status = 'Banned' WHERE ID = %s """,[ID])
+    cursor.execute("""UPDATE accounts SET Account_Status = 'Banned' WHERE ID = %s """, [ID])
     mysql.connection.commit()
     return redirect(url_for('ManageAccount'))
 
-@app.route('/DeleteAccountFunction/<int:ID>',methods = ['GET','POST'])
+
+@app.route('/DeleteAccountFunction/<int:ID>', methods=['GET', 'POST'])
 def DeleteAccountFunc(ID):
     print("Delete Account")
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute("""UPDATE accounts SET Account_Status = 'Disabled' WHERE ID = %s """, [ID])
+    cursor.execute("""UPDATE accounts SET Account_Status = 'Deleted' WHERE ID = %s """, [ID])
     mysql.connection.commit()
     return redirect(url_for('ManageAccount'))
 
 
-@app.route('/ForcePasswordAccountFunction/<int:ID>',methods = ['GET','POST'])
+@app.route('/ForcePasswordAccountFunction/<int:ID>', methods=['GET', 'POST'])
 def ForcePasswordChangeAccount(ID):
-    print("Force Password Change Account")
-    # Jaydon this is yours
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute("""UPDATE accounts SET Account_Status = 'Force' WHERE ID = %s """, [ID])
+    mysql.connection.commit()
     return redirect(url_for('ManageAccount'))
 
 
-
-@app.route('/ManageUserAccounts',methods = ['GET','POST'])
+@app.route('/ManageUserAccounts', methods=['GET', 'POST'])
 def ManageAccount():
     if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
         if session['role'] == "Admin":
@@ -1482,8 +1492,7 @@ def ManageAccount():
             cursor.execute("""SELECT * FROM accounts""")
             allaccounts = cursor.fetchall()
 
-
-            return render_template('UserAccountManager.html',account=account,allaccounts=allaccounts)
+            return render_template('UserAccountManager.html', account=account, allaccounts=allaccounts)
         else:
             return redirect(url_for('Userprofile'))
 
@@ -1601,10 +1610,14 @@ def Resetpassword(UUID):
                         flash("Your Password isn't the same as your confirm password. Please Try Again..")
                         return render_template('Resetpassword.html', sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
                     else:
+                        if account['Account_Status'] == 'Force':
+                            sql4 = "UPDATE accounts SET Account_Status = %s WHERE UUID = %s "
+                            value4 = ('Active', UUID)
+                            cursor.execute(sql4, value4)
+                            mysql.connection.commit()
                         now = datetime.datetime.now().replace(microsecond=0)
                         sql = "UPDATE accounts SET password_update_time = %s WHERE UUID = %s "
                         value = (now, UUID)
-                        print(value)
                         cursor.execute(sql, value)
                         salt = bcrypt.gensalt(rounds=16)
                         hash_password = bcrypt.hashpw(password.encode(), salt)
@@ -1676,8 +1689,14 @@ def login():
                         flash("This Account has been banned")
                     elif account['Account_Status'] == "Disabled":
                         print("Disabled")
-                        flash("Account has been disabled")
-
+                        flash("Account has been disabled, please contact the helpdesk for further assistance")
+                    elif account['Account_Status'] == "Deleted":
+                        print("Deleted")
+                        flash("Account has been deleted, please contact the helpdesk for further assistance")
+                    elif account['Account_Status'] == "Force":
+                        print("Force")
+                        flash("Please reset your password, your password has been compromised ")
+                        return redirect(url_for('Resetpassword', UUID=account['UUID']))
                     else:
                         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
                         cursor.execute("UPDATE accounts SET Attempts = 0 WHERE username = %(username)s", {'username': username})
