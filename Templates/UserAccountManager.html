@@ -60,6 +60,7 @@
         <td><span class="badge badge-success">{{ lol['Account_Status'] }}</span></td>
         {% endif %}
       <td>{{ lol['role'] }}</td>
+
       <td><button type="button" class="btn btn-warning" data-toggle="modal" data-target="#myModal{{ lol['ID'] }}"><i class="fas fa-users-cog"></i></button></td>
 
               <!-- Modal -->
@@ -70,7 +71,7 @@
             <div class="modal-content">
               <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Modal Header</h4>
+
               </div>
               <div class="modal-body">
                 <p>Ban Account</p><a  class="btn btn-danger" href="{{ url_for('BanAccount',ID = lol['ID']) }}"><i class="fas fa-ban"></i></a>
@@ -86,6 +87,13 @@
                 <br>
                 <br>
                 <p>Delete Account</p><a  class="btn btn-warning" href="{{ url_for('DeleteAccountFunc',ID = lol['ID']) }}"><i class="fas fa-user-slash"></i></a>
+
+                <br>
+                <br>
+                <br>
+                <br>
+                <p>Send Alert Emails</p>
+                <p>Too much login attempts</p><a  class="btn btn-warning" href="{{ url_for('EmailUserloginattempt',ID = lol['ID']) }}"><i class="fas fa-envelope"></i></a>
 
               </div>
               <div class="modal-footer">

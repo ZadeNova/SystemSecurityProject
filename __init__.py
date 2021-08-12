@@ -167,7 +167,7 @@ def callback():
         session['NRIC'] =  decryptedNRIC
         session['Address'] = decryptedaddress
         session['Phone_No']= decryptedPhoneNo
-
+        session['Email_Vulnerabilities'] = account['Email_Vulnerabilities']
         session['Account_Login_Notification'] = account['Account_Login_Notification']
         print( session["Account_Login_Notification"])
         if account['password_update_time'] + datetime.timedelta(days=365) <= datetime.datetime.now().replace(microsecond=0):
@@ -281,10 +281,10 @@ def callback():
             return redirect("/login")
 
         else:
-            cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+            cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                            , (username, EncryptedNRIC, DOB, password, gender, EncryptPhoneNo, email, security_questions_1,
                               security_questions_2, answer_1, answer_2, encryptedaddress, role, account_creation_time,
-                              email_confirm, key, UUID, Account_Status, password_update_time,Account_Login_Notification, 0))
+                              email_confirm, key, UUID, Account_Status, password_update_time,Account_Login_Notification, 0 , 0))
             mysql.connection.commit()
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': username})
@@ -331,7 +331,7 @@ def callback():
             session['2fa_status'] = 'Nil'
             session['role'] = 'Guest'
             session['email']=email
-
+            session['Email_Vulnerabilities'] = account12['Email_Vulnerabilities'] # Zadeadd this line
             session['Account_Login_Notification'] = account12['Account_Login_Notification']
             print(session["Account_Login_Notification"])
             cursor.execute("""INSERT INTO userlogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
@@ -491,7 +491,7 @@ socketio = SocketIO(app, logger=True, engineio_logger=True)
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = '1234'  # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = 'ZadePrimeSQL69420'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -1670,7 +1670,77 @@ def ViewDashboard():
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
             account = cursor.fetchone()
-            return render_template('dashboard.html',account=account)
+            cursor.execute("""SELECT DISTINCT Acc.ID , Acc.Username , ALI.Account_Log_In_Time AS TimeOfActivity ,ALI.Log_In_IP_Address AS IP_Address , UL.LoginType AS EventType FROM account_log_ins ALI INNER JOIN accounts AS Acc ON Acc.ID = ALI.Account_ID
+                            INNER JOIN userlogin AS UL ON UL.Account_ID = ALI.Account_ID WHERE UL.LoginType = 'Login'
+                            UNION SELECT * FROM (SELECT Distinct ACO.Account_ID,ACC.Username,ACO.Log_Out_Time,ACO.Log_Out_IP_Address,UL.LoginType FROM account_log_out ACO 
+                            INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
+                            INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout') AS TABLE2 
+                            UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID) AS TABLE3
+                            UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"AttemptedLogin" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID 
+                            WHERE Attempted_Log_Ins < 3  ) AS TABLE4
+                            UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"LoginFailure" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID 
+                            WHERE Attempted_Log_Ins >= 3  ) AS TABLE5
+                            ORDER BY TimeOfActivity;""")
+
+            AuditInfo = cursor.fetchall()
+
+            cursor.execute("""Select COUNT(Attempted_Log_Ins) AS TotalAttemptedLogins from accountattemptedlogins;""")
+            Attemptedlogincount = cursor.fetchone()
+
+            Userlist = []
+            UserEvent = {}
+            UserAttemptedLoginCount = {}
+            EventCount = {}
+            EventLoginFailCount = Attemptedlogincount['TotalAttemptedLogins']
+            print(AuditInfo)
+
+            for i in AuditInfo:
+                print(i)
+                Userlist.append(i['Username'])
+
+            for user in Userlist:
+                counter = 0
+                for i in AuditInfo:
+                    if user == i['Username'] and (i['EventType'] == "AttemptedLogin" or i['EventType'] == 'LoginFailure'):
+                        counter += 1
+                UserAttemptedLoginCount[user] = counter
+
+            for user in Userlist:
+                Eventcounter = 0
+                for i in AuditInfo:
+                    if user == i['Username']:
+                        Eventcounter += 1
+                EventCount[user] = Eventcounter
+
+
+            Userlist = list(set(Userlist))
+            print(UserAttemptedLoginCount)
+            print(Userlist)
+            print(EventCount)
+
+
+
+
+
+            # User Events
+
+            # User attempted log ins per user
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            return render_template('dashboard.html',account=account,UserAttemptedLoginCount = UserAttemptedLoginCount , EventCount = EventCount , EventLoginFailCount = EventLoginFailCount)
         else:
             return redirect(url_for('Userprofile'))
     else:
@@ -1696,12 +1766,16 @@ def Audit():
                 cursor.execute("""SELECT * FROM accounts""")
 
                 cursor.execute("""SELECT DISTINCT Acc.ID , Acc.Username , ALI.Account_Log_In_Time AS TimeOfActivity ,ALI.Log_In_IP_Address AS IP_Address , UL.LoginType AS EventType FROM account_log_ins ALI INNER JOIN accounts AS Acc ON Acc.ID = ALI.Account_ID
-                                INNER JOIN userlogin AS UL ON UL.Account_ID = ALI.Account_ID WHERE UL.LoginType = 'Login'
-                                UNION SELECT * FROM (SELECT Distinct ACO.Account_ID,ACC.Username,ACO.Log_Out_Time,ACO.Log_Out_IP_Address,UL.LoginType FROM account_log_out ACO 
-                                INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
-                                INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout') AS TABLE2 
-                                UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID) AS TABLE3
-                                ORDER BY TimeOfActivity; """)
+                                    INNER JOIN userlogin AS UL ON UL.Account_ID = ALI.Account_ID WHERE UL.LoginType = 'Login'
+                                    UNION SELECT * FROM (SELECT Distinct ACO.Account_ID,ACC.Username,ACO.Log_Out_Time,ACO.Log_Out_IP_Address,UL.LoginType FROM account_log_out ACO 
+                                    INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
+                                    INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout') AS TABLE2 
+                                    UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID) AS TABLE3
+                                    UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"AttemptedLogin" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID 
+                                    WHERE Attempted_Log_Ins < 3  ) AS TABLE4
+                                    UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"LoginFailure" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID 
+                                    WHERE Attempted_Log_Ins >= 3  ) AS TABLE5
+                                    ORDER BY TimeOfActivity; """)
 
 
                 allaccounts = cursor.fetchall()
@@ -1714,6 +1788,7 @@ def Audit():
     except:
         return render_template('error404.html')
 
+#ZadeStuff
 
 @app.route('/UnbanaccountFunction/<int:ID>',methods = ['GET','POST'])
 def UnBanAccount(ID):
@@ -1748,6 +1823,47 @@ def ForcePasswordChangeAccount(ID):
     cursor.execute("""UPDATE accounts SET Account_Status = 'Force' WHERE ID = %s """, [ID])
     mysql.connection.commit()
     return redirect(url_for('ManageAccount'))
+
+@app.route("/accountattemptNotify")
+def Accountnotifyloginattempts():
+    T, F = 1, 0
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute("""SELECT * FROM accounts WHERE ID = %s AND Username = %s""", [session['ID'], session['Username']])
+    account = cursor.fetchone()
+
+    if session["Email_Vulnerabilities"] == 0:  # This means u on account login notification.
+        cursor.execute("""UPDATE accounts SET Account_Login_Notification = %s WHERE ID = %s """, [T, session['ID']])
+        session["Account_Login_Notification"] = 1
+        mysql.connection.commit()
+        print(session)
+        print('True')
+        return redirect(url_for('Changesettings'))
+    else:
+        cursor.execute("""UPDATE accounts SET Account_Login_Notification = %s WHERE ID = %s """, [F, session['ID']])
+        mysql.connection.commit()
+        session["Email_Vulnerabilities"] = 0
+        print(session)
+        print('False ')
+        return redirect(url_for('Changesettings'))
+
+
+
+
+
+@app.route("/EmailAttemptNotification/<int:ID>", methods=['GET', 'POST'])
+def EmailUserloginattempt(ID):
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute("""SELECT * FROM accounts WHERE ID = %s """,[ID])
+    account = cursor.fetchone()
+    print(account)
+    msg = Message("Account Vulnerability Concern", recipients=[account['Email']])
+    Username = account['Username']
+    msg.html = render_template('VulnerabilityEmail1.html', Username=Username)
+    mail.send(msg)
+
+
+    return redirect(url_for('ManageAccount'))
+
 
 
 @app.route('/ManageUserAccounts', methods=['GET', 'POST'])
@@ -1980,7 +2096,7 @@ def login():
                         session['2fa_status']='Nil'
                         session['role']=account['role']
                         session['Account_Login_Notification'] = account['Account_Login_Notification']
-
+                        session['Email_Vulnerabilities'] = account['Email_Vulnerabilities']
                         print(session)
                         print(account)
                         # Update UserActions table for login!
@@ -2034,6 +2150,8 @@ def login():
                         Attempts = Original['Attempts']
                         if Attempts == 3:
                             cursor.execute("UPDATE accounts SET Account_Status = 'Disabled' WHERE username = %(username)s", {'username': username})
+
+                            # write email send here with elif
                             mysql.connection.commit()
                         else:
                             Attempts += 1
@@ -2154,10 +2272,10 @@ def create_login_user():
                 else:
 
                     # Account doesnt exists and the form data is valid, now insert new account into accounts table
-                    cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                    cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                                    , (username, EncryptedNRIC, DOB, hash_password, gender, EncryptPhoneNo, email, security_questions_1,
                                       security_questions_2, answer_1, answer_2, encryptedaddress, role, account_creation_time,
-                                      email_confirm, key, UUID, Account_Status, password_update_time, Account_Login_Notification, 0))
+                                      email_confirm, key, UUID, Account_Status, password_update_time, Account_Login_Notification, 0 ,0))
                     mysql.connection.commit()
                     msg = 'You have successfully registered! '
                     print("working")
@@ -2281,10 +2399,10 @@ def create_login_admin():
                     else:
 
                         # Account doesnt exists and the form data is valid, now insert new account into accounts table
-                        cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                        cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                                        , (username, EncryptedNRIC, DOB, hash_password, gender, EncryptPhoneNo, email, security_questions_1,
                                           security_questions_2, answer_1, answer_2, encryptedaddress, role, account_creation_time,
-                                          email_confirm, key, UUID, Account_Status, password_update_time, Account_Login_Notification, 0))
+                                          email_confirm, key, UUID, Account_Status, password_update_time, Account_Login_Notification, 0 , 0))
                         mysql.connection.commit()
                         msg = 'You have successfully registered! '
                         print("working")

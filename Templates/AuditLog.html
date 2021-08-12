@@ -56,7 +56,15 @@
     <tr>
       <th scope="row">{{ i['ID'] }}</th>
       <td>{{ i['Username'] }}</td>
+      {% if i['EventType'] == 'AttemptedLogin'%}
+
+      <td><span class="badge badge-warning">Warning</span></td>
+      {% elif i['EventType'] == 'LoginFailure'%}
+      <td><span class="badge badge-danger">Danger</span></td>
+      {% else %}
       <td><span class="badge badge-success">Success</span></td>
+      {% endif %}
+
       <td>{{ i['TimeOfActivity'] }}</td>
       <td>{{ i['EventType'] }}</td>
       <td>{{ i['IP_Address'] }}</td>

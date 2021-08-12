@@ -68,8 +68,8 @@
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                Attempted Log ins</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">$40,000</div>
+                                                Total Attempted Log ins</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ EventLoginFailCount }}</div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-calendar fa-2x text-gray-300"></i>
@@ -155,7 +155,7 @@
                                 <!-- Card Header - Dropdown -->
                                 <div
                                     class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Amount of Attempted Log ins</h6>
+                                    <h6 class="m-0 font-weight-bold text-primary">Amount of Requests to server</h6>
                                     <div class="dropdown no-arrow">
                                         <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
                                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -186,7 +186,7 @@
                                 <!-- Card Header - Dropdown -->
                                 <div
                                     class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">I dont know what to put here</h6>
+                                    <h6 class="m-0 font-weight-bold text-primary">Attempted and Login failures Per User</h6>
                                     <div class="dropdown no-arrow">
                                         <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
                                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -205,18 +205,7 @@
                                 <!-- Card Body -->
                                 <div class="card-body">
                                     <div class="chart-pie pt-4 pb-2">
-                                        <canvas id="myPieChart"></canvas>
-                                    </div>
-                                    <div class="mt-4 text-center small">
-                                        <span class="mr-2">
-                                            <i class="fas fa-circle text-primary"></i> Direct
-                                        </span>
-                                        <span class="mr-2">
-                                            <i class="fas fa-circle text-success"></i> Social
-                                        </span>
-                                        <span class="mr-2">
-                                            <i class="fas fa-circle text-info"></i> Referral
-                                        </span>
+                                        <canvas id="attemptlogins"></canvas>
                                     </div>
                                 </div>
                             </div>
@@ -232,42 +221,47 @@
                             <!-- Project Card Example -->
                             <div class="card shadow mb-4">
                                 <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">User Security Level</h6>
+                                    <h6 class="m-0 font-weight-bold text-primary">Statistics</h6>
                                 </div>
                                 <div class="card-body">
-                                    <h4 class="small font-weight-bold">2FA <span
+                                    <h4 class="small font-weight-bold">Average Attempt login failure per user <span
                                             class="float-right">20%</span></h4>
-                                    <div class="progress mb-4">
-                                        <div class="progress-bar bg-danger" role="progressbar" style="width: 20%"
-                                            aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                    <h4 class="small font-weight-bold">Sales Tracking <span
+
+                                    <h4 class="small font-weight-bold">Average Events per user<span
                                             class="float-right">40%</span></h4>
-                                    <div class="progress mb-4">
-                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 40%"
-                                            aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
+
                                     <h4 class="small font-weight-bold">Customer Database <span
                                             class="float-right">60%</span></h4>
-                                    <div class="progress mb-4">
-                                        <div class="progress-bar" role="progressbar" style="width: 60%"
-                                            aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
+
                                     <h4 class="small font-weight-bold">Payout Details <span
                                             class="float-right">80%</span></h4>
-                                    <div class="progress mb-4">
-                                        <div class="progress-bar bg-info" role="progressbar" style="width: 80%"
-                                            aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
+
                                     <h4 class="small font-weight-bold">Account Setup <span
                                             class="float-right">Complete!</span></h4>
-                                    <div class="progress">
-                                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%"
-                                            aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
+
                                 </div>
                             </div>
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">Security Events</h6>
+                                </div>
+                                <div class="card-body">
+                                    <h4 class="small font-weight-bold">Brute Force Attack Behavior <span
+                                            class="float-right">20%</span></h4>
 
+                                    <h4 class="small font-weight-bold">Excessive Failed Logins<span
+                                            class="float-right">40%</span></h4>
+
+
+
+                                    <h4 class="small font-weight-bold">Payout Details <span
+                                            class="float-right">80%</span></h4>
+
+                                    <h4 class="small font-weight-bold">Account Setup <span
+                                            class="float-right">Complete!</span></h4>
+
+                                </div>
+                            </div>
                             <!-- Color System -->
 
 
@@ -278,18 +272,15 @@
                             <!-- Illustrations -->
                             <div class="card shadow mb-4">
                                 <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Illustrations</h6>
+                                    <h6 class="m-0 font-weight-bold text-primary">Amount of Events per user</h6>
                                 </div>
                                 <div class="card-body">
-                                    <div class="text-center">
+                                    <!--<div class="text-center">
                                         <h1>Hello im here</h1>
+                                    </div> -->
+                                     <div class="chart-area">
+                                        <canvas id="eventchart"></canvas>
                                     </div>
-                                    <p>Add some quality, svg illustrations to your project courtesy of <a
-                                            target="_blank" rel="nofollow" href="https://undraw.co/">unDraw</a>, a
-                                        constantly updated collection of beautiful svg images that you can use
-                                        completely free and without attribution!</p>
-                                    <a target="_blank" rel="nofollow" href="https://undraw.co/">Browse Illustrations on
-                                        unDraw &rarr;</a>
                                 </div>
                             </div>
 
@@ -306,6 +297,7 @@
                                         Bootstrap framework, especially the utility classes.</p>
                                 </div>
                             </div>
+
 
                         </div>
                     </div>
@@ -356,6 +348,122 @@
             </div>
         </div>
     </div>
+
+
+    <script>
+
+        var javadict = {{ UserAttemptedLoginCount | safe }}
+        var eventdict = {{ EventCount | safe }}
+
+    function getRandomColor() {
+    var letters = '0123456789ABCDEF'.split('');
+    var color = '#';
+    for (var i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
+    function getRandomColorEachuser(count) {
+    var data =[];
+    for (var i = 0; i < count; i++) {
+        data.push(getRandomColor());
+    }
+    return data;
+}
+
+
+
+
+
+        var attemptlogin = document.getElementById("attemptlogins");
+var attemptloginchart = new Chart(attemptlogin, {
+  type: 'doughnut',
+  data: {
+    labels: Object.keys(javadict),
+    datasets: [{
+      data: Object.values(javadict),
+      backgroundColor: getRandomColorEachuser(Object.keys(javadict).length),
+      hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf'],
+      hoverBorderColor: "rgba(234, 236, 244, 1)",
+    }],
+  },
+  options: {
+    plugins:{
+        title:{
+            display:true,
+            text:"Attempted Logins and failures Per User"
+        }
+
+    },
+    maintainAspectRatio: false,
+    tooltips: {
+      backgroundColor: "rgb(255,255,255)",
+      bodyFontColor: "#858796",
+      borderColor: '#dddfeb',
+      borderWidth: 1,
+      xPadding: 15,
+      yPadding: 15,
+      displayColors: false,
+      caretPadding: 10,
+    },
+    legend: {
+      display: true
+    },
+    cutoutPercentage: 80,
+  },
+});
+
+
+
+
+
+
+var eventss = document.getElementById("eventchart");
+var eventcharto = new Chart(eventss, {
+  type: 'doughnut',
+  data: {
+    labels: Object.keys(eventdict),
+    datasets: [{
+      data: Object.values(eventdict),
+      backgroundColor: getRandomColorEachuser(Object.keys(eventdict).length),
+      hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf'],
+      hoverBorderColor: "rgba(234, 236, 244, 1)",
+    }],
+  },
+  options: {
+    plugins:{
+        title:{
+            display:true,
+            text:"Total Events Per User"
+        }
+
+    },
+
+    maintainAspectRatio: false,
+    tooltips: {
+      backgroundColor: "rgb(255,255,255)",
+      bodyFontColor: "#858796",
+      borderColor: '#dddfeb',
+      borderWidth: 1,
+      xPadding: 15,
+      yPadding: 15,
+      displayColors: false,
+      caretPadding: 10,
+    },
+    legend: {
+      display: true
+    },
+    cutoutPercentage: 80,
+  },
+});
+
+
+
+
+
+
+    </script>
+
 
     <!-- Bootstrap core JavaScript-->
     <script src="vendor/jquery/jquery.min.js"></script>
