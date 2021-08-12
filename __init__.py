@@ -13,7 +13,7 @@ import bcrypt
 import pyotp
 import requests
 from cryptography.fernet import Fernet
-from flask import Flask, render_template, request, redirect, url_for, flash, json , after_this_request , session
+from flask import Flask, render_template, request, redirect, url_for, flash, json , after_this_request , session ,abort
 # New things added by Zade
 import redis
 from flask_session import Session
@@ -273,6 +273,7 @@ def callback():
         if account12 :
             flash('Email already exists! Try another Email !')
             return redirect("/login")
+
         else:
             cursor.execute("INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                            , (username, EncryptedNRIC, DOB, password, gender, EncryptPhoneNo, email, security_questions_1,
@@ -307,6 +308,7 @@ def callback():
             # cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
             cursor.execute("""SELECT ID FROM accounts WHERE Username = %(username)s""", {'username': username})
             account = cursor.fetchone()
+
             Account_ID = account['ID']
             print(Account_ID, 'account id  ')
             cursor.execute("INSERT INTO authentication_table VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
@@ -318,11 +320,11 @@ def callback():
 
             session['loggedin'] = True
             session['ID'] = account['ID']
-
             session["Username"] = id_info.get("name")
             session['2fa_status'] = 'Nil'
             session['role'] = 'Guest'
             session['email']=email
+
             session['Account_Login_Notification'] = account12['Account_Login_Notification']
             print(session["Account_Login_Notification"])
             cursor.execute("""INSERT INTO userlogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
@@ -439,7 +441,7 @@ socketio = SocketIO(app, logger=True, engineio_logger=True)
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'N0passwordatall'  # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = '1234'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -451,6 +453,8 @@ configure_uploads(app, images)
 
 ### hong ji recapcha ##
 app.config['SECRET_KEY'] = 'cairocoders-ednalan'
+
+
 
 
 def is_human(captcha_response):
@@ -850,6 +854,7 @@ def two_fa_backupcode_check():
         return redirect(url_for("two_fa"))
 
 
+
 @app.route('/twofaauthen', methods=['GET', 'POST'])
 def two_fa_authen():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -1014,11 +1019,26 @@ def Userprofile():
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
             account = cursor.fetchone()
+            key = account['SymmetricKey']
+            fkey = Fernet(key)
+            decryptedaddress_Binary = fkey.decrypt(account['Address'].encode())
+            decryptedPhoneNo_Binary = fkey.decrypt(account['Phone_Number'].encode())
+            decryptedNRIC_Binary = fkey.decrypt(account['NRIC'].encode())
+            decryptedaddress = decryptedaddress_Binary.decode('utf8')
+            decryptedNRIC = decryptedNRIC_Binary.decode('utf-8')
+            decryptedPhoneNo = decryptedPhoneNo_Binary.decode('utf-8')
+            session['ID'] = account['ID']
+            session['Username'] = account['Username']
+            session['email'] = account['Email']
+            session['NRIC'] = decryptedNRIC
+            session['Address'] = decryptedaddress
+            session['Phone_No'] = decryptedPhoneNo
+            session['2fa_status'] = 'Nil'
+            session['role'] = account['role']
             # Show the profile page with account info
-            return render_template('userprofile.html', account=account, email=account['Email'],NRIC = account['NRIC'],address = account['Address'],phone_no = account['Phone_Number'])
+            return render_template('userprofile.html', account=account, email=session['email'],NRIC = session['NRIC'],address = session['Address'],phone_no = session['Phone_No'])
             # User is not loggedin redirect to login page
         return redirect(url_for('login'))
-
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
@@ -1869,9 +1889,13 @@ def create_login_user():
                 print(username, phone_no, NRIC, DOB, gender, email, password, address, role, UUID)
                 cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': username})
                 account = cursor.fetchone()
+                cursor.execute("""SELECT * FROM accounts WHERE Email = %(email)s""", {'email': email})
+                account12 = cursor.fetchone()
                 # If account exists show error and validation checks(do this at the form for this function)
                 if account:
-                    msg = 'Account already exists!'
+                    msg = 'Account already exists! , please choose other Name '
+                elif account12:
+                    msg = 'Email already exists! , please choose other Email'
                 elif not username or not password or not email:
                     print("3")
                     msg = 'Please fill out the form!'
