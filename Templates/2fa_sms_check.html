@@ -176,69 +176,39 @@ form .button{
                 var socket = io();
 
         });
-    </script> -->
+    </script>-->
 
   </head>
   <img src="{{url_for('static', filename='fairmont-singapore-asian-market-cafe.jpg')}}"  width="500" height="600" />
   <body>
     <div class="container">
-      <header>2 factor authentication</header>
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-      {% for category, message in messages %}
-      <div class="alert alert-{{ category }}" role="alert">
-        {{ message }}
-      </div>
-      {% endfor %}
-      {% endif %}
-      {% endwith %}
-        {%if status_text == 1 %}
-      <form method="POST" action="/twofaemail">
-<div class="button">
-          <div class="inner">
+      <header>Enter your Otp</header>
+         <p>
+              {% with messages = get_flashed_messages() %}
+              {% if messages  %}
+              {% for message in messages %}
+          <div class="alert alert-primary">
+              <strong>{{ message }}</strong>
           </div>
-<button type='submit'>Email Otp</button>
+          {% endfor %}
+          {% endif %}
+          {% endwith %}
+          </p>
+      <form method="POST" action="/twofasmscheck">
+        <div class="input-field">
+          <input type="text" class='input' name="otp"  required>
+          <label>6 Digit OTP</label>
         </div>
-</form>
 
-        {% endif %}
-        {% if status_auth == 1 %}
-            <form method="POST" action="/twofaauthen">
-<div class="button">
-          <div class="inner">
-          </div>
-<button type='submit'>Google Authenticator / Auth</button>
-        </div>
-</form>
-        {% endif %}
-        {% if status_psuh == 1 %}
 
-            <form method="POST" action="">
+
 <div class="button">
           <div class="inner">
-          </div>
-<button type='submit'>Push Notifi</button>
+</div>
+
+<button type='submit'>CONTINUE</button>
         </div>
 </form>
-        {% endif %}
-        {% if status_back == 1 %}
-        <form method="POST" action="/twofabackupcode">
-<div class="button">
-          <div class="inner">
-          </div>
-<button type='submit'>Backup Otp</button>
-        </div>
-</form>
-  {% endif %}
-        {% if status_sms == 1 %}
-        <form method="POST" action="/twofasms">
-<div class="button">
-          <div class="inner">
-          </div>
-<button type='submit'>Sms Otp</button>
-        </div>
-</form>
-        {% endif %}
 <div class="auth">
 
 <div class="links">

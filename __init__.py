@@ -8,6 +8,11 @@ import uuid
 from random import randint  ###### email otp ####
 import logging
 
+from twilio.rest import Client
+from chatterbot import ChatBot
+from chatterbot.trainers import ListTrainer
+from chatterbot.trainers import ChatterBotCorpusTrainer
+
 from google.auth._default import default, load_credentials_from_file
 import bcrypt
 import pyotp
@@ -90,6 +95,7 @@ import google.auth.transport.requests
 
 
 app = Flask(__name__)
+
 app.config['SECRET_KEY'] = 'Project'
 ### google login key###
 __all__ = ["default", "load_credentials_from_file"]
@@ -201,13 +207,13 @@ def callback():
             mysql.connection.commit()
             cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
             account1 = cursor.fetchone()
-            if account1['Text_Message_Status'] == True or account1['Authenticator_Status'] == True or account1[
-                'Push_Base_Status'] == True or account1['Backup_Code_Status'] == True:
+            if account1['Text_Message_Status'] == True or account1['Authenticator_Status'] == True or account1['Push_Base_Status'] == True or account1['Backup_Code_Status'] == True or account1['Sms_Message_Status'] == True:
                 session['2fa_status'] = 'Fail'
                 return render_template("2fa.html", status_text=account1['Text_Message_Status'],
                                        status_auth=account1['Authenticator_Status'],
                                        status_psuh=account1['Push_Base_Status'],
-                                       status_back=account1['Backup_Code_Status'])
+                                       status_back=account1['Backup_Code_Status'],
+                                       status_sms=account1['Sms_Message_Status'])
             else:
                 cursor.execute('SELECT * FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )', [session['ID']])
                 logininfo = cursor.fetchone()
@@ -305,15 +311,16 @@ def callback():
             Backup_Code_Status = False
             Backup_Code_Key = 0
             Backup_Code_No_Of_Use = 0
+            Sms_Message_Status=False
             # cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
             cursor.execute("""SELECT ID FROM accounts WHERE Username = %(username)s""", {'username': username})
             account = cursor.fetchone()
 
             Account_ID = account['ID']
             print(Account_ID, 'account id  ')
-            cursor.execute("INSERT INTO authentication_table VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
+            cursor.execute("INSERT INTO authentication_table VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                            , (Account_ID, Text_Message_Status, Authenticator_Status, Authenticator_Key,
-                              Push_Base_Status, Backup_Code_Status, Backup_Code_Key, Backup_Code_No_Of_Use))
+                              Push_Base_Status, Backup_Code_Status, Backup_Code_Key, Backup_Code_No_Of_Use,Sms_Message_Status))
             mysql.connection.commit()
             cursor.execute("""SELECT ID FROM accounts WHERE Username = %(username)s""", {'username': username})
             account = cursor.fetchone()
@@ -384,7 +391,6 @@ def Forcepassword():
                 return render_template('ForcePassword.html',
                                        sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
             else:
-
                 now = datetime.datetime.now().replace(microsecond=0)
                 sql = "UPDATE accounts SET password_update_time = %s WHERE username = %s "
                 value = (now, username)
@@ -401,9 +407,7 @@ def Forcepassword():
             flash('Sorry ! Please Check Im not a robot.')
             return render_template('ForcePassword.html',
                                    sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
-
     return render_template('ForcePassword.html', sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
-
 
 ## google login key end ###
 
@@ -417,7 +421,53 @@ def Forcepassword():
 
 #End of flask-session
 
+app.static_folder = 'static'
 
+@app.route('/chatbot')
+def chatbot():
+    return render_template('chatbot.html')
+
+@app.route("/get")
+def get_bot_response():
+    userText = request.args.get('msg')
+    print(userText)
+    chatbot = ChatBot(
+        'CoronaBot',
+        storage_adapter='chatterbot.storage.SQLStorageAdapter',
+        logic_adapters=[
+            'chatterbot.logic.MathematicalEvaluation',
+            'chatterbot.logic.TimeLogicAdapter',
+            'chatterbot.logic.BestMatch',
+            {
+                'import_path': 'chatterbot.logic.BestMatch',
+                'default_response': 'I am sorry, but I do not understand. I am still learning.',
+                'maximum_similarity_threshold': 0.90
+            }
+        ],
+        database_uri='sqlite:///database.sqlite3'
+    )
+
+    # Training With Own Questions
+
+    trainer = ListTrainer(chatbot)
+
+    training_data_quesans = open('training_data/ques_ans.txt').read().splitlines()
+    training_data_personal = open('training_data/personal_ques.txt').read().splitlines()
+
+    training_data = training_data_quesans + training_data_personal
+
+    trainer.train(training_data)
+
+    # Training With Corpus
+
+    trainer_corpus = ChatterBotCorpusTrainer(chatbot)
+
+    trainer_corpus.train(
+        'chatterbot.corpus.english'
+    )
+
+
+    return str(chatbot.get_response(userText))
 # Flask-Mail and app.config stuff
 # These are default values dont anyhow change
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
@@ -441,7 +491,7 @@ socketio = SocketIO(app, logger=True, engineio_logger=True)
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'Dragonnight1002'  # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = '1234'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -565,6 +615,128 @@ def test2():
 
 
 ## hong ji text message done ??? #####
+@app.route('/SmsOtpCheck')
+def SmsOtpCheck():
+    if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+        account = cursor.fetchone()
+        cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
+        account_sid = 'AC8e0240f8443f52121cc16bbf1f38a719'
+        auth_token = 'f5962b8f4aaef8d63058aa99cbde4011'
+        client = Client(account_sid, auth_token)
+        phn=session['Phone_No']
+        print(phn)
+        #if phn == session['username']+'phn':
+            #return redirect(url_for('Forcephn'))
+
+        otp = randint(000000, 999999)  # email otp
+        session['otp'] = otp
+        ph1='+65'+phn
+        k12 = datetime.datetime.now() + timedelta(seconds=60)
+        session['otp_create_time'] = k12.strftime("%X")
+        message = client.messages.create(
+                messaging_service_sid='MG3153b219b198d00e07da6bfd6b91ed8e',
+                body='This is your OTP : '+ str(otp) +' , please do not share it with other people thanks ',
+                to=ph1
+            )
+
+        print(message.sid)
+
+        return render_template('SmsOtpCheck.html', account=account,role=account['role'],opt=otp)
+    else:
+        flash('Please complete your 2FA !', 'danger')
+        return redirect(url_for("two_fa"))
+
+@app.route('/Forcephn', methods=['GET', 'POST'])
+def Forcephn():
+    username=session['Username']
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': username})
+    account = cursor.fetchone()
+    captcha_response = request.form.get('g-recaptcha-response')
+    if request.method == 'POST' and 'phn' in request.form :
+        if is_human(captcha_response):
+            phone_no = request.form['phn']
+            key = account['SymmetricKey']
+            fkey = Fernet(key)
+
+            now = datetime.datetime.now().replace(microsecond=0)
+            sql = "UPDATE accounts SET password_update_time = %s WHERE username = %s "
+            value = (now, username)
+            print(value)
+            cursor.execute(sql, value)
+            salt = bcrypt.gensalt(rounds=16)
+            hash_password = bcrypt.hashpw(password.encode(), salt)
+            sql2 = "UPDATE accounts SET Password = %s WHERE username = %s "
+            value2 = (hash_password, username)
+            cursor.execute(sql2, value2)
+            mysql.connection.commit()
+            return redirect(url_for('homepage'))
+        else:
+            flash('Sorry ! Please Check Im not a robot.')
+            return render_template('ForcePassword.html',
+                                   sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
+    return render_template('ForcePassword.html', sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
+
+@app.route('/validateSms', methods=['GET', 'POST'])
+def validateSms():
+    if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+        account = cursor.fetchone()
+        time_pre=session['otp_create_time']
+        yy = datetime.datetime.now()
+        time_now=yy.strftime("%X")
+        user_otp = request.form['otp']
+        if session['otp'] == int(user_otp) and time_pre>time_now:
+            cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
+            account1 = cursor.fetchone()
+            print('updating text status')
+            cursor.execute("UPDATE  authentication_table SET Sms_Message_Status=True WHERE Account_ID=%s ", [session['ID']])
+            mysql.connection.commit()
+            print('updated successfully noice ')
+            flash('successfully','primary')
+            return render_template('successful.html', account=account,role=account['role'],what='Sms')
+        else:
+            if time_pre<time_now:
+                flash('Otp expire !','danger')
+                return render_template('Fail.html', account=account, role=account['role'],what='Sms')
+            else:
+                flash('Opt incorrect !','danger')
+            return render_template('Fail.html', account=account,role=account['role'],what='Sms')
+
+    else:
+        flash('Please complete your 2FA !', 'danger')
+        return redirect(url_for("two_fa"))
+
+
+
+@app.route('/SmsOtpdisable')
+def SmsOtpdisable():
+    if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+        account = cursor.fetchone()
+        cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
+        account1 = cursor.fetchone()
+        if account1['Sms_Message_Status'] ==True:
+            Sms_Message_Status=False
+            cursor.execute(
+                "UPDATE authentication_table SET Sms_Message_Status=%s  WHERE Account_ID=%s ",
+                (Sms_Message_Status, [session['ID']]))
+            mysql.connection.commit()
+            flash('Sms Otp message  disable ! ', 'primary')
+            return redirect(url_for('Changesettings'))
+        else:
+            flash('Sms Otp message is not activated ', 'danger')
+        return redirect(url_for('Changesettings'))
+    else:
+        flash('Please complete your 2FA !', 'danger')
+        return redirect(url_for("two_fa"))
+
+
+
 @app.route('/EmailOtpCheck')
 def EmailOtpCheck():
     if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
@@ -587,6 +759,7 @@ def EmailOtpCheck():
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
+
 
 
 @app.route('/EmailOtpdisable')
@@ -631,14 +804,14 @@ def validate():
             mysql.connection.commit()
             print('updated successfully noice ')
             flash('successfully','primary')
-            return render_template('successful.html', account=account,role=account['role'])
+            return render_template('successful.html', account=account,role=account['role'],what='Email')
         else:
             if time_pre<time_now:
                 flash('Otp expire !','danger')
-                return render_template('Fail.html', account=account, role=account['role'])
+                return render_template('Fail.html', account=account, role=account['role'],what='Email')
             else:
                 flash('Opt incorrect !','danger')
-            return render_template('Fail.html', account=account,role=account['role'])
+            return render_template('Fail.html', account=account,role=account['role'],what='Email')
 
     else:
         flash('Please complete your 2FA !', 'danger')
@@ -713,7 +886,7 @@ def two_fa():
     cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
     account1 = cursor.fetchone()
 
-    return render_template("2fa.html",status_text=account1['Text_Message_Status'],status_auth=account1['Authenticator_Status'],status_psuh=account1['Push_Base_Status'],status_back=account1['Backup_Code_Status'])
+    return render_template("2fa.html",status_text=account1['Text_Message_Status'],status_auth=account1['Authenticator_Status'],status_psuh=account1['Push_Base_Status'],status_back=account1['Backup_Code_Status'],status_sms=account1['Sms_Message_Status'])
 
 
 @app.route('/twofaemail', methods=['GET', 'POST'])
@@ -788,6 +961,84 @@ def two_fa_email_check():
         else:
             flash('Incorrect Otp , please try again !','danger')
         return redirect(url_for("two_fa_email"))
+
+
+@app.route('/twofasms', methods=['GET', 'POST'])
+def two_fa_sms():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+    account = cursor.fetchone()
+    if request.method == 'POST':
+        cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
+        account1 = cursor.fetchone()
+        otp = randint(000000, 999999)  # email otp
+        session['otp'] = otp
+        k12 = datetime.datetime.now() + timedelta(seconds=60)
+        session['otp_create_time'] = k12.strftime("%X")
+
+        if account1['Sms_Message_Status']==True:
+            account_sid = 'AC8e0240f8443f52121cc16bbf1f38a719'
+            auth_token = 'f5962b8f4aaef8d63058aa99cbde4011'
+            client = Client(account_sid, auth_token)
+            phn = session['Phone_No']
+            message = client.messages.create(
+                messaging_service_sid='MG3153b219b198d00e07da6bfd6b91ed8e',
+                body='This is your OTP : ' + str(otp) + ' , please do not share it with other people thanks ',
+                to=phn
+            )
+            print(message.sid)
+            return render_template('2fa_email_check.html', account=account,role=account['role'])
+        else:
+            flash('You havent active this function yet choose other 2 factor authentication method','danger')
+            return redirect(url_for("two_fa_sms"))
+    else:
+        return redirect(url_for("two_fa"))
+
+@app.route('/twofasmscheck', methods=['GET', 'POST'])
+def two_fa_sms_check():
+    user_otp = request.form['otp']
+    time_pre = session['otp_create_time']
+    yy = datetime.datetime.now()
+    time_now = yy.strftime("%X")
+    if session['otp'] == int(user_otp) and  time_pre>time_now:
+        session['2fa_status']='Pass'
+
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute("""INSERT INTO userlogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
+        mysql.connection.commit()
+        cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (
+            session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.remote_addr))
+        mysql.connection.commit()
+        cursor.execute(
+            """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
+            [session['ID']])
+        login_ID = cursor.fetchone()
+        cursor.execute("""INSERT INTO usersloggedin VALUES (NULL,%s,%s)""",
+                       (session['ID'], login_ID['Log_in_ID']))
+        mysql.connection.commit()
+
+        cursor.execute(
+            'SELECT * FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )',
+            [session['ID']])
+        logininfo = cursor.fetchone()
+        if session["Account_Login_Notification"] == 1:  # If login notif true
+
+            msg = Message("Login Notification", recipients=[session['email']])
+            Username = session['Username']
+            IP = logininfo['Log_In_IP_Address']
+            Date = logininfo['Account_Log_In_Time']
+            msg.html = render_template('Login_Notification_Email.html', Username=Username, Date=Date, IP=IP)
+            mail.send(msg)
+            return redirect(url_for("homepage"))
+        else:
+            return redirect(url_for("homepage"))
+    else:
+        if time_pre<time_now:
+            flash('Opt expired !','danger')
+            return redirect(url_for("two_fa_email"))
+        else:
+            flash('Incorrect Otp , please try again !','danger')
+        return redirect(url_for("two_fa_sms"))
 
 
 @app.route('/twofabackupcode', methods=['GET', 'POST'])
@@ -1132,8 +1383,6 @@ def Changesettings():
 
 
 
-
-
             if formupdateuser.Username.data != account['Username']:
                 cursor.execute("UPDATE accounts SET Username=%s  WHERE id=%s ", (formupdateuser.Username.data, [session['ID']]))
                 #cursor.execute("""UPDATE UserUpdateTime SET Username = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""",[Updated,session['ID']])
@@ -1225,7 +1474,7 @@ def Changesettings():
             formupdateuser.Answers_2.data = account['Answer_2']
             formupdateuser.Address.data = decryptedaddress
 
-        return render_template('Settings.html', account=account, form=formupdateuser, ip=ip, role=role, status_text=account1['Text_Message_Status'], status_auth=account1['Authenticator_Status'], status_psuh=account1['Push_Base_Status'], status_back=account1['Backup_Code_Status'])
+        return render_template('Settings.html', account=account, form=formupdateuser, ip=ip, role=role, status_text=account1['Text_Message_Status'], status_auth=account1['Authenticator_Status'], status_psuh=account1['Push_Base_Status'], status_back=account1['Backup_Code_Status'],status_sms=account1['Sms_Message_Status'])
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
@@ -1738,9 +1987,9 @@ def login():
                         cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
                         account1 = cursor.fetchone()
 
-                        if account1['Text_Message_Status'] ==True or account1['Authenticator_Status']==True or account1['Push_Base_Status']==True or account1['Backup_Code_Status']==True:
+                        if account1['Text_Message_Status'] ==True or account1['Authenticator_Status']==True or account1['Push_Base_Status']==True or account1['Backup_Code_Status']==True  or account1['Sms_Message_Status']==True:
                             session['2fa_status']='Fail'
-                            return render_template("2fa.html", status_text=account1['Text_Message_Status'], status_auth=account1['Authenticator_Status'], status_psuh=account1['Push_Base_Status'], status_back=account1['Backup_Code_Status'])
+                            return render_template("2fa.html", status_text=account1['Text_Message_Status'], status_auth=account1['Authenticator_Status'], status_psuh=account1['Push_Base_Status'], status_back=account1['Backup_Code_Status'], status_sms=account1['Sms_Message_Status'])
                         else:
 
                             cursor.execute("""INSERT INTO userlogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
@@ -1857,6 +2106,7 @@ def create_login_user():
                 DOB = request.form['DOB']
                 gender = request.form['Gender']
                 password = request.form['Password']
+
                 phone_no = request.form['Phone_Number']
                 email = request.form['Email']
                 security_questions_1 = request.form['Security_Questions_1']
@@ -1919,14 +2169,15 @@ def create_login_user():
                     Backup_Code_Status = False
                     Backup_Code_Key = 0
                     Backup_Code_No_Of_Use = 0
+                    Sms_Message_Status=False
                     #cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
                     cursor.execute("""SELECT ID FROM accounts WHERE Username = %(username)s""", {'username': username})
                     account = cursor.fetchone()
                     Account_ID = account['ID']
                     print(Account_ID, 'account id  ')
-                    cursor.execute("INSERT INTO authentication_table VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
+                    cursor.execute("INSERT INTO authentication_table VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                                    , (Account_ID, Text_Message_Status, Authenticator_Status, Authenticator_Key,
-                                      Push_Base_Status, Backup_Code_Status, Backup_Code_Key, Backup_Code_No_Of_Use))
+                                      Push_Base_Status, Backup_Code_Status, Backup_Code_Key, Backup_Code_No_Of_Use,Sms_Message_Status))
                     mysql.connection.commit()
                     print('insert successfully nocie ')
                     msg = Message("Account Verification Link", recipients=[email])

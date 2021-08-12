@@ -25,15 +25,17 @@
     <div class="col-lg-12">
       <div class="jumbotron text-center p-4">
 
-        <h4>Setup for {{what}} Authenticate  </h4>
+        <h4>Setup your Phone Number  </h4>
       </div>
     </div>
     <div class="col-lg-5">
       <form>
         <div>
-          <h5>Fail!</h5>
+          <h5>Instructions!</h5>
           <ul>
-            <li>You have not enable {{what}} otp !  </li>
+            <li>Enter your Phone number that is contactable  </li>
+            <li>example 8888 8888 </li>
+            <li>This Phone Number that you have enter will receive Otp in the future for Sms Otp </li>
           </ul>
         </div>
 
@@ -50,11 +52,26 @@
       {% endfor %}
       {% endif %}
       {% endwith %}
+      <form action="/Forcephn"  method="POST">
+        <div class="form-group">
+          <label for="phn">Enter your Phone Number</label>
+          <input type="text" class="form-control" id="phn"  name="phn" pattern="\d{4}[-.\s]?\d{4}$"  required>
 
+
+        </div>
+        <div class="text-center">
+          <div class="g-recaptcha" data-sitekey="{{ sitekey }}"></div> <br/>
+          <button type="submit" class="btn btn-primary" >Comfirm</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
+
 <a href="/Settings"><button class="btn btn-primary" type="button">Return</button></a>
-<a href="/EmailOtpCheck"><button class="btn btn-primary"  type="button">Email Authentication</button></a>
+   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
+      <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    <script src="https://www.google.com/recaptcha/api.js"></script>
 
 {% endblock %}

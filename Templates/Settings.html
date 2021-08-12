@@ -257,13 +257,24 @@ body{
                     <p class="small text-muted mt-2">Two-factor authentication adds an additional layer of security to your account by requiring more than just a password to log in.</p>
                     <ul class="list-group list-group-sm">
                       <li class="list-group-item has-icon">
-                        Text Message
+                        Email  Message
                         <div class="custom-control custom-control-nolabel custom-switch ml-auto">
 
                           {%if status_text == 0 %}
                           <a href="/EmailOtpCheck"><button class="btn btn-success" type="button">Enable</button></a>
                           {%else%}
                           <a href="/EmailOtpdisable"><button class="btn btn-danger" type="button">Disable</button></a>
+                          {% endif %}
+                        </div>
+                      </li>
+                      <li class="list-group-item has-icon">
+                        Sms  Message
+                        <div class="custom-control custom-control-nolabel custom-switch ml-auto">
+
+                          {%if status_sms == 0 %}
+                          <a href="/SmsOtpCheck"><button class="btn btn-success" type="button">Enable</button></a>
+                          {%else%}
+                          <a href="/SmsOtpdisable"><button class="btn btn-danger" type="button">Disable</button></a>
                           {% endif %}
                         </div>
                       </li>
@@ -282,7 +293,7 @@ body{
                         Push-based
                         <div class="custom-control custom-control-nolabel custom-switch ml-auto">
 
-                          {%if status_push == 0 %}
+                          {%if status_psuh == 0 %}
                           <a href="/login/2fa/"><button class="btn btn-success" type="button">Enable</button></a>
                           {%else%}
                           <a href="/login/2fadisable/"><button class="btn btn-danger" type="button">Disable</button></a>
