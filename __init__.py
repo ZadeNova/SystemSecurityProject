@@ -511,7 +511,7 @@ try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
     app.config[
-        'MYSQL_PASSWORD'] = 'N0passwordatall'  # change this line to our own sql password , thank you vry not much xd
+        'MYSQL_PASSWORD'] = 'ZadePrimeSQL69420'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -1754,7 +1754,8 @@ def ViewDashboard():
                             ORDER BY TimeOfActivity;""")
 
             AuditInfo = cursor.fetchall()
-
+            cursor.execute("""SELECT * FROM accounts""")
+            allusers = cursor.fetchall()
             cursor.execute("""Select COUNT(Attempted_Log_Ins) AS TotalAttemptedLogins from accountattemptedlogins;""")
             Attemptedlogincount = cursor.fetchone()
             cursor.execute("""SELECT COUNT(ID) As Totalusers from accounts;""")
@@ -1769,7 +1770,7 @@ def ViewDashboard():
 
             print(AuditInfo)
 
-            for i in AuditInfo:
+            for i in allusers:
                 print(i)
                 Userlist.append(i['Username'])
 
@@ -1786,20 +1787,22 @@ def ViewDashboard():
                 for i in AuditInfo:
                     if user == i['Username']:
                         Eventcounter += 1
+
                 EventCount[user] = Eventcounter
 
             Userlist = list(set(Userlist))
-            print(UserAttemptedLoginCount)
+
             print(Userlist)
             print(EventCount)
-            # Stats?
+            # Statistics
             # Calculate average attempt login failure per user
             # All attempted and login failure / Total Logins.
             # Add up everything then divide by total users.
             AvgLoginFailuresUsers = round(EventLoginFailCount/NumberOfUsers,2)
             AvgEventCountUser = round(sum([ EventCount[x] for x in EventCount])/NumberOfUsers,2)
             print(AvgLoginFailuresUsers)
-
+            AvgEvents24hr = 0
+            AvgEvent1hr = 0
 
 
             print(AvgEventCountUser)
@@ -1849,7 +1852,7 @@ def Audit():
                 print(allaccounts)
                 cursor.execute("""SELECT * FROM accounts""")
                 accountlevel = cursor.fetchall()
-                print('hi')
+
 
 
 
@@ -2229,6 +2232,9 @@ def login():
                         cursor.execute("UPDATE accounts SET Attempts = 0 WHERE username = %(username)s",
                                        {'username': username})
                         mysql.connection.commit()
+
+
+                        cursor.execute("""SELECT * FROM Authentication_Table""")
                         session['loggedin'] = True
                         session['ID'] = account['ID']
                         session['Username'] = account['Username']
@@ -2241,6 +2247,8 @@ def login():
                         session['Account_Login_Notification'] = account['Account_Login_Notification']
                         session['Email_Vulnerabilities'] = account['Email_Vulnerabilities']
                         session['Attempts_Notification'] = account1['Attempts_Notification']
+
+
                         print(session)
                         print(account)
                         # Update UserActions table for login!
