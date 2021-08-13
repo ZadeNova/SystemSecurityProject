@@ -56,3 +56,4 @@ spacy==3.1.1
 chatterbot-corpus==1.2.0
 pytz==2021.1
 twilio===6.63.0
+pyjwt==1.7.1
