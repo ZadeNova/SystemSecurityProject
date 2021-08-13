@@ -485,7 +485,7 @@ app.config['MAIL_ASCII_ATTACHMENTS'] = False
 s = URLSafeTimedSerializer('SecretKey?')
 mail = Mail(app)
 
-socketio = SocketIO(app, logger=True, engineio_logger=True)
+
 
 # Database connection MYSQL
 try:
@@ -590,19 +590,19 @@ def is_human(captcha_response):
 
 
 
+#
+#@app.route('/testsocket')
+#def testtt():
+#    print(session)
+#
+#    return render_template('testsocketio.html')
 
-@app.route('/testsocket')
-def testtt():
-    print(session)
 
-    return render_template('testsocketio.html')
-
-
-@app.route('/testsocket2')
-def test2():
-    print(session)
-
-    return render_template('testsocketio2.html')
+#@app.route('/testsocket2')
+#def test2():
+#    print(session)
+#
+#    return render_template('testsocketio2.html')
 
 #@app.after_request
 #def after_request(response):
@@ -5199,4 +5199,4 @@ def page_not_found(e):
 # def page_not_found(e):
 # return render_template('error404.html'), 404
 if __name__ == '__main__':
-    socketio.run(app,debug=True)
+    app.run(debug=True)
