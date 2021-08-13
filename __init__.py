@@ -243,7 +243,7 @@ def callback():
         gender = False
         password = '0'
         print(password)
-        phone_no =  id_info.get("name")+'phn'
+        phone_no ='phn'
         email = id_info.get("email")
         security_questions_1 = False
         answer_1 = False
@@ -491,7 +491,7 @@ mail = Mail(app)
 try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'ZadePrimeSQL69420'  # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_PASSWORD'] = '1234'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -617,33 +617,39 @@ def is_human(captcha_response):
 ## hong ji text message done ??? #####
 @app.route('/SmsOtpCheck')
 def SmsOtpCheck():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
+    account = cursor.fetchone()
+    key = account['SymmetricKey']
+    fkey = Fernet(key)
+    decryptedPhoneNo_Binary = fkey.decrypt(account['Phone_Number'].encode())
+    decryptedPhoneNo = decryptedPhoneNo_Binary.decode('utf-8')
     if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
-        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
-        account = cursor.fetchone()
-        cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
-        account_sid = 'AC8e0240f8443f52121cc16bbf1f38a719'
-        auth_token = 'f5962b8f4aaef8d63058aa99cbde4011'
-        client = Client(account_sid, auth_token)
-        phn=session['Phone_No']
-        print(phn)
-        #if phn == session['username']+'phn':
-            #return redirect(url_for('Forcephn'))
+        if decryptedPhoneNo =='phn':
+            return redirect(url_for('Forcephn'))
+        else:
+            cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
+            account_sid = 'AC8e0240f8443f52121cc16bbf1f38a719'
+            auth_token = '..'  ### check ur whatapp for the lasted codoe
+            client = Client(account_sid, auth_token)
+            print('phn:',decryptedPhoneNo)
+            #if phn == session['username']+'phn':
+                #return redirect(url_for('Forcephn'))
 
-        otp = randint(000000, 999999)  # email otp
-        session['otp'] = otp
-        ph1='+65'+phn
-        k12 = datetime.datetime.now() + timedelta(seconds=60)
-        session['otp_create_time'] = k12.strftime("%X")
-        message = client.messages.create(
-                messaging_service_sid='MG3153b219b198d00e07da6bfd6b91ed8e',
-                body='This is your OTP : '+ str(otp) +' , please do not share it with other people thanks ',
-                to=ph1
-            )
+            otp = randint(000000, 999999)  # email otp
+            session['otp'] = otp
 
-        print(message.sid)
+            k12 = datetime.datetime.now() + timedelta(seconds=60)
+            session['otp_create_time'] = k12.strftime("%X")
+            message = client.messages.create(
+                    messaging_service_sid='MG3153b219b198d00e07da6bfd6b91ed8e',
+                    body='This is your OTP : '+ str(otp) +' , please do not share it with other people thanks ',
+                    to=decryptedPhoneNo
+                )
 
-        return render_template('SmsOtpCheck.html', account=account,role=account['role'],opt=otp)
+            print(message.sid)
+
+            return render_template('SmsOtpCheck.html', account=account,role=account['role'],opt=otp,phn=decryptedPhoneNo)
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
@@ -657,27 +663,19 @@ def Forcephn():
     captcha_response = request.form.get('g-recaptcha-response')
     if request.method == 'POST' and 'phn' in request.form :
         if is_human(captcha_response):
-            phone_no = request.form['phn']
+            phn=request.form['phn']
+            phone_no = '+65'+phn
             key = account['SymmetricKey']
             fkey = Fernet(key)
-
-            now = datetime.datetime.now().replace(microsecond=0)
-            sql = "UPDATE accounts SET password_update_time = %s WHERE username = %s "
-            value = (now, username)
-            print(value)
-            cursor.execute(sql, value)
-            salt = bcrypt.gensalt(rounds=16)
-            hash_password = bcrypt.hashpw(password.encode(), salt)
-            sql2 = "UPDATE accounts SET Password = %s WHERE username = %s "
-            value2 = (hash_password, username)
-            cursor.execute(sql2, value2)
+            EncryptPhoneNo = fkey.encrypt(phone_no.encode())
+            cursor.execute("UPDATE accounts SET Phone_Number=%s  WHERE Username=%s ", (EncryptPhoneNo, [session['Username']]))
             mysql.connection.commit()
-            return redirect(url_for('homepage'))
+            return redirect(url_for('SmsOtpCheck'))
         else:
             flash('Sorry ! Please Check Im not a robot.')
-            return render_template('ForcePassword.html',
-                                   sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
-    return render_template('ForcePassword.html', sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
+            return render_template('phn.html',
+                                   sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb",account=account)
+    return render_template('phn.html', sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb",account=account)
 
 @app.route('/validateSms', methods=['GET', 'POST'])
 def validateSms():
@@ -978,7 +976,7 @@ def two_fa_sms():
 
         if account1['Sms_Message_Status']==True:
             account_sid = 'AC8e0240f8443f52121cc16bbf1f38a719'
-            auth_token = 'f5962b8f4aaef8d63058aa99cbde4011'
+            auth_token = '..' ## check your whatapp for the latest code
             client = Client(account_sid, auth_token)
             phn = session['Phone_No']
             message = client.messages.create(
@@ -1405,10 +1403,12 @@ def Changesettings():
                 mysql.connection.commit()
                 counter += 1
             if formupdateuser.Phone_Number.data != decryptedPhoneNo:
-                EncryptPhoneNo = fkey.encrypt(formupdateuser.Phone_Number.data.encode())
+                new='+65'+formupdateuser.Phone_Number.data
+                EncryptPhoneNo = fkey.encrypt(new.encode())
                 cursor.execute("UPDATE accounts SET Phone_Number=%s  WHERE id=%s ", (EncryptPhoneNo, [session['ID']]))
                 #cursor.execute("""UPDATE UserUpdateTime SET Phone_Number = %s WHERE Account_ID = %s AND ID = (SELECT Max(ID))""", [Updated,session['ID']])
                 mysql.connection.commit()
+                session['Phone_No']=new
                 counter += 1
             if formupdateuser.Email.data != account['Email']:
                 cursor.execute("UPDATE accounts SET Email=%s  WHERE id=%s ", (formupdateuser.Email.data, [session['ID']]))
@@ -2224,8 +2224,8 @@ def create_login_user():
                 DOB = request.form['DOB']
                 gender = request.form['Gender']
                 password = request.form['Password']
-
-                phone_no = request.form['Phone_Number']
+                pnh1=request.form['Phone_Numer']
+                phone_no ='+65'+pnh1
                 email = request.form['Email']
                 security_questions_1 = request.form['Security_Questions_1']
                 answer_1 = request.form['Answers_1']
@@ -2359,7 +2359,8 @@ def create_login_admin():
                     DOB = request.form['DOB']
                     gender = request.form['Gender']
                     password = request.form['Password']
-                    phone_no = request.form['Phone_Number']
+                    phn1=request.form['Phone_Number']
+                    phone_no ='+65'+phn1
                     email = request.form['Email']
                     security_questions_1 = request.form['Security_Questions_1']
                     answer_1 = request.form['Answers_1']
@@ -3368,6 +3369,10 @@ def homepage():
             flash('Email otp is activated ','primary')
         else:
             flash('Email otp  not activated ', "danger")
+        if account1['Sms_Message_Status'] == True:
+            flash('Sms otp  is activated ','primary')
+        else:
+            flash('Sms otp not activated ','danger')
         if account1['Authenticator_Status'] == True:
             flash('Google /Auth Authenticator is activated','primary')
         else:
