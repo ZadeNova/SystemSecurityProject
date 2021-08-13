@@ -1685,7 +1685,7 @@ def AttemptsNotification():
         print(session)
         print('False ')
         return redirect(url_for('Changesettings'))
-
+# sadge
 
 @app.route('/IPmap')
 def Ipmap():
