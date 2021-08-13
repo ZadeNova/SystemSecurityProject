@@ -20,10 +20,10 @@ import requests
 from cryptography.fernet import Fernet
 from flask import Flask, render_template, request, redirect, url_for, flash, json, after_this_request, session, abort
 # New things added by Zade
-import redis
+
 from flask_session import Session
 # End of new items
-from flask_socketio import SocketIO, emit, send, disconnect
+
 from flask_mail import Mail, Message
 # SQL stuff
 ###line 43 , 44 for hong ji only , the others just # this 2 line
