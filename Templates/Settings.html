@@ -325,13 +325,21 @@ body{
                           <a href="{{ url_for('LoginNotification') }}"><button class="btn btn-danger" type="button">Disable</button></a>
 
                           {% endif %}
-
-
-
-
                         </div>
                       </li>
 
+                      <li class="list-group-item has-icon">
+                        Attempts Login Notification
+                        <div class="custom-control custom-control-nolabel custom-switch ml-auto">
+
+                          {% if status_Attempts == 0 %}
+                          <a href="{{ url_for('AttemptsNotification') }}"><button class="btn btn-success" type="button">Enable</button></a>
+                          {% else %}
+                          <a href="{{ url_for('AttemptsNotification') }}"><button class="btn btn-danger" type="button">Disable</button></a>
+
+                          {% endif %}
+                        </div>
+                      </li>
                     </ul>
                   </div>
                 </form>

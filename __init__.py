@@ -153,6 +153,8 @@ def callback():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': username})
     account = cursor.fetchone()
+    cursor.execute("""SELECT * FROM Authentication_Table WHERE ID = %(ID)s""", {'ID': account['ID']})
+    account1 = cursor.fetchone()
     # If account exists show error and validation checks(do this at the form for this function)
     if account:
         key = account['SymmetricKey']
@@ -174,6 +176,7 @@ def callback():
         session['Phone_No'] = decryptedPhoneNo
         session['Email_Vulnerabilities'] = account['Email_Vulnerabilities']
         session['Account_Login_Notification'] = account['Account_Login_Notification']
+        session["Attempts_Notification"] = account1['Attempts_Notification']
         print(session["Account_Login_Notification"])
         if account['password_update_time'] + datetime.timedelta(days=365) <= datetime.datetime.now().replace(
                 microsecond=0):
@@ -295,7 +298,7 @@ def callback():
                 "INSERT INTO accounts VALUES (NULL,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                 , (username, EncryptedNRIC, DOB, password, gender, EncryptPhoneNo, email, security_questions_1,
                    security_questions_2, answer_1, answer_2, encryptedaddress, role, account_creation_time,
-                   email_confirm, key, UUID, Account_Status, password_update_time, Account_Login_Notification, 0, 0 ,25))
+                   email_confirm, key, UUID, Account_Status, password_update_time, Account_Login_Notification, 0, 0, 25))
             mysql.connection.commit()
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': username})
@@ -323,16 +326,17 @@ def callback():
             Backup_Code_Key = 0
             Backup_Code_No_Of_Use = 0
             Sms_Message_Status = False
+            AttemptsNotification = False
             # cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
             cursor.execute("""SELECT ID FROM accounts WHERE Username = %(username)s""", {'username': username})
             account = cursor.fetchone()
 
             Account_ID = account['ID']
             print(Account_ID, 'account id  ')
-            cursor.execute("INSERT INTO authentication_table VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+            cursor.execute("INSERT INTO authentication_table VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                            , (Account_ID, Text_Message_Status, Authenticator_Status, Authenticator_Key,
                               Push_Base_Status, Backup_Code_Status, Backup_Code_Key, Backup_Code_No_Of_Use,
-                              Sms_Message_Status))
+                              Sms_Message_Status, AttemptsNotification))
             mysql.connection.commit()
             cursor.execute("""SELECT ID FROM accounts WHERE Username = %(username)s""", {'username': username})
             account = cursor.fetchone()
@@ -345,6 +349,7 @@ def callback():
             session['email'] = email
             session['Email_Vulnerabilities'] = account12['Email_Vulnerabilities']  # Zadeadd this line
             session['Account_Login_Notification'] = account12['Account_Login_Notification']
+            session["Attempts_Notification"] = AttemptsNotification
             print(session["Account_Login_Notification"])
             cursor.execute("""INSERT INTO userlogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
             mysql.connection.commit()
@@ -506,7 +511,7 @@ try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
     app.config[
-        'MYSQL_PASSWORD'] = 'ZadePrimeSQL69420'  # change this line to our own sql password , thank you vry not much xd
+        'MYSQL_PASSWORD'] = 'N0passwordatall'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -642,9 +647,11 @@ def SmsOtpCheck():
         else:
             cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
             account_sid = 'AC8e0240f8443f52121cc16bbf1f38a719'
-            auth_token = '..'  ### check ur whatapp for the lasted codoe
+            auth_token = '..'
+            ### check ur whatapp for the lasted codoe
             client = Client(account_sid, auth_token)
-            print('phn:',decryptedPhoneNo)
+            print('phn:', decryptedPhoneNo)
+            print(type(decryptedPhoneNo))
             #if phn == session['username']+'phn':
                 #return redirect(url_for('Forcephn'))
 
@@ -1490,7 +1497,6 @@ def Changesettings():
                 mysql.connection.commit()
                 account1 = cursor.fetchone()
                 counter = str(counter)
-                print(type(counter))
                 msg = Message("Update of Account", recipients=account['Email'].split())
                 msg.html = render_template('UpdateEmail.html', counter=str(counter), Ipaddress=request.remote_addr)
                 mail.send(msg)
@@ -1515,7 +1521,7 @@ def Changesettings():
         return render_template('Settings.html', account=account, form=formupdateuser, ip=ip, role=role,
                                status_text=account1['Text_Message_Status'],
                                status_auth=account1['Authenticator_Status'], status_psuh=account1['Push_Base_Status'],
-                               status_back=account1['Backup_Code_Status'], status_sms=account1['Sms_Message_Status'])
+                               status_back=account1['Backup_Code_Status'], status_sms=account1['Sms_Message_Status'], status_Attempts=account1['Attempts_Notification'])
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
@@ -1650,6 +1656,32 @@ def LoginNotification():
         cursor.execute("""UPDATE accounts SET Account_Login_Notification = %s WHERE ID = %s """, [F, session['ID']])
         mysql.connection.commit()
         session["Account_Login_Notification"] = 0
+        print(session)
+        print('False ')
+        return redirect(url_for('Changesettings'))
+
+
+@app.route('/AttemptsLoginNotification', methods=['GET', 'POST'])
+def AttemptsNotification():
+    T, F = 1, 0
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute("""SELECT * FROM accounts WHERE ID = %s AND Username = %s""", [session['ID'], session['Username']])
+    account = cursor.fetchone()
+    cursor.execute("SELECT * FROM Authentication_Table WHERE Account_ID = %(ID)s", {'ID': account['ID']})
+    # Fetch one record and return result
+    account1 = cursor.fetchone()
+
+    if account1["Attempts_Notification"] == 0:
+        cursor.execute("""UPDATE Authentication_Table SET Attempts_Notification = %s WHERE Account_ID = %s """, [T, account['ID']])
+        session["Attempts_Notification"] = 1
+        mysql.connection.commit()
+        print(session)
+        print('True')
+        return redirect(url_for('Changesettings'))
+    else:
+        cursor.execute("""UPDATE Authentication_Table SET Attempts_Notification = %s WHERE Account_ID = %s """, [F, account['ID']])
+        mysql.connection.commit()
+        session["Attempts_Notification"] = 0
         print(session)
         print('False ')
         return redirect(url_for('Changesettings'))
@@ -2051,10 +2083,13 @@ def login():
             # Check if account exists in MYSQL
 
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-            cursor.execute("SELECT * FROM accounts WHERE username = %(username)s",
-                           {'username': username})
+            cursor.execute("SELECT * FROM accounts WHERE username = %(username)s", {'username': username})
             # Fetch one record and return result
             account = cursor.fetchone()
+            print(account['ID'])
+            cursor.execute("SELECT * FROM Authentication_Table WHERE Account_ID = %(ID)s", {'ID': account['ID']})
+            # Fetch one record and return result
+            account1 = cursor.fetchone()
             print(account)
 
             if account:
@@ -2114,6 +2149,7 @@ def login():
                         session['role'] = account['role']
                         session['Account_Login_Notification'] = account['Account_Login_Notification']
                         session['Email_Vulnerabilities'] = account['Email_Vulnerabilities']
+                        session['Attempts_Notification'] = account1['Attempts_Notification']
                         print(session)
                         print(account)
                         # Update UserActions table for login!
@@ -2176,42 +2212,38 @@ def login():
                                        {'username': username})
                         Original = cursor.fetchone()
                         Attempts = Original['Attempts']
-                        if Attempts == 3:
+                        if Attempts == 2:
                             Attempts += 1
-
                             now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                             cursor.execute("""INSERT INTO accountattemptedlogins VALUES (NULL,%s,%s,%s,%s)""",
                                            [Original['ID'], Attempts, request.remote_addr,
                                             now])
                             mysql.connection.commit()
-                            print("hi00000")
                             sql2 = "UPDATE accounts SET Attempts = %s WHERE username = %s "
                             value2 = (Attempts, Username)
                             cursor.execute(sql2, value2)
 
-                            cursor.execute(
-                                "UPDATE accounts SET Account_Status = 'Disabled' WHERE username = %(username)s",
-                                {'username': username})
-
-                            # write email send here with elif
+                            cursor.execute("UPDATE accounts SET Account_Status = 'Disabled' WHERE username = %(username)s", {'username': username})
                             mysql.connection.commit()
+                            msg = Message("Account Disabled", recipients=[Original['Email']])
+                            msg.html = render_template('AccountDisabled.html')
+                            mail.send(msg)
+                            msg = 'Your Account have been Disabled. please contact the helpdesk'
 
-                        elif Attempts > 3:
+                        elif Attempts > 2 and Attempts%5 == 0:
                             Attempts += 1
-                            now =  datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                            cursor.execute("""INSERT INTO accountattemptedlogins VALUES (NULL,%s,%s,%s,%s)""",
-                                           [Original['ID'], Attempts, request.remote_addr,
-                                            now])
+                            now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                            cursor.execute("""INSERT INTO accountattemptedlogins VALUES (NULL,%s,%s,%s,%s)""", [Original['ID'], Attempts, request.remote_addr, now])
                             mysql.connection.commit()
-                            print("hi312321")
                             sql2 = "UPDATE accounts SET Attempts = %s WHERE username = %s "
                             value2 = (Attempts, Username)
                             cursor.execute(sql2, value2)
                             mysql.connection.commit()
-                            # write if statement here jaydon
-                            msge = Message("Account Login Attempt", recipients=[Original['Email']])
-                            msge.html = render_template('AlertUserEmailAttemptedlogin.html',Date = now,IP = request.remote_addr,count=Attempts  )
-                            mail.send(msge)
+                            if account1['Attempts_Notification'] == 1:
+                                msge = Message("Account Login Attempt", recipients=[Original['Email']])
+                                msge.html = render_template('AlertUserEmailAttemptedlogin.html', Date=now, IP=request.remote_addr ,count=Attempts  )
+                                mail.send(msge)
+                            msg = 'Your Account have already been Disabled. please contact the helpdesk'
 
 
                         else:
@@ -2287,7 +2319,7 @@ def create_login_user():
                 DOB = request.form['DOB']
                 gender = request.form['Gender']
                 password = request.form['Password']
-                pnh1=request.form['Phone_Numer']
+                pnh1=request.form['Phone_Number']
                 phone_no ='+65'+pnh1
                 email = request.form['Email']
                 security_questions_1 = request.form['Security_Questions_1']
@@ -2353,15 +2385,16 @@ def create_login_user():
                     Backup_Code_Key = 0
                     Backup_Code_No_Of_Use = 0
                     Sms_Message_Status = False
+                    AttemptsNotification = False
                     # cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
                     cursor.execute("""SELECT ID FROM accounts WHERE Username = %(username)s""", {'username': username})
                     account = cursor.fetchone()
                     Account_ID = account['ID']
                     print(Account_ID, 'account id  ')
-                    cursor.execute("INSERT INTO authentication_table VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                    cursor.execute("INSERT INTO authentication_table VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                                    , (Account_ID, Text_Message_Status, Authenticator_Status, Authenticator_Key,
                                       Push_Base_Status, Backup_Code_Status, Backup_Code_Key, Backup_Code_No_Of_Use,
-                                      Sms_Message_Status))
+                                      Sms_Message_Status, AttemptsNotification))
                     mysql.connection.commit()
                     print('insert successfully nocie ')
                     msg = Message("Account Verification Link", recipients=[email])
@@ -2483,15 +2516,17 @@ def create_login_admin():
                         Backup_Code_Status = False
                         Backup_Code_Key = 0
                         Backup_Code_No_Of_Use = 0
+                        Sms_Message_Status = False
+                        AttemptsNotification = False
                         # cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
                         cursor.execute("""SELECT ID FROM accounts WHERE Username = %(username)s""",
                                        {'username': username})
                         account = cursor.fetchone()
                         Account_ID = account['ID']
                         print(Account_ID, 'account id  ')
-                        cursor.execute("INSERT INTO authentication_table VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
+                        cursor.execute("INSERT INTO authentication_table VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                                        , (Account_ID, Text_Message_Status, Authenticator_Status, Authenticator_Key,
-                                          Push_Base_Status, Backup_Code_Status, Backup_Code_Key, Backup_Code_No_Of_Use))
+                                          Push_Base_Status, Backup_Code_Status, Backup_Code_Key, Backup_Code_No_Of_Use, Sms_Message_Status, AttemptsNotification))
                         mysql.connection.commit()
                         print('insert successfully nocie ')
 
