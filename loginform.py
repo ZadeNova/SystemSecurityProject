@@ -1,19 +1,20 @@
 from wtforms import Form, StringField, TextAreaField, validators, SelectField, PasswordField, RadioField, DateTimeField
 import shelve
 from wtforms.validators import ValidationError, DataRequired
-from datetime import datetime, date
+from dateutil.relativedelta import relativedelta
 from wtforms.fields.html5 import DateField, EmailField
 import re
 import datetime
 
+
+
+
 class CreateLoginUserForm(Form):
-    yy = datetime.datetime.now()
-    yy = yy.replace(year=yy.year - 16)
-    kkk = yy.strftime('%Y-%m-%d')
+
 
     Username = StringField('Username:', [validators.Length(min=5, max=20), validators.DataRequired()])
     NRIC = StringField('NRIC: ', validators=[validators.Regexp(regex="^[ST][0-9]{7}[A-Z]$", message='Must start with a S or T and end with any letter between A-Z')])
-    DOB = DateField("Date of Birth", format='%Y-%m-%d', validators=[DataRequired('Select a date')])
+    DOB = DateField("Date of Birth", format='%Y-%m-%d', validators=[DataRequired('Select a date'),validators.DataRequired()],)
 
    # if DOB < kkk:
         #ValidationError('wrong')
@@ -63,6 +64,14 @@ class CreateLoginUserForm(Form):
 
     role = StringField('Role', default='Guest', render_kw={'readonly': True})
 
-  #  def validate_date(self,):
+    def validate_DOB(self, DOB):
+        yy = datetime.datetime.now()
+        yy = yy.replace(year=yy.year - 16)
+        kkk = yy
+        if DOB.data > datetime.date.today():
+            raise ValidationError("Do not choose a future date")
+        elif DOB.data > (datetime.date.today() - relativedelta(years=16)):
+            raise ValidationError("Too young!")
+
 
 

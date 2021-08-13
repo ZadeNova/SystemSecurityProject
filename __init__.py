@@ -1719,13 +1719,15 @@ def SecurityAlgo():
 @app.route('/dashboard/24hour', methods=['GET', 'POST'])
 def dashboardday():
     print(session)
-    return render_template("dashboard.html")
+    session['DashboardTime'] = "24Hour"
+    return redirect(url_for('ViewDashboard'))
 
 
 @app.route('/dashboard/1hour', methods=['GET', 'POST'])
 def dashboardhour():
     print(session)
-    return render_template("dashboard.html")
+    session['DashboardTime'] = "1Hour"
+    return redirect(url_for('ViewDashboard'))
 
 
 
@@ -1734,6 +1736,8 @@ def dashboardhour():
 def ViewDashboard():
     if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
         if session['role'] == 'Admin':
+
+            print(session)
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
             account = cursor.fetchone()
@@ -1805,7 +1809,7 @@ def ViewDashboard():
             # User attempted log ins per user
 
             return render_template('dashboard.html', account=account, UserAttemptedLoginCount=UserAttemptedLoginCount,
-                                   EventCount=EventCount, EventLoginFailCount=EventLoginFailCount,AvgLoginFailuresUsers = AvgLoginFailuresUsers , AvgEventCountUser = AvgEventCountUser)
+                                   EventCount=EventCount, EventLoginFailCount=EventLoginFailCount,AvgLoginFailuresUsers = AvgLoginFailuresUsers , AvgEventCountUser = AvgEventCountUser ,sess=session)
         else:
             return redirect(url_for('Userprofile'))
     else:
@@ -1956,6 +1960,17 @@ def ManageAccount():
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
 
+        # 25 to 50 and 50 to 25
+        #if EmailLoginNotif == 1 or AttemptedLoginNotification == 1:
+        #    print("true")
+        #    cursor.execute("""UPDATE accounts SET Security_Level = %s WHERE ID = %s""",[50,session['ID']])
+        #    mysql.connection.commit()
+        #elif EmailLoginNotif == 0 and AttemptedLoginNotification == 0:
+        #    print('hii')
+        #    cursor.execute("""UPDATE accounts SET Security_Level = %s WHERE ID = %s""", [25, session['ID']])
+        #    mysql.connection.commit()
+        if EmailLoginNotif == 1:
+            Value_of_security += 10
 
 @app.route('/ActivityLogUser', methods=['GET', 'POST'])
 def UserLogsActivity():
@@ -1974,15 +1989,59 @@ def UserLogsActivity():
                        [session['Username'], session['Username'], session['Username']])
 
         userloginactivity = cursor.fetchall()
-        Value_of_security = account['Security_Level']
+        # Place where progress bar values come in
+        cursor.execute("""SELECT * FROM authentication_table WHERE Account_ID = %s """,[session['ID']])
+        authenticationmethods = cursor.fetchone()
+        TWOFADICT = {}
+        Email2FA = authenticationmethods['Text_Message_Status']
+        Googleauthen = authenticationmethods['Authenticator_Status']
+        BackupCode = authenticationmethods['Backup_Code_Status']
+        Phone = authenticationmethods['Sms_Message_Status']
+
+        TWOFADICT['Email2FA'] = Email2FA
+        TWOFADICT['Googleauthen'] = Googleauthen
+        TWOFADICT['BackupCode'] = BackupCode
+        TWOFADICT['Phone'] = Phone
+
+        print(authenticationmethods)
+        EmailLoginNotif = account['Account_Login_Notification']
+        AttemptedLoginNotification = 0
+        Value_of_security = 25  # 25 is default cause everyone got strong password.
+
+
+
+        if AttemptedLoginNotification == 1:
+            Value_of_security += 15
+        counter = 0
+        for a in TWOFADICT:
+            if TWOFADICT[a] == 1:
+                counter += 1
+
+        if counter == 1: # He on one twofa
+            Value_of_security += 30
 
 
 
 
+        elif counter > 1: # He on 2 2fa so he go here.
+            Value_of_security += 50
+
+        print(Value_of_security)
+
+        print(EmailLoginNotif,AttemptedLoginNotification,counter)
+
+
+
+        cursor.execute("""UPDATE accounts SET Security_Level = %s WHERE ID = %s""", [Value_of_security, session['ID']])
+        mysql.connection.commit()
 
         print(userloginactivity)
         return render_template('UserActivityLog.html', account=account, role=account['role'],
-                               userloginactivity=userloginactivity , Value_of_security = Value_of_security)
+                               userloginactivity=userloginactivity , Value_of_security = Value_of_security ,
+                               EmailLoginNotif = EmailLoginNotif , AttemptedLoginNotification = AttemptedLoginNotification,
+                               Email2FA = Email2FA,Googleauthen = Googleauthen ,BackupCode = BackupCode ,Phone = Phone , counter = counter)
+
+
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))

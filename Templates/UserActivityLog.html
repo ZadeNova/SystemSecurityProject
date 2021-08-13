@@ -274,14 +274,163 @@ text-transform: none;
                                 <div class="card-body">
                                     <h4 class="small font-weight-bold">Current Security Level<span
                                             class="float-right">{{ Value_of_security }}%</span></h4>
+
+
+                                    {% if Value_of_security == 25 %}
                                     <div class="progress">
-                                          <div class="progress-bar bg-warning progress-bar-striped" role="progressbar"
+                                          <div class="progress-bar bg-danger progress-bar-striped progress-bar-animated" role="progressbar"
                                           aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width:{{ Value_of_security }}%">
                                               {{ Value_of_security }}%
                                           </div>
                                         </div>
+                                    {% elif Value_of_security == 50 %}
+                                    <div class="progress">
+                                          <div class="progress-bar bg-warning progress-bar-striped progress-bar-animated" role="progressbar"
+                                          aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width:{{ Value_of_security }}%">
+                                              {{ Value_of_security }}%
+                                          </div>
+                                        </div>
+                                    {% elif Value_of_security == 75 %}
+                                    <div class="progress">
+                                          <div class="progress-bar bg-info progress-bar-striped progress-bar-animated" role="progressbar"
+                                          aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width:{{ Value_of_security }}%">
+                                              {{ Value_of_security }}%
+                                          </div>
+                                        </div>
+                                    {% else %}
+                                    <div class="progress">
+                                          <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" role="progressbar"
+                                          aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width:{{ Value_of_security }}%">
+                                              {{ Value_of_security }}%
+                                          </div>
+                                        </div>
+
+
+
+                                    {% endif %}
+
                                     <h4 class="small font-weight-bold">Ways to improve your security Level
                                             </h4>
+
+
+
+
+
+
+
+
+                                    {% if Value_of_security == 25 %}
+                                    <div class="list-group">
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Strong Password    <span class="demoFont">25</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-danger">Activate Login Notification <span class="demoFont">10</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-danger">Activate Login Attempts Notification <span class="demoFont">15</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-danger">Activate any method of 2FA <span class="demoFont">30</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-danger">Activate two or more method of 2FA <span class="demoFont">20</span></a>
+                                    </div>
+                                    {% elif Value_of_security == 35 %}
+                                    <div class="list-group">
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Strong Password    <span class="demoFont">25</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Activate Login Notification <span class="demoFont">10</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-danger">Activate Login Attempts Notification <span class="demoFont">15</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-danger">Activate any method of 2FA <span class="demoFont">30</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-danger">Activate two or more method of 2FA <span class="demoFont">20</span></a>
+                                    </div>
+
+
+                                    {% elif Value_of_security == 40 %}
+                                    <div class="list-group">
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Strong Password    <span class="demoFont">25</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-danger">Activate Login Notification <span class="demoFont">10</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Activate Login Attempts Notification <span class="demoFont">15</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-danger">Activate any method of 2FA <span class="demoFont">30</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-danger">Activate two or more method of 2FA <span class="demoFont">20</span></a>
+                                    </div>
+
+
+
+                                    {% elif Value_of_security == 50%}
+                                    <div class="list-group">
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Strong Password    <span class="demoFont">25</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Activate Login Notification <span class="demoFont">10</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Activate Login Attempts Notification <span class="demoFont">15</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-danger">Activate any method of 2FA <span class="demoFont">30</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-danger">Activate two or more method of 2FA <span class="demoFont">20</span></a>
+                                    </div>
+
+                                    {% elif Value_of_security == 55  %}
+                                    <div class="list-group">
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Strong Password    <span class="demoFont">25</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-danger">Activate Login Notification <span class="demoFont">10</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-danger">Activate Login Attempts Notification <span class="demoFont">15</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Activate any method of 2FA <span class="demoFont">30</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-danger">Activate two or more method of 2FA <span class="demoFont">20</span></a>
+                                    </div>
+                                    {% elif Value_of_security == 65  %}
+                                    <div class="list-group">
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Strong Password    <span class="demoFont">25</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Activate Login Notification <span class="demoFont">10</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-danger">Activate Login Attempts Notification <span class="demoFont">15</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Activate any method of 2FA <span class="demoFont">30</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-danger">Activate two or more method of 2FA <span class="demoFont">20</span></a>
+                                    </div>
+
+                                    {% elif Value_of_security == 70  %}
+                                    <div class="list-group">
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Strong Password    <span class="demoFont">25</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-danger">Activate Login Notification <span class="demoFont">10</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Activate Login Attempts Notification <span class="demoFont">15</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Activate any method of 2FA <span class="demoFont">30</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-danger">Activate two or more method of 2FA <span class="demoFont">20</span></a>
+                                    </div>
+
+
+                                    {% elif Value_of_security == 75  %}
+                                    <div class="list-group">
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Strong Password    <span class="demoFont">25</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-danger">Activate Login Notification <span class="demoFont">10</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-danger">Activate Login Attempts Notification <span class="demoFont">15</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Activate any method of 2FA <span class="demoFont">30</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Activate two or more method of 2FA <span class="demoFont">20</span></a>
+                                    </div>
+
+
+                                    {% elif Value_of_security == 80  %}
+                                    <div class="list-group">
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Strong Password    <span class="demoFont">25</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Activate Login Notification <span class="demoFont">10</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Activate Login Attempts Notification <span class="demoFont">15</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Activate any method of 2FA <span class="demoFont">30</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-danger">Activate two or more method of 2FA <span class="demoFont">20</span></a>
+                                    </div>
+
+                                    {% elif Value_of_security == 85  %}
+                                    <div class="list-group">
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Strong Password    <span class="demoFont">25</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Activate Login Notification <span class="demoFont">10</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-danger">Activate Login Attempts Notification <span class="demoFont">15</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Activate any method of 2FA <span class="demoFont">30</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Activate two or more method of 2FA <span class="demoFont">20</span></a>
+                                    </div>
+
+
+
+                                    {% elif Value_of_security == 100 %}
+                                    <div class="list-group">
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Strong Password    <span class="demoFont">25</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Activate Login Notification <span class="demoFont">10</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Activate Login Attempts Notification <span class="demoFont">15</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Activate any method of 2FA <span class="demoFont">30</span></a>
+                                    <a href="#" class="list-group-item list-group-item-action list-group-item-success">Activate two or more method of 2FA <span class="demoFont">20</span></a>
+                                    </div> -->
+
+
+
+                                    {% endif %}
+
+
+
+
+                                        <!--{% if Value_of_security == 25 %}
                                     <div class="list-group">
                                           <a href="#" class="list-group-item list-group-item-action list-group-item-success">Strong Password</a>
 
@@ -293,10 +442,51 @@ text-transform: none;
                                           <div class="demoFont" align="center">75%</div>
                                           <a href="#" class="list-group-item list-group-item-action list-group-item-danger">Activate Two or more methods of 2FA</a>
                                           <div class="demoFont" align="center">100%</div>
+
+                                        </div>
+                                    {% elif Value_of_security == 50 and (EmailLoginNotif == 1 or AttemptedLoginNotification == 1) %}
+                                    <div class="list-group">
+                                          <a href="#" class="list-group-item list-group-item-action list-group-item-success">Strong Password</a>
+
+
+                                          <div class="demoFont" align="center">25%</div>
+                                          <a href="#" class="list-group-item list-group-item-action list-group-item-success">Activate Login Notification or Activate Login attempts Notification or One method of 2FA</a>
+                                          <div class="demoFont" align="center">50%</div>
+                                          <a href="#" class="list-group-item list-group-item-action list-group-item-danger">Activate Two methods of 2FA</a>
+                                          <div class="demoFont" align="center">75%</div>
+                                          <a href="#" class="list-group-item list-group-item-action list-group-item-danger">Activate Two or more methods of 2FA and activate security report.</a>
+                                          <div class="demoFont" align="center">100%</div>
+
+                                        </div>
+                                    {% elif Value_of_security == 75 %}
+                                    <div class="list-group">
+                                          <a href="#" class="list-group-item list-group-item-action list-group-item-success">Strong Password</a>
+
+
+                                          <div class="demoFont" align="center">25%</div>
+                                          <a href="#" class="list-group-item list-group-item-action list-group-item-success">Activate Login Notification or Activate Login attempts Notification</a>
+                                          <div class="demoFont" align="center">50%</div>
+                                          <a href="#" class="list-group-item list-group-item-action list-group-item-success">Activate One method of 2FA</a>
+                                          <div class="demoFont" align="center">75%</div>
+                                          <a href="#" class="list-group-item list-group-item-action list-group-item-success">Activate Two or more methods of 2FA</a>
+                                          <div class="demoFont" align="center">100%</div>
+
+                                        </div>
+                                    {% else %}
+                                    <div class="list-group">
+                                          <a href="#" class="list-group-item list-group-item-action list-group-item-success">Strong Password</a>
+
+
+                                          <div class="demoFont" align="center">25%</div>
+                                          <a href="#" class="list-group-item list-group-item-action list-group-item-success">Activate Login Notification or Activate Login attempts Notification</a>
+                                          <div class="demoFont" align="center">50%</div>
+                                          <a href="#" class="list-group-item list-group-item-action list-group-item-success">Activate One method of 2FA</a>
+                                          <div class="demoFont" align="center">75%</div>
+                                          <a href="#" class="list-group-item list-group-item-action list-group-item-success">Activate Two or more methods of 2FA</a>
+                                          <div class="demoFont" align="center">100%</div>
                                           <a href="#" class="list-group-item list-group-item-action list-group-item-info">Congrats on reaching 100% security level.</a>
                                         </div>
-
-
+                                    {% endif %}-->
 
 
                                 </div>
@@ -344,7 +534,7 @@ text-transform: none;
                                         <tr>
 
                                           <th scope="row">{{ loop.index }}</th>
-                                          <td><span class="badge badge-danger">Danger</span></td>
+                                          <td><span class="badge badge-success">Success</span></td>
                                           <td>{{ i['TimeOfActivity'] }}</td>
                                           <td>{{ i['EventType'] }}</td>
                                           <td>{{ i['IP_Address'] }}</td>

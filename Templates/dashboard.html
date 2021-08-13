@@ -36,6 +36,8 @@
 <body id="page-top">
 
     <!-- Page Wrapper -->
+
+
     <div id="wrapper">
 
 
@@ -58,7 +60,7 @@
                                 class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
 
                         <div class="btn-group" >
-                                      <button type="button" class="btn btn-primary">24 Hour</button>
+                                      <a href="{{ url_for('dashboardday') }}"><button type="button" class="btn btn-primary">24 Hour</button></a>
                                       <button type="button" class="btn btn-primary">1 Hour</button>
 
                                     </div>
@@ -186,7 +188,7 @@
                                 </div>
                             </div>
                         </div>
-
+                        {
                         <!-- Pie Chart -->
                         <div class="col-xl-4 col-lg-5">
                             <div class="card shadow mb-4">
