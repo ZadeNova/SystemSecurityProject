@@ -56,6 +56,13 @@
                         <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
                         <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
                                 class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
+
+                        <div class="btn-group" >
+                                      <button type="button" class="btn btn-primary">24 Hour</button>
+                                      <button type="button" class="btn btn-primary">1 Hour</button>
+
+                                    </div>
+
                     </div>
 
                     <!-- Content Row -->
@@ -222,15 +229,16 @@
                             <div class="card shadow mb-4">
                                 <div class="card-header py-3">
                                     <h6 class="m-0 font-weight-bold text-primary">Statistics</h6>
+
                                 </div>
                                 <div class="card-body">
-                                    <h4 class="small font-weight-bold">Average Attempt login failure per user <span
-                                            class="float-right">20%</span></h4>
+                                    <h4 class="small font-weight-bold">Average Attempt login failure per user<span
+                                            class="float-right">{{ AvgLoginFailuresUsers }}</span></h4>
 
                                     <h4 class="small font-weight-bold">Average Events per user<span
-                                            class="float-right">40%</span></h4>
+                                            class="float-right">{{ AvgEventCountUser }}</span></h4>
 
-                                    <h4 class="small font-weight-bold">Customer Database <span
+                                    <h4 class="small font-weight-bold">Amount of accounts created Recently<span
                                             class="float-right">60%</span></h4>
 
                                     <h4 class="small font-weight-bold">Payout Details <span

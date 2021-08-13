@@ -993,7 +993,7 @@ def two_fa_sms():
 
         if account1['Sms_Message_Status'] == True:
             account_sid = 'AC8e0240f8443f52121cc16bbf1f38a719'
-            auth_token = '..' ## check your whatapp for the latest code
+            auth_token = '6b6e1dfbd018f68e67f118c8fb403a5a' ## check your whatapp for the latest code
             client = Client(account_sid, auth_token)
             phn = session['Phone_No']
             message = client.messages.create(
@@ -1681,6 +1681,23 @@ def SecurityAlgo():
     return 'dew it'
 
 
+
+
+
+@app.route('/dashboard/24hour', methods=['GET', 'POST'])
+def dashboardday():
+    print(session)
+    return render_template("dashboard.html")
+
+
+@app.route('/dashboard/1hour', methods=['GET', 'POST'])
+def dashboardhour():
+    print(session)
+    return render_template("dashboard.html")
+
+
+
+
 @app.route('/dashboard')
 def ViewDashboard():
     if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
@@ -1704,12 +1721,16 @@ def ViewDashboard():
 
             cursor.execute("""Select COUNT(Attempted_Log_Ins) AS TotalAttemptedLogins from accountattemptedlogins;""")
             Attemptedlogincount = cursor.fetchone()
-
+            cursor.execute("""SELECT COUNT(ID) As Totalusers from accounts;""")
+            No = cursor.fetchone()
             Userlist = []
             UserEvent = {}
             UserAttemptedLoginCount = {}
             EventCount = {}
             EventLoginFailCount = Attemptedlogincount['TotalAttemptedLogins']
+            NumberOfUsers = No['Totalusers']
+
+
             print(AuditInfo)
 
             for i in AuditInfo:
@@ -1735,13 +1756,24 @@ def ViewDashboard():
             print(UserAttemptedLoginCount)
             print(Userlist)
             print(EventCount)
+            # Stats?
+            # Calculate average attempt login failure per user
+            # All attempted and login failure / Total Logins.
+            # Add up everything then divide by total users.
+            AvgLoginFailuresUsers = round(EventLoginFailCount/NumberOfUsers,2)
+            AvgEventCountUser = round(sum([ EventCount[x] for x in EventCount])/NumberOfUsers,2)
+            print(AvgLoginFailuresUsers)
+
+
+
+            print(AvgEventCountUser)
 
             # User Events
 
             # User attempted log ins per user
 
             return render_template('dashboard.html', account=account, UserAttemptedLoginCount=UserAttemptedLoginCount,
-                                   EventCount=EventCount, EventLoginFailCount=EventLoginFailCount)
+                                   EventCount=EventCount, EventLoginFailCount=EventLoginFailCount,AvgLoginFailuresUsers = AvgLoginFailuresUsers , AvgEventCountUser = AvgEventCountUser)
         else:
             return redirect(url_for('Userprofile'))
     else:
@@ -1775,7 +1807,7 @@ def Audit():
                                     WHERE Attempted_Log_Ins < 3  ) AS TABLE4
                                     UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"LoginFailure" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID 
                                     WHERE Attempted_Log_Ins >= 3  ) AS TABLE5
-                                    ORDER BY TimeOfActivity; """)
+                                    ORDER BY TimeOfActivity DESC; """)
 
                 allaccounts = cursor.fetchall()
                 print(allaccounts)
@@ -2287,7 +2319,7 @@ def create_login_user():
                 DOB = request.form['DOB']
                 gender = request.form['Gender']
                 password = request.form['Password']
-                pnh1=request.form['Phone_Numer']
+                pnh1=request.form['Phone_Number']
                 phone_no ='+65'+pnh1
                 email = request.form['Email']
                 security_questions_1 = request.form['Security_Questions_1']
