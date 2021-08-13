@@ -1000,7 +1000,7 @@ def two_fa_sms():
 
         if account1['Sms_Message_Status'] == True:
             account_sid = 'AC8e0240f8443f52121cc16bbf1f38a719'
-            auth_token = '6b6e1dfbd018f68e67f118c8fb403a5a' ## check your whatapp for the latest code
+            auth_token = '..' ## check your whatapp for the latest code
             client = Client(account_sid, auth_token)
             phn = session['Phone_No']
             message = client.messages.create(
