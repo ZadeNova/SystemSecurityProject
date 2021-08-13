@@ -2177,6 +2177,18 @@ def login():
                         Original = cursor.fetchone()
                         Attempts = Original['Attempts']
                         if Attempts == 3:
+                            Attempts += 1
+
+                            now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                            cursor.execute("""INSERT INTO accountattemptedlogins VALUES (NULL,%s,%s,%s,%s)""",
+                                           [Original['ID'], Attempts, request.remote_addr,
+                                            now])
+                            mysql.connection.commit()
+                            print("hi00000")
+                            sql2 = "UPDATE accounts SET Attempts = %s WHERE username = %s "
+                            value2 = (Attempts, Username)
+                            cursor.execute(sql2, value2)
+
                             cursor.execute(
                                 "UPDATE accounts SET Account_Status = 'Disabled' WHERE username = %(username)s",
                                 {'username': username})
@@ -2185,12 +2197,18 @@ def login():
                             mysql.connection.commit()
 
                         elif Attempts > 3:
+                            Attempts += 1
                             now =  datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                             cursor.execute("""INSERT INTO accountattemptedlogins VALUES (NULL,%s,%s,%s,%s)""",
                                            [Original['ID'], Attempts, request.remote_addr,
                                             now])
                             mysql.connection.commit()
-
+                            print("hi312321")
+                            sql2 = "UPDATE accounts SET Attempts = %s WHERE username = %s "
+                            value2 = (Attempts, Username)
+                            cursor.execute(sql2, value2)
+                            mysql.connection.commit()
+                            # write if statement here jaydon
                             msge = Message("Account Login Attempt", recipients=[Original['Email']])
                             msge.html = render_template('AlertUserEmailAttemptedlogin.html',Date = now,IP = request.remote_addr,count=Attempts  )
                             mail.send(msge)
