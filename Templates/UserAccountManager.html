@@ -32,36 +32,37 @@
 
 <table class="table table-hover table-bordered table-dark">
     <thead class="thread-dark">
-        <th id="titletablelol" colspan="6">User Accounts</th>
+        <th id="titletablelol" colspan="7">User Accounts</th>
 
     </thead>
   <thead class="thread-dark">
     <tr>
-      <th scope ="col">#</th>
-      <th scope="col">User</th>
-      <th scope="col">Date Created</th>
-      <th scope="col">Status</th>
-      <th scope="col">Role</th>
-      <th scope="col">Settings</th>
+      <th scope ="col" style="text-align:center">#</th>
+      <th scope="col" style="text-align:center">User</th>
+      <th scope="col" style="text-align:center">Date Created</th>
+      <th scope="col" style="text-align:center">Status</th>
+      <th scope="col" style="text-align:center">Role</th>
+      <th scope="col" style="text-align:center">Security Level</th>
+      <th scope="col" style="text-align:center">Settings</th>
     </tr>
   </thead>
   <tbody id="myTable" class="ex3">
   {% for lol in allaccounts %}
     <tr>
       <th scope="row">{{ lol['ID'] }}</th>
-      <td>{{ lol['Username'] }}</td>
-      <td>{{ lol['account_creation_time'] }}</td>
+      <td style="text-align:center">{{ lol['Username'] }}</td>
+      <td style="text-align:center">{{ lol['account_creation_time'] }}</td>
 
         {% if lol['Account_Status'] == 'Banned' %}
-        <td><span class="badge badge-danger">{{ lol['Account_Status'] }}</span></td>
+        <td style="text-align:center"><span class="badge badge-danger">{{ lol['Account_Status'] }}</span></td>
         {% elif lol['Account_Status'] == 'Disabled' %}
-        <td><span class="badge badge-warning">{{ lol['Account_Status'] }}</span></td>
+        <td style="text-align:center"><span class="badge badge-warning">{{ lol['Account_Status'] }}</span></td>
         {% else %}
-        <td><span class="badge badge-success">{{ lol['Account_Status'] }}</span></td>
+        <td style="text-align:center"><span class="badge badge-success">{{ lol['Account_Status'] }}</span></td>
         {% endif %}
-      <td>{{ lol['role'] }}</td>
-
-      <td><button type="button" class="btn btn-warning" data-toggle="modal" data-target="#myModal{{ lol['ID'] }}"><i class="fas fa-users-cog"></i></button></td>
+      <td style="text-align:center">{{ lol['role'] }}</td>
+      <td style="text-align:center">{{ lol['Security_Level'] }}</td>
+      <td style="text-align:center"><button type="button" class="btn btn-warning" data-toggle="modal" data-target="#myModal{{ lol['ID'] }}"><i class="fas fa-users-cog"></i></button></td>
 
               <!-- Modal -->
         <div id="myModal{{ lol['ID'] }}" class="modal fade" role="dialog">
