@@ -539,7 +539,7 @@ text-transform: none;
                                       </thead>
                                       <tbody id="MYTable">
 
-                                      {% for i in userloginactivity %}
+                                      {% for i in userlistactivity %}
 
                                         <tr>
 
@@ -548,7 +548,7 @@ text-transform: none;
                                           <td>{{ i['TimeOfActivity'] }}</td>
                                           <td>{{ i['EventType'] }}</td>
                                           <td>{{ i['IP_Address'] }}</td>
-                                          <td>Location</td>
+                                          <td>{{ i['Location'] }}</td>
 
                                         </tr>
                                        {% endfor %}

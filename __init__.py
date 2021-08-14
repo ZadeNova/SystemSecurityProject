@@ -2110,6 +2110,14 @@ def UserLogsActivity():
         print(Value_of_security)
 
         print(EmailLoginNotif,AttemptedLoginNotification,counter)
+        userlistactivity = []
+        # New Line of Code for ip address
+        for lol in userloginactivity:
+            lol["Location"]  = get_location(lol["IP_Address"] )
+            userlistactivity.append(lol)
+
+
+
 
 
 
@@ -2120,7 +2128,7 @@ def UserLogsActivity():
         return render_template('UserActivityLog.html', account=account, role=account['role'],
                                userloginactivity=userloginactivity , Value_of_security = Value_of_security ,
                                EmailLoginNotif = EmailLoginNotif , AttemptedLoginNotification = AttemptedLoginNotification,
-                               Email2FA = Email2FA,Googleauthen = Googleauthen ,BackupCode = BackupCode ,Phone = Phone , counter = counter)
+                               Email2FA = Email2FA,Googleauthen = Googleauthen ,BackupCode = BackupCode ,Phone = Phone , counter = counter,userlistactivity = userlistactivity)
 
 
     else:
