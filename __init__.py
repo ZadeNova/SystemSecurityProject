@@ -153,10 +153,10 @@ def callback():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': username})
     account = cursor.fetchone()
-    cursor.execute("""SELECT * FROM Authentication_Table WHERE ID = %(ID)s""", {'ID': account['ID']})
-    account1 = cursor.fetchone()
     # If account exists show error and validation checks(do this at the form for this function)
     if account:
+        cursor.execute("SELECT * FROM Authentication_Table WHERE Account_ID = %(ID)s", {'ID': account['ID']})
+        account1 = cursor.fetchone()
         key = account['SymmetricKey']
         fkey = Fernet(key)
         decryptedaddress_Binary = fkey.decrypt(account['Address'].encode())
@@ -511,7 +511,7 @@ try:
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
     app.config[
-        'MYSQL_PASSWORD'] = 'ZadePrimeSQL69420'  # change this line to our own sql password , thank you vry not much xd
+        'MYSQL_PASSWORD'] = 'N0passwordatall'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -1550,7 +1550,13 @@ def Settings_changepassword():
                     sql = "UPDATE accounts SET Password = %s WHERE UUID = %s "
                     value = (hash_password, UUID)
                     cursor.execute(sql, value)
+                    cursor.execute(
+                        """INSERT INTO UserUpdateTime VALUES (NULL, %s, %s, %s, %s) """, [session['ID'], 'UpdatePassword', request.remote_addr, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
                     mysql.connection.commit()
+                    counter = 1
+                    email = Message("Update of Account", recipients=account['Email'].split())
+                    email.html = render_template('UpdateEmail.html', counter=str(counter), Ipaddress=request.remote_addr)
+                    mail.send(email)
 
                     flash('Password have been updated', 'category2')
                     return redirect(url_for("Changesettings"))
@@ -1998,7 +2004,7 @@ def UserLogsActivity():
 
         print(authenticationmethods)
         EmailLoginNotif = account['Account_Login_Notification']
-        AttemptedLoginNotification = 0
+        AttemptedLoginNotification = authenticationmethods['Attempts_Notification']
         Value_of_security = 25  # 25 is default cause everyone got strong password.
 
         if EmailLoginNotif == 1:
@@ -2171,11 +2177,9 @@ def login():
             cursor.execute("SELECT * FROM accounts WHERE username = %(username)s", {'username': username})
             # Fetch one record and return result
             account = cursor.fetchone()
-            print(account['ID'])
             cursor.execute("SELECT * FROM Authentication_Table WHERE Account_ID = %(ID)s", {'ID': account['ID']})
             # Fetch one record and return result
             account1 = cursor.fetchone()
-            print(account)
 
             if account:
 
