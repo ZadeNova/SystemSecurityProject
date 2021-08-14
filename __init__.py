@@ -2249,17 +2249,17 @@ def login():
                 print(request.remote_addr)
                 print("End of print testcode")
                 if bcrypt.checkpw(password.encode(), hashandsalt.encode()):
-                    cursor.execute('SELECT * FROM accountattemptedlogins WHERE Account_ID = %(ID)s ORDER BY ID DESC limit 1', {'ID': account['ID']})
-                    Time = cursor.fetchone()
-                    if Time['TimeOfActivity'] + datetime.timedelta(minutes=30) <= datetime.datetime.now().replace(microsecond=0) and account['Account_Status'] == 'Disabled':
-                        sql2 = "UPDATE accounts SET Attempts = %s WHERE username = %s "
-                        value2 = (0, account['Username'])
-                        cursor.execute(sql2, value2)
-                        cursor.execute("UPDATE accounts SET Account_Status = 'Active' WHERE username = %(username)s", {'username': account['Username']})
-                        mysql.connection.commit()
-                        flash('Your account have been re-enabled, Please key In the information again')
-                    # compare the current date and time with the last password update time
-                    elif account['password_update_time'] + datetime.timedelta(
+                    #cursor.execute('SELECT * FROM accountattemptedlogins WHERE Account_ID = %(ID)s ORDER BY ID DESC limit 1', {'ID': account['ID']})
+                    #Time = cursor.fetchone()
+                    #if Time['TimeOfActivity'] + datetime.timedelta(minutes=30) <= datetime.datetime.now().replace(microsecond=0) and account['Account_Status'] == 'Disabled':
+                    #    sql2 = "UPDATE accounts SET Attempts = %s WHERE username = %s "
+                    #    value2 = (0, account['Username'])
+                    #    cursor.execute(sql2, value2)
+                    #    cursor.execute("UPDATE accounts SET Account_Status = 'Active' WHERE username = %(username)s", {'username': account['Username']})
+                    #    mysql.connection.commit()
+                    #    flash('Your account have been re-enabled, Please key In the information again')
+                    ## compare the current date and time with the last password update time
+                    if account['password_update_time'] + datetime.timedelta(
                             days=365) <= datetime.datetime.now().replace(microsecond=0):
                         return redirect(url_for('Resetpassword', UUID=account['UUID']))
                     elif account['Account_Status'] == "Pending":
