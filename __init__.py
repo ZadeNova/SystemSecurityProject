@@ -516,6 +516,7 @@ try:
 except:
     print("MYSQL root is not found?")
 
+
 mysql = MySQL(app)
 app.config['UPLOADED_IMAGES_DEST'] = 'uploads/FoodImages'
 images = UploadSet('images', IMAGES)
