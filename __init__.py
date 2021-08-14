@@ -9,9 +9,6 @@ from random import randint  ###### email otp ####
 import logging
 
 from twilio.rest import Client
-from chatterbot import ChatBot
-from chatterbot.trainers import ListTrainer
-from chatterbot.trainers import ChatterBotCorpusTrainer
 
 from google.auth._default import default, load_credentials_from_file
 import bcrypt
@@ -513,11 +510,16 @@ mail = Mail(app)
 
 # Database connection MYSQL
 try:
-    app.config['MYSQL_HOST'] = 'us-cdbr-east-04.cleardb.com'
-    app.config['MYSQL_USER'] = 'b5353b83482c7f'
+    #app.config['MYSQL_HOST'] = 'us-cdbr-east-04.cleardb.com'
+    #app.config['MYSQL_USER'] = 'b5353b83482c7f'
+    #app.config[
+        #'MYSQL_PASSWORD'] = '48b8b0c9'  # change this line to our own sql password , thank you vry not much xd
+    #app.config['MYSQL_DB'] = 'heroku_6230660f02e0b5c'
+    app.config['MYSQL_HOST'] = 'localhost'
+    app.config['MYSQL_USER'] = 'root'
     app.config[
-        'MYSQL_PASSWORD'] = '48b8b0c9'  # change this line to our own sql password , thank you vry not much xd
-    app.config['MYSQL_DB'] = 'heroku_6230660f02e0b5c'
+        'MYSQL_PASSWORD'] = 'Dragonnight1002'  # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
 
@@ -2253,8 +2255,11 @@ def login():
                     if account['password_update_time'] + datetime.timedelta(days=365) <= datetime.datetime.now().replace(microsecond=0):
                         return redirect(url_for('Resetpassword', UUID=account['UUID']))
                     elif account['Account_Status'] == "Pending":
+                        msg = Message("Account Verification Link", recipients=[account['Email']])
+                        msg.html = render_template('account_verification_email.html', UUID=account['UUID'])
+                        mail.send(msg)
                         print("This account is unactivated")
-                        flash("This Account has not been activated. Please go to your email to activate the account.")
+                        flash("Another Verification Email have been re-sent to you. Please Verify Again!")
                     elif account['Account_Status'] == "Banned":
                         print("This account is banned")
                         flash("This Account has been banned")
@@ -2703,14 +2708,52 @@ def TermsAndConditions():
 @app.route('/AccountVerification1/<path:UUID>')
 def AccountVerification1(UUID):
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute("UPDATE accounts SET Account_Status = 'Active' WHERE UUID = %(UUID)s", {'UUID': UUID})
-    UUID2 = uuid.uuid4().hex
-    sql3 = "UPDATE accounts SET UUID = %s WHERE UUID = %s "
-    value3 = (UUID2, UUID)
-    cursor.execute(sql3, value3)
-    mysql.connection.commit()
-    flash('Your account have been successfully activated')
-    return redirect(url_for("login"))
+    cursor.execute("SELECT * FROM accounts WHERE UUID = %(UUID)s", {'UUID': UUID})
+    account = cursor.fetchone()
+    key = account['SymmetricKey']
+    fkey = Fernet(key)
+    decryptedPhoneNo_Binary = fkey.decrypt(account['Phone_Number'].encode())
+    decryptedPhoneNo = decryptedPhoneNo_Binary.decode('utf-8')
+    account_sid = 'AC5a5b558f25c2a7131c5004e0a77caecf'
+    auth_token = '6b5bd403487576aaee718625b31a03a8'
+    ### check ur whatapp for the lasted codoe
+    client = Client(account_sid, auth_token)
+
+    otp = randint(111111, 999999)  # email otp
+    session['otp'] = otp
+    message = client.messages.create(
+        messaging_service_sid='MGf72a96edffcf7beadca966887d48878a',
+        body='This is your OTP : ' + str(otp) + ' , please do not share it with other people thanks ',
+        to=decryptedPhoneNo
+    )
+
+    return redirect(url_for('AccountVerification2', UUID=UUID))
+
+
+@app.route('/AccountVerification2/<path:UUID>', methods=['GET', 'POST'])
+def AccountVerification2(UUID):
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute("SELECT * FROM accounts WHERE UUID = %(UUID)s", {'UUID': UUID})
+    account = cursor.fetchone()
+
+    otp = session['otp']
+    if request.method == 'POST' and 'otp' in request.form:
+        user_otp = request.form['otp']
+
+        if otp == int(user_otp):
+            cursor.execute("UPDATE accounts SET Account_Status = 'Active' WHERE UUID = %(UUID)s", {'UUID': account['UUID']})
+            UUID2 = uuid.uuid4().hex
+            sql3 = "UPDATE accounts SET UUID = %s WHERE UUID = %s "
+            value3 = (UUID2, account['UUID'])
+            cursor.execute(sql3, value3)
+            mysql.connection.commit()
+            flash('Your account have been successfully activated')
+            return redirect(url_for('login'))
+        else:
+            flash('Wrong OTP Entered, Please Try Again')
+            return render_template("account_verification_sms.html")
+
+    return render_template("account_verification_sms.html")
 
 
 # End of new stuff
