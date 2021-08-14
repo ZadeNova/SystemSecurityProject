@@ -1816,8 +1816,8 @@ def ViewDashboard():
                 i['Location'] = get_countrycode(i['IP_Address'])
 
                 Auditlist.append(i)
-            for number in Auditlist:
-                Countrycount[number["Location"]] = 0
+
+            Countrycount = {number["Location"]: 0 for number in Auditlist}
             plzcount = 0
 
             for numberevent in Countrycount:
@@ -1843,19 +1843,13 @@ def ViewDashboard():
 
 
 
-            Userlist = []
-            UserEvent = {}
-            UserAttemptedLoginCount = {}
-            EventCount = {}
-            EventLoginFailCount = Attemptedlogincount['TotalAttemptedLogins']
-            NumberOfUsers = No['Totalusers']
+
+            UserEvent,UserAttemptedLoginCount,EventCount,EventLoginFailCount,NumberOfUsers = {},{},{},Attemptedlogincount['TotalAttemptedLogins'],No['Totalusers']
 
 
             print(AuditInfo)
 
-            for i in allusers:
-                print(i)
-                Userlist.append(i['Username'])
+            Userlist = list(set([i['Username'] for i in allusers]))
 
             for user in Userlist:
                 counter = 0
@@ -1873,7 +1867,7 @@ def ViewDashboard():
 
                 EventCount[user] = Eventcounter
 
-            Userlist = list(set(Userlist))
+
 
             print(Userlist)
             print(EventCount)
