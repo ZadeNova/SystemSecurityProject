@@ -1378,6 +1378,7 @@ def deleteaccoutcheck():
         return redirect(url_for("two_fa"))
 
 
+
 @app.route('/Settings', methods=['GET', 'POST'])
 def Changesettings():
     if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
