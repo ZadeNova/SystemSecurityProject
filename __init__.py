@@ -90,12 +90,15 @@ from google_auth_oauthlib.flow import Flow
 from pip._vendor import cachecontrol
 import google.auth.transport.requests
 
+import sys
+import logging
 ## google login end ###
 # Form imports
 
 
 app = Flask(__name__)
-
+app.logger.addHandler(logging.StreamHandler(sys.stdout))
+app.logger.setLevel(logging.ERROR)
 app.config['SECRET_KEY'] = 'Project'
 ### google login key###
 __all__ = ["default", "load_credentials_from_file"]
