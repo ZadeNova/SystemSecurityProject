@@ -1765,7 +1765,50 @@ def ViewDashboard():
             cursor.execute("""Select COUNT(Attempted_Log_Ins) AS TotalAttemptedLogins from accountattemptedlogins;""")
             Attemptedlogincount = cursor.fetchone()
             cursor.execute("""SELECT COUNT(ID) As Totalusers from accounts;""")
+
+
             No = cursor.fetchone()
+            cursor.execute("""SELECT COUNT(ID) as Counter1hour FROM (
+                            SELECT DISTINCT Acc.ID , Acc.Username , ALI.Account_Log_In_Time AS TimeOfActivity ,ALI.Log_In_IP_Address AS IP_Address , UL.LoginType AS EventType FROM account_log_ins ALI INNER JOIN accounts AS Acc ON Acc.ID = ALI.Account_ID
+                            INNER JOIN userlogin AS UL ON UL.Account_ID = ALI.Account_ID WHERE UL.LoginType = 'Login'
+                            UNION SELECT * FROM (SELECT Distinct ACO.Account_ID,ACC.Username,ACO.Log_Out_Time,ACO.Log_Out_IP_Address,UL.LoginType FROM account_log_out ACO 
+                            INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
+                            INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout') AS TABLE2 
+                            UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID) AS TABLE3
+                            UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"AttemptedLogin" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID 
+                            WHERE Attempted_Log_Ins < 3  ) AS TABLE4
+                            UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"LoginFailure" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID 
+                            WHERE Attempted_Log_Ins >= 3  ) AS TABLE5
+                            ORDER BY TimeOfActivity) AS CombinedTable WHERE TimeOfActivity > now() - interval 1 HOUR;""")
+            eventcount1hr = cursor.fetchone()
+            cursor.execute("""SELECT COUNT(ID) as Counter24hour FROM (
+                            SELECT DISTINCT Acc.ID , Acc.Username , ALI.Account_Log_In_Time AS TimeOfActivity ,ALI.Log_In_IP_Address AS IP_Address , UL.LoginType AS EventType FROM account_log_ins ALI INNER JOIN accounts AS Acc ON Acc.ID = ALI.Account_ID
+                            INNER JOIN userlogin AS UL ON UL.Account_ID = ALI.Account_ID WHERE UL.LoginType = 'Login'
+                            UNION SELECT * FROM (SELECT Distinct ACO.Account_ID,ACC.Username,ACO.Log_Out_Time,ACO.Log_Out_IP_Address,UL.LoginType FROM account_log_out ACO 
+                            INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
+                            INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout') AS TABLE2 
+                            UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID) AS TABLE3
+                            UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"AttemptedLogin" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID 
+                            WHERE Attempted_Log_Ins < 3  ) AS TABLE4
+                            UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"LoginFailure" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID 
+                            WHERE Attempted_Log_Ins >= 3  ) AS TABLE5
+                            ORDER BY TimeOfActivity) AS CombinedTable WHERE TimeOfActivity > now() - interval 24 HOUR;""")
+            eventcount24hr = cursor.fetchone()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             Userlist = []
             UserEvent = {}
             UserAttemptedLoginCount = {}
@@ -1807,18 +1850,18 @@ def ViewDashboard():
             AvgLoginFailuresUsers = round(EventLoginFailCount/NumberOfUsers,2)
             AvgEventCountUser = round(sum([ EventCount[x] for x in EventCount])/NumberOfUsers,2)
             print(AvgLoginFailuresUsers)
-            AvgEvents24hr = 0
-            AvgEvent1hr = 0
+            AvgEvents24hr = round((eventcount24hr['Counter24hour']/NumberOfUsers),2)
+            AvgEvent1hr = round((eventcount1hr['Counter1hour']/NumberOfUsers),2)
 
-
-            print(AvgEventCountUser)
 
             # User Events
 
             # User attempted log ins per user
 
             return render_template('dashboard.html', account=account, UserAttemptedLoginCount=UserAttemptedLoginCount,
-                                   EventCount=EventCount, EventLoginFailCount=EventLoginFailCount,AvgLoginFailuresUsers = AvgLoginFailuresUsers , AvgEventCountUser = AvgEventCountUser ,sess=session)
+                                   EventCount=EventCount, EventLoginFailCount=EventLoginFailCount
+                                   ,AvgLoginFailuresUsers = AvgLoginFailuresUsers ,
+                                   AvgEventCountUser = AvgEventCountUser ,sess=session,AvgEvent1hr = AvgEvent1hr, AvgEvents24hr = AvgEvents24hr)
         else:
             return redirect(url_for('Userprofile'))
     else:
