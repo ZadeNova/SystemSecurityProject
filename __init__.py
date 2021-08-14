@@ -2249,18 +2249,7 @@ def login():
                 print(request.remote_addr)
                 print("End of print testcode")
                 if bcrypt.checkpw(password.encode(), hashandsalt.encode()):
-                    #cursor.execute('SELECT * FROM accountattemptedlogins WHERE Account_ID = %(ID)s ORDER BY ID DESC limit 1', {'ID': account['ID']})
-                    #Time = cursor.fetchone()
-                    #if Time['TimeOfActivity'] + datetime.timedelta(minutes=30) <= datetime.datetime.now().replace(microsecond=0) and account['Account_Status'] == 'Disabled':
-                    #    sql2 = "UPDATE accounts SET Attempts = %s WHERE username = %s "
-                    #    value2 = (0, account['Username'])
-                    #    cursor.execute(sql2, value2)
-                    #    cursor.execute("UPDATE accounts SET Account_Status = 'Active' WHERE username = %(username)s", {'username': account['Username']})
-                    #    mysql.connection.commit()
-                    #    flash('Your account have been re-enabled, Please key In the information again')
-                    ## compare the current date and time with the last password update time
-                    if account['password_update_time'] + datetime.timedelta(
-                            days=365) <= datetime.datetime.now().replace(microsecond=0):
+                    if account['password_update_time'] + datetime.timedelta(days=365) <= datetime.datetime.now().replace(microsecond=0):
                         return redirect(url_for('Resetpassword', UUID=account['UUID']))
                     elif account['Account_Status'] == "Pending":
                         print("This account is unactivated")
@@ -2269,8 +2258,18 @@ def login():
                         print("This account is banned")
                         flash("This Account has been banned")
                     elif account['Account_Status'] == "Disabled":
-                        print("Disabled")
-                        flash("Account has been disabled, please contact the helpdesk for further assistance")
+                            cursor.execute('SELECT * FROM accountattemptedlogins WHERE Account_ID = %(ID)s ORDER BY ID DESC limit 1', {'ID': account['ID']})
+                            Time = cursor.fetchone()
+                            if Time['TimeOfActivity'] + datetime.timedelta(seconds=30) <= datetime.datetime.now().replace(microsecond=0):
+                                sql = "UPDATE accounts SET Attempts = %s WHERE username = %s "
+                                value = (0, account['Username'])
+                                cursor.execute(sql, value)
+                                cursor.execute("UPDATE accounts SET Account_Status = 'Active' WHERE username = %(username)s", {'username': account['Username']})
+                                mysql.connection.commit()
+                                flash('Your account have been re-enabled, Please key In the information again')
+                            else:
+                                print("Disabled")
+                                flash("Account has been disabled, please contact the helpdesk for further assistance")
                     elif account['Account_Status'] == "Deleted":
                         print("Deleted")
                         flash("Account has been deleted, please contact the helpdesk for further assistance")
@@ -2280,8 +2279,7 @@ def login():
                         return redirect(url_for('Resetpassword', UUID=account['UUID']))
                     else:
                         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-                        cursor.execute("UPDATE accounts SET Attempts = 0 WHERE username = %(username)s",
-                                       {'username': username})
+                        cursor.execute("UPDATE accounts SET Attempts = 0 WHERE username = %(username)s", {'username': username})
                         mysql.connection.commit()
 
                         cursor.execute("""SELECT * FROM Authentication_Table""")
@@ -2387,7 +2385,7 @@ def login():
                             mysql.connection.commit()
                             if account1['Attempts_Notification'] == 1:
                                 msge = Message("Account Login Attempt", recipients=[Original['Email']])
-                                msge.html = render_template('AlertUserEmailAttemptedlogin.html', Date=now, IP=request.remote_addr ,count=Attempts  )
+                                msge.html = render_template('AlertUserEmailAttemptedlogin.html', Date=now, IP=request.remote_addr, count=Attempts)
                                 mail.send(msge)
                             msg = 'Your Account have already been Disabled. please contact the helpdesk'
 
