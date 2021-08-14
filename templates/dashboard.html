@@ -164,7 +164,7 @@
                                 <!-- Card Header - Dropdown -->
                                 <div
                                     class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Amount of Requests to server</h6>
+                                    <h6 class="m-0 font-weight-bold text-primary">Events by Location</h6>
                                     <div class="dropdown no-arrow">
                                         <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
                                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -183,7 +183,7 @@
                                 <!-- Card Body -->
                                 <div class="card-body">
                                     <div class="chart-area">
-                                        <canvas id="myChart"></canvas>
+                                        <canvas id="Eventlocation"></canvas>
                                     </div>
                                 </div>
                             </div>
@@ -372,6 +372,9 @@
 
         var javadict = {{ UserAttemptedLoginCount | safe }}
         var eventdict = {{ EventCount | safe }}
+        var Countrycounter = {{ Countrycount | safe }}
+
+
 
     function getRandomColor() {
     var letters = '0123456789ABCDEF'.split('');
@@ -475,6 +478,44 @@ var eventcharto = new Chart(eventss, {
   },
 });
 
+var eventarea = document.getElementById("Eventlocation");
+var eventlocationarea = new Chart(eventarea, {
+  type: 'doughnut',
+  data: {
+    labels: Object.keys(Countrycounter),
+    datasets: [{
+      data: Object.values(Countrycounter),
+      backgroundColor: getRandomColorEachuser(Object.keys(Countrycounter).length),
+      hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf'],
+      hoverBorderColor: "rgba(234, 236, 244, 1)",
+    }],
+  },
+  options: {
+    plugins:{
+        title:{
+            display:true,
+            text:"Total Events Per Country"
+        }
+
+    },
+
+    maintainAspectRatio: false,
+    tooltips: {
+      backgroundColor: "rgb(255,255,255)",
+      bodyFontColor: "#858796",
+      borderColor: '#dddfeb',
+      borderWidth: 1,
+      xPadding: 15,
+      yPadding: 15,
+      displayColors: false,
+      caretPadding: 10,
+    },
+    legend: {
+      display: true
+    },
+    cutoutPercentage: 80,
+  },
+});
 
 
 

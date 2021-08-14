@@ -1635,18 +1635,26 @@ def Managerprofile():
 # Edit this - Zadesqlstuff
 
 def get_location(ip_address):
-    if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
+    try:
+        response = requests.get("http://ip-api.com/json/{}".format(ip_address))
+        js = response.json()
+        country = js
 
-        try:
-            response = requests.get("http://ip-api.com/json/{}".format(ip_address))
-            js = response.json()
-            country = js
-            return country
-        except Exception as e:
-            return "Unknown"
-    else:
-        flash('Please complete your 2FA !', 'danger')
-        return redirect(url_for("two_fa"))
+
+        return country['country']
+    except Exception as e:
+        return "Unknown"
+
+def get_countrycode(ip_address):
+    try:
+        response = requests.get("http://ip-api.com/json/{}".format(ip_address))
+        js = response.json()
+        country = js
+
+
+        return country["countryCode"]
+    except Exception as e:
+        return "Unknown"
 
 
 @app.route('/EmailLoginNotification', methods=['GET', 'POST'])
@@ -1799,7 +1807,27 @@ def ViewDashboard():
                             WHERE Attempted_Log_Ins >= 3  ) AS TABLE5
                             ORDER BY TimeOfActivity) AS CombinedTable WHERE TimeOfActivity > now() - interval 24 HOUR;""")
             eventcount24hr = cursor.fetchone()
+            Auditlist = []
+            Countrycount = {}
+            counterloca = 0
+            print(AuditInfo)
+            for i in AuditInfo:
+                i['Location'] = get_countrycode(i['IP_Address'])
 
+                Auditlist.append(i)
+            for number in Auditlist:
+                Countrycount[number["Location"]] = 0
+            plzcount = 0
+
+            for numberevent in Countrycount:
+
+                for count in Auditlist:
+
+                    if numberevent == count['Location']:
+                        plzcount += 1
+                Countrycount[numberevent] = plzcount
+
+            print(Countrycount)
 
 
 
@@ -1866,7 +1894,7 @@ def ViewDashboard():
             return render_template('dashboard.html', account=account, UserAttemptedLoginCount=UserAttemptedLoginCount,
                                    EventCount=EventCount, EventLoginFailCount=EventLoginFailCount
                                    ,AvgLoginFailuresUsers = AvgLoginFailuresUsers ,
-                                   AvgEventCountUser = AvgEventCountUser ,sess=session,AvgEvent1hr = AvgEvent1hr, AvgEvents24hr = AvgEvents24hr)
+                                   AvgEventCountUser = AvgEventCountUser ,sess=session,AvgEvent1hr = AvgEvent1hr, AvgEvents24hr = AvgEvents24hr,Countrycount = Countrycount)
         else:
             return redirect(url_for('Userprofile'))
     else:
