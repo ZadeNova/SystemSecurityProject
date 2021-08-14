@@ -2211,6 +2211,12 @@ def Resetpassword(UUID):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+
+    print(request.headers)
+    print(request.access_route)
+    print(request.remote_addr)
+    print(request.headers['X-Forwarded-For'])
+
     captcha_response = request.form.get('g-recaptcha-response')
     if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
         if is_human(captcha_response):
