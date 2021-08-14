@@ -178,22 +178,24 @@ def callback():
         session['Email_Vulnerabilities'] = account['Email_Vulnerabilities']
         session['Account_Login_Notification'] = account['Account_Login_Notification']
         session["Attempts_Notification"] = account1['Attempts_Notification']
-        print(session["Account_Login_Notification"])
-        if account['password_update_time'] + datetime.timedelta(days=365) <= datetime.datetime.now().replace(
-                microsecond=0):
+        if account['password_update_time'] + datetime.timedelta(days=365) <= datetime.datetime.now().replace(microsecond=0):
             return redirect(url_for('Resetpassword', UUID=account['UUID']))
         elif account['Account_Status'] == "Pending":
             print("This account is unactivated")
             flash("This Account has not been activated. Please go to your email to activate the account.")
+            return redirect(url_for('login'))
         elif account['Account_Status'] == "Banned":
             print("This account is banned")
             flash("This Account has been banned")
+            return redirect(url_for('login'))
         elif account['Account_Status'] == "Disabled":
             print("Disabled")
             flash("Account has been disabled, please contact the helpdesk for further assistance")
+            return redirect(url_for('login'))
         elif account['Account_Status'] == "Deleted":
             print("Deleted")
             flash("Account has been deleted, please contact the helpdesk for further assistance")
+            return redirect(url_for('login'))
         elif account['Account_Status'] == "Force":
             print("Force")
             flash("Please reset your password, your password has been compromised ")
@@ -2255,18 +2257,18 @@ def login():
                         print("This account is banned")
                         flash("This Account has been banned")
                     elif account['Account_Status'] == "Disabled":
-                            cursor.execute('SELECT * FROM accountattemptedlogins WHERE Account_ID = %(ID)s ORDER BY ID DESC limit 1', {'ID': account['ID']})
-                            Time = cursor.fetchone()
-                            if Time['TimeOfActivity'] + datetime.timedelta(seconds=30) <= datetime.datetime.now().replace(microsecond=0):
-                                sql = "UPDATE accounts SET Attempts = %s WHERE username = %s "
-                                value = (0, account['Username'])
-                                cursor.execute(sql, value)
-                                cursor.execute("UPDATE accounts SET Account_Status = 'Active' WHERE username = %(username)s", {'username': account['Username']})
-                                mysql.connection.commit()
-                                flash('Your account have been re-enabled, Please key In the information again')
-                            else:
-                                print("Disabled")
-                                flash("Account has been disabled, please contact the helpdesk for further assistance")
+                        cursor.execute('SELECT * FROM accountattemptedlogins WHERE Account_ID = %(ID)s ORDER BY ID DESC limit 1', {'ID': account['ID']})
+                        Time = cursor.fetchone()
+                        if Time['TimeOfActivity'] + datetime.timedelta(seconds=30) <= datetime.datetime.now().replace(microsecond=0):
+                            sql = "UPDATE accounts SET Attempts = %s WHERE username = %s "
+                            value = (0, account['Username'])
+                            cursor.execute(sql, value)
+                            cursor.execute("UPDATE accounts SET Account_Status = 'Active' WHERE username = %(username)s", {'username': account['Username']})
+                            mysql.connection.commit()
+                            flash('Your account have been re-enabled, Please key In the information again')
+                        else:
+                            print("Disabled")
+                            flash("Account has been disabled, please contact the helpdesk for further assistance")
                     elif account['Account_Status'] == "Deleted":
                         print("Deleted")
                         flash("Account has been deleted, please contact the helpdesk for further assistance")
