@@ -1821,7 +1821,7 @@ def ViewDashboard():
             plzcount = 0
 
             for numberevent in Countrycount:
-
+                plzcount = 0
                 for count in Auditlist:
 
                     if numberevent == count['Location']:
