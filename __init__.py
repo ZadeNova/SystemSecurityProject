@@ -1963,17 +1963,7 @@ def ManageAccount():
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
 
-        # 25 to 50 and 50 to 25
-        #if EmailLoginNotif == 1 or AttemptedLoginNotification == 1:
-        #    print("true")
-        #    cursor.execute("""UPDATE accounts SET Security_Level = %s WHERE ID = %s""",[50,session['ID']])
-        #    mysql.connection.commit()
-        #elif EmailLoginNotif == 0 and AttemptedLoginNotification == 0:
-        #    print('hii')
-        #    cursor.execute("""UPDATE accounts SET Security_Level = %s WHERE ID = %s""", [25, session['ID']])
-        #    mysql.connection.commit()
-        if EmailLoginNotif == 1:
-            Value_of_security += 10
+
 
 @app.route('/ActivityLogUser', methods=['GET', 'POST'])
 def UserLogsActivity():
@@ -2011,7 +2001,8 @@ def UserLogsActivity():
         AttemptedLoginNotification = 0
         Value_of_security = 25  # 25 is default cause everyone got strong password.
 
-
+        if EmailLoginNotif == 1:
+            Value_of_security += 10
 
         if AttemptedLoginNotification == 1:
             Value_of_security += 15
