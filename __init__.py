@@ -659,7 +659,7 @@ def SmsOtpCheck():
             #if phn == session['username']+'phn':
                 #return redirect(url_for('Forcephn'))
 
-            otp = randint(000000, 999999)  # email otp
+            otp = randint(111111, 999999)  # email otp
             session['otp'] = otp
 
             k12 = datetime.datetime.now() + timedelta(seconds=60)
@@ -767,7 +767,7 @@ def EmailOtpCheck():
         cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
         account = cursor.fetchone()
         cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
-        otp = randint(000000, 999999)  # email otp
+        otp = randint(111111, 999999)  # email otp
         session['otp'] = otp
         k12 = datetime.datetime.now() + timedelta(seconds=60)
         session['otp_create_time'] = k12.strftime("%X")
@@ -924,7 +924,7 @@ def two_fa_email():
     if request.method == 'POST':
         cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
         account1 = cursor.fetchone()
-        otp = randint(000000, 999999)  # email otp
+        otp = randint(111111, 999999)  # email otp
         session['otp'] = otp
         k12 = datetime.datetime.now() + timedelta(seconds=60)
         session['otp_create_time'] = k12.strftime("%X")
@@ -997,7 +997,7 @@ def two_fa_sms():
     if request.method == 'POST':
         cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
         account1 = cursor.fetchone()
-        otp = randint(000000, 999999)  # email otp
+        otp = randint(111111, 999999)  # email otp
         session['otp'] = otp
         k12 = datetime.datetime.now() + timedelta(seconds=60)
         session['otp_create_time'] = k12.strftime("%X")
@@ -1013,7 +1013,7 @@ def two_fa_sms():
                 to=phn
             )
             print(message.sid)
-            return render_template('2fa_email_check.html', account=account, role=account['role'])
+            return render_template('2fa_sms_check.html', account=account, role=account['role'])
         else:
             flash('You havent active this function yet choose other 2 factor authentication method', 'danger')
             return redirect(url_for("two_fa_sms"))

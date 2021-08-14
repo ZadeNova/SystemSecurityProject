@@ -196,7 +196,7 @@ form .button{
           </p>
       <form method="POST" action="/twofaauthencheck">
         <div class="input-field">
-          <input type="text" class='input' name="otp1" required>
+          <input type="text" class='input' name="otp1" required pattern="^[0-9]{6}+$">
           <label>6 digit otp</label>
         </div>
 
