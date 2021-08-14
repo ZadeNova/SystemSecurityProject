@@ -650,8 +650,8 @@ def SmsOtpCheck():
             return redirect(url_for('Forcephn'))
         else:
             cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
-            account_sid = 'AC8e0240f8443f52121cc16bbf1f38a719'
-            auth_token = '..'
+            account_sid = 'AC5a5b558f25c2a7131c5004e0a77caecf'
+            auth_token = '6b5bd403487576aaee718625b31a03a8'
             ### check ur whatapp for the lasted codoe
             client = Client(account_sid, auth_token)
             print('phn:', decryptedPhoneNo)
@@ -665,7 +665,7 @@ def SmsOtpCheck():
             k12 = datetime.datetime.now() + timedelta(seconds=60)
             session['otp_create_time'] = k12.strftime("%X")
             message = client.messages.create(
-                    messaging_service_sid='MG3153b219b198d00e07da6bfd6b91ed8e',
+                    messaging_service_sid='MGf72a96edffcf7beadca966887d48878a',
                     body='This is your OTP : '+ str(otp) +' , please do not share it with other people thanks ',
                     to=decryptedPhoneNo
                 )
@@ -1003,12 +1003,12 @@ def two_fa_sms():
         session['otp_create_time'] = k12.strftime("%X")
 
         if account1['Sms_Message_Status'] == True:
-            account_sid = 'AC8e0240f8443f52121cc16bbf1f38a719'
-            auth_token = '..' ## check your whatapp for the latest code
+            account_sid = 'AC5a5b558f25c2a7131c5004e0a77caecf'
+            auth_token = '6b5bd403487576aaee718625b31a03a8'
             client = Client(account_sid, auth_token)
             phn = session['Phone_No']
             message = client.messages.create(
-                messaging_service_sid='MG3153b219b198d00e07da6bfd6b91ed8e',
+                messaging_service_sid='MGf72a96edffcf7beadca966887d48878a',
                 body='This is your OTP : ' + str(otp) + ' , please do not share it with other people thanks ',
                 to=phn
             )
