@@ -2116,6 +2116,8 @@ def UserLogsActivity():
             lol["Location"]  = get_location(lol["IP_Address"] )
             userlistactivity.append(lol)
 
+        passwordupdatetime = account["password_update_time"]
+
 
 
 
@@ -2128,7 +2130,7 @@ def UserLogsActivity():
         return render_template('UserActivityLog.html', account=account, role=account['role'],
                                userloginactivity=userloginactivity , Value_of_security = Value_of_security ,
                                EmailLoginNotif = EmailLoginNotif , AttemptedLoginNotification = AttemptedLoginNotification,
-                               Email2FA = Email2FA,Googleauthen = Googleauthen ,BackupCode = BackupCode ,Phone = Phone , counter = counter,userlistactivity = userlistactivity)
+                               Email2FA = Email2FA,Googleauthen = Googleauthen ,BackupCode = BackupCode ,Phone = Phone , counter = counter,userlistactivity = userlistactivity,password_update_time = passwordupdatetime)
 
 
     else:
