@@ -9,9 +9,7 @@ from random import randint  ###### email otp ####
 import logging
 
 from twilio.rest import Client
-from chatterbot import ChatBot
-from chatterbot.trainers import ListTrainer
-from chatterbot.trainers import ChatterBotCorpusTrainer
+
 
 from google.auth._default import default, load_credentials_from_file
 import bcrypt
@@ -207,7 +205,7 @@ def callback():
             cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
             account1 = cursor.fetchone()
             cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""",
-                           (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.remote_addr))
+                           (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.headers['X-Forwarded-For']))
 
             mysql.connection.commit()
             cursor.execute(
@@ -309,7 +307,7 @@ def callback():
             session['ID'] = account12['ID']
             session["Username"] = username
             cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""",
-                           (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.remote_addr))
+                           (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),request.headers['X-Forwarded-For']))
 
             mysql.connection.commit()
             cursor.execute(
@@ -360,7 +358,7 @@ def callback():
             cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
             account1 = cursor.fetchone()
             cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""",
-                           (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.remote_addr))
+                           (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.headers['X-Forwarded-For']))
 
             mysql.connection.commit()
             cursor.execute(
@@ -445,51 +443,51 @@ def Forcepassword():
 app.static_folder = 'static'
 
 
-@app.route('/chatbot')
-def chatbot():
-    return render_template('chatbot.html')
+#@app.route('/chatbot')
+#def chatbot():
+#    return render_template('chatbot.html')
 
 
-@app.route("/get")
-def get_bot_response():
-    userText = request.args.get('msg')
-    print(userText)
-    chatbot = ChatBot(
-        'CoronaBot',
-        storage_adapter='chatterbot.storage.SQLStorageAdapter',
-        logic_adapters=[
-            'chatterbot.logic.MathematicalEvaluation',
-            'chatterbot.logic.TimeLogicAdapter',
-            'chatterbot.logic.BestMatch',
-            {
-                'import_path': 'chatterbot.logic.BestMatch',
-                'default_response': 'I am sorry, but I do not understand. I am still learning.',
-                'maximum_similarity_threshold': 0.90
-            }
-        ],
-        database_uri='sqlite:///database.sqlite3'
-    )
-
-    # Training With Own Questions
-
-    trainer = ListTrainer(chatbot)
-
-    training_data_quesans = open('training_data/ques_ans.txt').read().splitlines()
-    training_data_personal = open('training_data/personal_ques.txt').read().splitlines()
-
-    training_data = training_data_quesans + training_data_personal
-
-    trainer.train(training_data)
-
-    # Training With Corpus
-
-    trainer_corpus = ChatterBotCorpusTrainer(chatbot)
-
-    trainer_corpus.train(
-        'chatterbot.corpus.english'
-    )
-
-    return str(chatbot.get_response(userText))
+#@app.route("/get")
+#def get_bot_response():
+#    userText = request.args.get('msg')
+#    print(userText)
+#    chatbot = ChatBot(
+#        'CoronaBot',
+#        storage_adapter='chatterbot.storage.SQLStorageAdapter',
+#        logic_adapters=[
+#            'chatterbot.logic.MathematicalEvaluation',
+#            'chatterbot.logic.TimeLogicAdapter',
+#            'chatterbot.logic.BestMatch',
+#            {
+#                'import_path': 'chatterbot.logic.BestMatch',
+#                'default_response': 'I am sorry, but I do not understand. I am still learning.',
+#                'maximum_similarity_threshold': 0.90
+#            }
+#        ],
+#        database_uri='sqlite:///database.sqlite3'
+#    )
+#
+#    # Training With Own Questions
+#
+#    trainer = ListTrainer(chatbot)
+#
+#    training_data_quesans = open('training_data/ques_ans.txt').read().splitlines()
+#    training_data_personal = open('training_data/personal_ques.txt').read().splitlines()
+#
+#    training_data = training_data_quesans + training_data_personal
+#
+#    trainer.train(training_data)
+#
+#    # Training With Corpus
+#
+#    trainer_corpus = ChatterBotCorpusTrainer(chatbot)
+#
+#    trainer_corpus.train(
+#        'chatterbot.corpus.english'
+#    )
+#
+#    return str(chatbot.get_response(userText))
 
 
 # Flask-Mail and app.config stuff
@@ -517,7 +515,7 @@ try:
         'MYSQL_PASSWORD'] = '48b8b0c9'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'heroku_6230660f02e0b5c'
 except:
-    print("MYSQL root is not found?")
+    print("MYSQL root is not found!")
 
 
 mysql = MySQL(app)
@@ -955,7 +953,7 @@ def two_fa_email_check():
         cursor.execute("""INSERT INTO userlogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
         mysql.connection.commit()
         cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (
-            session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.remote_addr))
+            session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.headers['X-Forwarded-For']))
         mysql.connection.commit()
         cursor.execute(
             """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
@@ -1034,7 +1032,7 @@ def two_fa_sms_check():
         cursor.execute("""INSERT INTO userlogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
         mysql.connection.commit()
         cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (
-            session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.remote_addr))
+            session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.headers['X-Forwarded-For']))
         mysql.connection.commit()
         cursor.execute(
             """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
@@ -1105,7 +1103,7 @@ def two_fa_backupcode_check():
         cursor.execute("""INSERT INTO UserLogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
         mysql.connection.commit()
         cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (
-            session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.remote_addr))
+            session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.headers['X-Forwarded-For']))
         mysql.connection.commit()
         cursor.execute(
             """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
@@ -1166,7 +1164,7 @@ def two_fa_authen_check():
         cursor.execute("""INSERT INTO UserLogin VALUES (NULL,%s,%s) """, (session['ID'], "Login"))
         mysql.connection.commit()
         cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (
-            session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.remote_addr))
+            session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.headers['X-Forwarded-For']))
         mysql.connection.commit()
         cursor.execute(
             """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
@@ -1379,7 +1377,7 @@ def deleteaccoutcheck():
 @app.route('/Settings', methods=['GET', 'POST'])
 def Changesettings():
     if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
-        ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+        ip = request.environ.get('HTTP_X_REAL_IP', request.headers['X-Forwarded-For'])
         global dataforemailupdate, IDUpdate
         formupdateuser = UpdateUserForm(request.form)
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -1497,12 +1495,12 @@ def Changesettings():
                     [session['ID']])
                 cursor.execute(
                     """UPDATE UserUpdateTime SET Ip_Address = %s WHERE Account_ID = %s ORDER BY ID DESC Limit 1""",
-                    [request.remote_addr, session['ID']])
+                    [request.headers['X-Forwarded-For'], session['ID']])
                 mysql.connection.commit()
                 account1 = cursor.fetchone()
                 counter = str(counter)
                 msg = Message("Update of Account", recipients=account['Email'].split())
-                msg.html = render_template('UpdateEmail.html', counter=str(counter), Ipaddress=request.remote_addr)
+                msg.html = render_template('UpdateEmail.html', counter=str(counter), Ipaddress=request.headers['X-Forwarded-For'])
                 mail.send(msg)
                 flash(
                     "You have just updated {} item/s in your account. An email has been send out as a notification.".format(
@@ -1555,11 +1553,11 @@ def Settings_changepassword():
                     value = (hash_password, UUID)
                     cursor.execute(sql, value)
                     cursor.execute(
-                        """INSERT INTO UserUpdateTime VALUES (NULL, %s, %s, %s, %s) """, [session['ID'], 'UpdatePassword', request.remote_addr, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
+                        """INSERT INTO UserUpdateTime VALUES (NULL, %s, %s, %s, %s) """, [session['ID'], 'UpdatePassword', request.headers['X-Forwarded-For'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
                     mysql.connection.commit()
                     counter = 1
                     email = Message("Update of Account", recipients=account['Email'].split())
-                    email.html = render_template('UpdateEmail.html', counter=str(counter), Ipaddress=request.remote_addr)
+                    email.html = render_template('UpdateEmail.html', counter=str(counter), Ipaddress=request.headers['X-Forwarded-For'])
                     mail.send(email)
 
                     flash('Password have been updated', 'category2')
@@ -1701,7 +1699,7 @@ def AttemptsNotification():
 def Ipmap():
     if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
         if session['role'] == 'Admin':
-            ip_address = request.remote_addr
+            ip_address = request.headers['X-Forwarded-For']
             # ip_address =
             country = get_location(ip_address)
             print(country)
@@ -2245,7 +2243,7 @@ def login():
                 hashandsalt = account['Password']
                 # This means that you have logged in
                 print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-                print(request.remote_addr)
+                print(request.headers['X-Forwarded-For'])
                 print("End of print testcode")
                 if bcrypt.checkpw(password.encode(), hashandsalt.encode()):
                     if account['password_update_time'] + datetime.timedelta(days=365) <= datetime.datetime.now().replace(microsecond=0):
@@ -2315,7 +2313,7 @@ def login():
                             mysql.connection.commit()
                             cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (
                                 session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                request.remote_addr))
+                                request.headers['X-Forwarded-For']))
                             mysql.connection.commit()
                             cursor.execute(
                                 """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
@@ -2360,7 +2358,7 @@ def login():
                             Attempts += 1
                             now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                             cursor.execute("""INSERT INTO accountattemptedlogins VALUES (NULL,%s,%s,%s,%s)""",
-                                           [Original['ID'], Attempts, request.remote_addr, now])
+                                           [Original['ID'], Attempts, request.headers['X-Forwarded-For'], now])
                             mysql.connection.commit()
                             sql2 = "UPDATE accounts SET Attempts = %s WHERE username = %s "
                             value2 = (Attempts, Username)
@@ -2376,7 +2374,7 @@ def login():
                         elif Attempts > 2 and Attempts%5 == 0:
                             Attempts += 1
                             now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                            cursor.execute("""INSERT INTO accountattemptedlogins VALUES (NULL,%s,%s,%s,%s)""", [Original['ID'], Attempts, request.remote_addr, now])
+                            cursor.execute("""INSERT INTO accountattemptedlogins VALUES (NULL,%s,%s,%s,%s)""", [Original['ID'], Attempts, request.headers['X-Forwarded-For'], now])
                             mysql.connection.commit()
                             sql2 = "UPDATE accounts SET Attempts = %s WHERE username = %s "
                             value2 = (Attempts, Username)
@@ -2384,7 +2382,7 @@ def login():
                             mysql.connection.commit()
                             if account1['Attempts_Notification'] == 1:
                                 msge = Message("Account Login Attempt", recipients=[Original['Email']])
-                                msge.html = render_template('AlertUserEmailAttemptedlogin.html', Date=now, IP=request.remote_addr, count=Attempts)
+                                msge.html = render_template('AlertUserEmailAttemptedlogin.html', Date=now, IP=request.headers['X-Forwarded-For'], count=Attempts)
                                 mail.send(msge)
                             msg = 'Your Account have already been Disabled. please contact the helpdesk'
 
@@ -2394,7 +2392,7 @@ def login():
                             sql2 = "UPDATE accounts SET Attempts = %s WHERE username = %s "
                             value2 = (Attempts, Username)
                             cursor.execute(sql2, value2)
-                            cursor.execute("""INSERT INTO accountattemptedlogins VALUES (NULL,%s,%s,%s,%s)""",[Original['ID'],Attempts,request.remote_addr,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
+                            cursor.execute("""INSERT INTO accountattemptedlogins VALUES (NULL,%s,%s,%s,%s)""",[Original['ID'],Attempts,request.headers['X-Forwarded-For'],datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
                             mysql.connection.commit()
                     return render_template('login.html', msg=msg, sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
             else:
@@ -2419,7 +2417,7 @@ def accountlogout():
             # Record into database that user log out
             cursor.execute("""INSERT INTO UserLogin VALUES (NULL,%s,%s) """, (session['ID'], "Logout"))
             cursor.execute("""INSERT INTO account_log_out VALUES (NULL,%s,%s,%s) """,
-                           (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.remote_addr))
+                           (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.headers['X-Forwarded-For']))
             mysql.connection.commit()
             sqlcode = """UPDATE account_log_ins INNER JOIN account_log_out ON account_log_ins.Account_ID = 
             account_log_out.Account_ID SET account_log_ins.Log_Out_ID = account_log_out.Log_Out_ID WHERE 
