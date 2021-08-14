@@ -9,9 +9,7 @@ from random import randint  ###### email otp ####
 import logging
 
 from twilio.rest import Client
-from chatterbot import ChatBot
-from chatterbot.trainers import ListTrainer
-from chatterbot.trainers import ChatterBotCorpusTrainer
+
 
 from google.auth._default import default, load_credentials_from_file
 import bcrypt
@@ -452,46 +450,46 @@ def chatbot():
     return render_template('chatbot.html')
 
 
-@app.route("/get")
-def get_bot_response():
-    userText = request.args.get('msg')
-    print(userText)
-    chatbot = ChatBot(
-        'CoronaBot',
-        storage_adapter='chatterbot.storage.SQLStorageAdapter',
-        logic_adapters=[
-            'chatterbot.logic.MathematicalEvaluation',
-            'chatterbot.logic.TimeLogicAdapter',
-            'chatterbot.logic.BestMatch',
-            {
-                'import_path': 'chatterbot.logic.BestMatch',
-                'default_response': 'I am sorry, but I do not understand. I am still learning.',
-                'maximum_similarity_threshold': 0.90
-            }
-        ],
-        database_uri='sqlite:///database.sqlite3'
-    )
+#@app.route("/get")
+#def get_bot_response():
+#    userText = request.args.get('msg')
+#    print(userText)
+#    chatbot = ChatBot(
+#        'CoronaBot',
+#        storage_adapter='chatterbot.storage.SQLStorageAdapter',
+#        logic_adapters=[
+#            'chatterbot.logic.MathematicalEvaluation',
+#            'chatterbot.logic.TimeLogicAdapter',
+#            'chatterbot.logic.BestMatch',
+#            {
+#                'import_path': 'chatterbot.logic.BestMatch',
+#                'default_response': 'I am sorry, but I do not understand. I am still learning.',
+#                'maximum_similarity_threshold': 0.90
+#            }
+#        ],
+#        database_uri='sqlite:///database.sqlite3'
+#    )
 
     # Training With Own Questions
-
-    trainer = ListTrainer(chatbot)
-
-    training_data_quesans = open('training_data/ques_ans.txt').read().splitlines()
-    training_data_personal = open('training_data/personal_ques.txt').read().splitlines()
-
-    training_data = training_data_quesans + training_data_personal
-
-    trainer.train(training_data)
-
-    # Training With Corpus
-
-    trainer_corpus = ChatterBotCorpusTrainer(chatbot)
-
-    trainer_corpus.train(
-        'chatterbot.corpus.english'
-    )
-
-    return str(chatbot.get_response(userText))
+#
+#    trainer = ListTrainer(chatbot)
+#
+#    training_data_quesans = open('training_data/ques_ans.txt').read().splitlines()
+#    training_data_personal = open('training_data/personal_ques.txt').read().splitlines()
+#
+#    training_data = training_data_quesans + training_data_personal
+#
+#    trainer.train(training_data)
+#
+#    # Training With Corpus
+#
+#    trainer_corpus = ChatterBotCorpusTrainer(chatbot)
+#
+#    trainer_corpus.train(
+#        'chatterbot.corpus.english'
+#    )
+#
+#    return str(chatbot.get_response(userText))
 
 
 # Flask-Mail and app.config stuff
