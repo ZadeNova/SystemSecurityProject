@@ -1,3 +1,4 @@
+import copy
 import datetime
 from datetime import timedelta
 import json
@@ -9,6 +10,7 @@ from random import randint  ###### email otp ####
 import logging
 
 from twilio.rest import Client
+
 
 from google.auth._default import default, load_credentials_from_file
 import bcrypt
@@ -449,46 +451,46 @@ def chatbot():
     return render_template('chatbot.html')
 
 
-@app.route("/get")
-def get_bot_response():
-    userText = request.args.get('msg')
-    print(userText)
-    chatbot = ChatBot(
-        'CoronaBot',
-        storage_adapter='chatterbot.storage.SQLStorageAdapter',
-        logic_adapters=[
-            'chatterbot.logic.MathematicalEvaluation',
-            'chatterbot.logic.TimeLogicAdapter',
-            'chatterbot.logic.BestMatch',
-            {
-                'import_path': 'chatterbot.logic.BestMatch',
-                'default_response': 'I am sorry, but I do not understand. I am still learning.',
-                'maximum_similarity_threshold': 0.90
-            }
-        ],
-        database_uri='sqlite:///database.sqlite3'
-    )
-
-    # Training With Own Questions
-
-    trainer = ListTrainer(chatbot)
-
-    training_data_quesans = open('training_data/ques_ans.txt').read().splitlines()
-    training_data_personal = open('training_data/personal_ques.txt').read().splitlines()
-
-    training_data = training_data_quesans + training_data_personal
-
-    trainer.train(training_data)
-
-    # Training With Corpus
-
-    trainer_corpus = ChatterBotCorpusTrainer(chatbot)
-
-    trainer_corpus.train(
-        'chatterbot.corpus.english'
-    )
-
-    return str(chatbot.get_response(userText))
+#@app.route("/get")
+#def get_bot_response():
+#    userText = request.args.get('msg')
+#    print(userText)
+#    chatbot = ChatBot(
+#        'CoronaBot',
+#        storage_adapter='chatterbot.storage.SQLStorageAdapter',
+#        logic_adapters=[
+#            'chatterbot.logic.MathematicalEvaluation',
+#            'chatterbot.logic.TimeLogicAdapter',
+#            'chatterbot.logic.BestMatch',
+#            {
+#                'import_path': 'chatterbot.logic.BestMatch',
+#                'default_response': 'I am sorry, but I do not understand. I am still learning.',
+#                'maximum_similarity_threshold': 0.90
+#            }
+#        ],
+#        database_uri='sqlite:///database.sqlite3'
+#    )
+#
+#    # Training With Own Questions
+#
+#    trainer = ListTrainer(chatbot)
+#
+#    training_data_quesans = open('training_data/ques_ans.txt').read().splitlines()
+#    training_data_personal = open('training_data/personal_ques.txt').read().splitlines()
+#
+#    training_data = training_data_quesans + training_data_personal
+#
+#    trainer.train(training_data)
+#
+#    # Training With Corpus
+#
+#    trainer_corpus = ChatterBotCorpusTrainer(chatbot)
+#
+#    trainer_corpus.train(
+#        'chatterbot.corpus.english'
+#    )
+#
+#    return str(chatbot.get_response(userText))
 
 
 # Flask-Mail and app.config stuff
@@ -510,15 +512,10 @@ mail = Mail(app)
 
 # Database connection MYSQL
 try:
-    #app.config['MYSQL_HOST'] = 'us-cdbr-east-04.cleardb.com'
-    #app.config['MYSQL_USER'] = 'b5353b83482c7f'
-    #app.config[
-        #'MYSQL_PASSWORD'] = '48b8b0c9'  # change this line to our own sql password , thank you vry not much xd
-    #app.config['MYSQL_DB'] = 'heroku_6230660f02e0b5c'
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
     app.config[
-        'MYSQL_PASSWORD'] = 'Dragonnight1002'  # change this line to our own sql password , thank you vry not much xd
+        'MYSQL_PASSWORD'] = 'ZadePrimeSQL69420'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'SystemSecurityProject'
 except:
     print("MYSQL root is not found?")
@@ -1802,11 +1799,29 @@ def ViewDashboard():
                             WHERE Attempted_Log_Ins >= 3  ) AS TABLE5
                             ORDER BY TimeOfActivity) AS CombinedTable WHERE TimeOfActivity > now() - interval 24 HOUR;""")
             eventcount24hr = cursor.fetchone()
+            Auditlist = []
+            Countrycount = {}
+            counterloca = 0
+            print(AuditInfo)
+            for i in AuditInfo:
+
+                i['Location'] = get_countrycode(i['IP_Address'])
+
+                Auditlist.append(i)
+            for number in Auditlist:
+                Countrycount[number["Location"]] = 0
+            plzcount = 0
+
+            for numberevent in Countrycount:
+
+                for count in Auditlist:
 
 
+                    if numberevent == count['Location']:
+                        plzcount += 1
+                Countrycount[numberevent] = plzcount
 
-
-
+            print(Countrycount)
 
 
 
@@ -1862,6 +1877,9 @@ def ViewDashboard():
             AvgEvent1hr = round((eventcount1hr['Counter1hour']/NumberOfUsers),2)
 
 
+
+
+
             # User Events
 
             # User attempted log ins per user
@@ -1869,12 +1887,37 @@ def ViewDashboard():
             return render_template('dashboard.html', account=account, UserAttemptedLoginCount=UserAttemptedLoginCount,
                                    EventCount=EventCount, EventLoginFailCount=EventLoginFailCount
                                    ,AvgLoginFailuresUsers = AvgLoginFailuresUsers ,
-                                   AvgEventCountUser = AvgEventCountUser ,sess=session,AvgEvent1hr = AvgEvent1hr, AvgEvents24hr = AvgEvents24hr)
+                                   AvgEventCountUser = AvgEventCountUser ,sess=session,AvgEvent1hr = AvgEvent1hr, AvgEvents24hr = AvgEvents24hr , Countrycount = Countrycount)
         else:
             return redirect(url_for('Userprofile'))
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
+
+
+def get_location(ip_address):
+    try:
+        response = requests.get("http://ip-api.com/json/{}".format(ip_address))
+        js = response.json()
+        country = js
+
+
+        return country['country']
+    except Exception as e:
+        return "Unknown"
+
+
+def get_countrycode(ip_address):
+    try:
+        response = requests.get("http://ip-api.com/json/{}".format(ip_address))
+        js = response.json()
+        country = js
+
+
+        return country["countryCode"]
+    except Exception as e:
+        return "Unknown"
+
 
 
 @app.route('/AuditLog')
@@ -1907,17 +1950,14 @@ def Audit():
 
                 allaccounts = cursor.fetchall()
                 print(allaccounts)
-                cursor.execute("""SELECT * FROM accounts""")
-                accountlevel = cursor.fetchall()
-
-
-
-
-
-
-
+                Auditlist = []
+                for lol in allaccounts:
+                    lol['Location'] = get_location(lol['IP_Address'])
+                    print(lol)
+                    Auditlist.append(lol)
+                print(Auditlist)
                 return render_template('AuditLog.html', account=account, role=account['role'],
-                                       allaccounts=allaccounts)  # labels = labels,values = values)
+                                       allaccounts=allaccounts , Auditlist = Auditlist)  # labels = labels,values = values)
             else:
                 return redirect(url_for('Userprofile'))
         else:
@@ -2080,7 +2120,7 @@ def UserLogsActivity():
         print(Value_of_security)
 
         print(EmailLoginNotif,AttemptedLoginNotification,counter)
-
+        print(userloginactivity)
 
 
         cursor.execute("""UPDATE accounts SET Security_Level = %s WHERE ID = %s""", [Value_of_security, session['ID']])
