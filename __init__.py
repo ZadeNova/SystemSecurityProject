@@ -2202,8 +2202,17 @@ def login():
                 print(request.remote_addr)
                 print("End of print testcode")
                 if bcrypt.checkpw(password.encode(), hashandsalt.encode()):
+                    cursor.execute('SELECT * FROM accountattemptedlogins WHERE Account_ID = %(ID)s ORDER BY ID DESC limit 1', {'ID': account['ID']})
+                    Time = cursor.fetchone()
+                    if Time['TimeOfActivity'] + datetime.timedelta(minutes=30) <= datetime.datetime.now().replace(microsecond=0) and account['Account_Status'] == 'Disabled':
+                        sql2 = "UPDATE accounts SET Attempts = %s WHERE username = %s "
+                        value2 = (0, account['Username'])
+                        cursor.execute(sql2, value2)
+                        cursor.execute("UPDATE accounts SET Account_Status = 'Active' WHERE username = %(username)s", {'username': account['Username']})
+                        mysql.connection.commit()
+                        flash('Your account have been re-enabled, Please key In the information again')
                     # compare the current date and time with the last password update time
-                    if account['password_update_time'] + datetime.timedelta(
+                    elif account['password_update_time'] + datetime.timedelta(
                             days=365) <= datetime.datetime.now().replace(microsecond=0):
                         return redirect(url_for('Resetpassword', UUID=account['UUID']))
                     elif account['Account_Status'] == "Pending":
@@ -2228,7 +2237,6 @@ def login():
                                        {'username': username})
                         mysql.connection.commit()
 
-
                         cursor.execute("""SELECT * FROM Authentication_Table""")
                         session['loggedin'] = True
                         session['ID'] = account['ID']
@@ -2244,8 +2252,6 @@ def login():
                         session['Attempts_Notification'] = account1['Attempts_Notification']
 
 
-                        print(session)
-                        print(account)
                         # Update UserActions table for login!
                         cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
                         account1 = cursor.fetchone()
@@ -2310,8 +2316,7 @@ def login():
                             Attempts += 1
                             now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                             cursor.execute("""INSERT INTO accountattemptedlogins VALUES (NULL,%s,%s,%s,%s)""",
-                                           [Original['ID'], Attempts, request.remote_addr,
-                                            now])
+                                           [Original['ID'], Attempts, request.remote_addr, now])
                             mysql.connection.commit()
                             sql2 = "UPDATE accounts SET Attempts = %s WHERE username = %s "
                             value2 = (Attempts, Username)
