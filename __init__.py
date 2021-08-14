@@ -2211,7 +2211,6 @@ def Resetpassword(UUID):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     captcha_response = request.form.get('g-recaptcha-response')
-
     if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
         if is_human(captcha_response):
             # Process request here

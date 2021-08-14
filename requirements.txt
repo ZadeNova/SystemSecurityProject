@@ -9,9 +9,8 @@ catalogue==2.0.5
 certifi==2021.5.30
 cffi==1.14.6
 chardet==4.0.0
-charset-normalizer==2.0.4
-ChatterBot==1.0.4
-chatterbot-corpus==1.2.0
+
+
 click==8.0.1
 colorama==0.4.4
 cryptography==3.4.7
