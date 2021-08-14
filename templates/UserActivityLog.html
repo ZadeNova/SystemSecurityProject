@@ -276,21 +276,21 @@ text-transform: none;
                                             class="float-right">{{ Value_of_security }}%</span></h4>
 
 
-                                    {% if Value_of_security == 25 %}
+                                    {% if Value_of_security < 25 %}
                                     <div class="progress">
                                           <div class="progress-bar bg-danger progress-bar-striped progress-bar-animated" role="progressbar"
                                           aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width:{{ Value_of_security }}%">
                                               {{ Value_of_security }}%
                                           </div>
                                         </div>
-                                    {% elif Value_of_security == 50 %}
+                                    {% elif Value_of_security > 25 and Value_of_security < 50 %}
                                     <div class="progress">
                                           <div class="progress-bar bg-warning progress-bar-striped progress-bar-animated" role="progressbar"
                                           aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width:{{ Value_of_security }}%">
                                               {{ Value_of_security }}%
                                           </div>
                                         </div>
-                                    {% elif Value_of_security == 75 %}
+                                    {% elif Value_of_security > 50 and Value_of_security < 75 %}
                                     <div class="progress">
                                           <div class="progress-bar bg-info progress-bar-striped progress-bar-animated" role="progressbar"
                                           aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width:{{ Value_of_security }}%">
