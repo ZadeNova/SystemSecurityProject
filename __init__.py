@@ -1906,15 +1906,20 @@ def Audit():
                 print(allaccounts)
                 cursor.execute("""SELECT * FROM accounts""")
                 accountlevel = cursor.fetchall()
-
-
-
-
-
-
-
+                Auditlist = []
+                for lol in allaccounts:
+                    lol['Location'] = get_location(lol['IP_Address'])
+                    print(lol)
+                    Auditlist.append(lol)
+                print(Auditlist)
                 return render_template('AuditLog.html', account=account, role=account['role'],
-                                       allaccounts=allaccounts)  # labels = labels,values = values)
+                                       allaccounts=allaccounts, Auditlist=Auditlist)  # labels = labels,values = values)
+
+
+
+
+
+
             else:
                 return redirect(url_for('Userprofile'))
         else:
