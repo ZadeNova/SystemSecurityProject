@@ -2637,6 +2637,8 @@ def login():
 
 @app.route('/logout')
 def accountlogout():
+    print(session['state'])
+    print(session)
     try:
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         # cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': session['Username']})
@@ -2662,7 +2664,7 @@ def accountlogout():
             print(session)
             session.clear()
             print(session)
-
+            print(session['state'])
             return redirect(url_for('login'))
         else:
             print("Session cant be used by 2 user")
