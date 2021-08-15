@@ -2199,7 +2199,7 @@ def UserLogsActivity():
                             INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
                             INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout' AND ACC.Username = %s) AS TABLE2 
                             UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID WHERE accounts.Username = %s) AS TABLE3
-                            ORDER BY TimeOfActivity;               """,
+                            ORDER BY TimeOfActivity DESC;               """,
                        [session['Username'], session['Username'], session['Username']])
 
         userloginactivity = cursor.fetchall()
