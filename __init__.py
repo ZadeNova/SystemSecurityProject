@@ -1942,14 +1942,14 @@ def ViewDashboard():
             print(Everything)
 
             print(list(Everything))
-            print(';;;')
+
 
             Countrycount = {number["Location"]: 0 for number in Everything}
             print(Countrycount)
-            plzcount = 0
+
 
             for numberevent in Countrycount:
-
+                plzcount = 0
                 for count in Everything:
 
                     if numberevent == count['Location']:
@@ -2068,7 +2068,7 @@ def Audit():
 #
                 #allaccounts = cursor.fetchall()
 
-                cursor.execute("""SELECT * FROM eventtype""")
+                cursor.execute("""SELECT * FROM eventtype ORDER BY TimeOfActivity DESC;""")
                 allaccounts = cursor.fetchall()
 
 
