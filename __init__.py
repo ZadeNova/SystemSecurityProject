@@ -2098,6 +2098,7 @@ def UnBanAccount(ID):
     print("UnBan Account Function")
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute("""UPDATE accounts SET Account_Status = 'Active' WHERE ID = %s """, [ID])
+    cursor.execute("""UPDATE accounts SET Attempts = 0 WHERE ID = %s """, [ID])
     mysql.connection.commit()
     return redirect(url_for('ManageAccount'))
 
