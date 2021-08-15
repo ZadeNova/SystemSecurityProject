@@ -1443,7 +1443,7 @@ def Changesettings():
         decryptedaddress = decryptedaddress_Binary.decode('utf8')
         decryptedNRIC = decryptedNRIC_Binary.decode('utf-8')
         decryptedPhoneNo = decryptedPhoneNo_Binary.decode('utf-8')
-        if request.method == 'POST' and (formupdateuser.Username.data != account['Username'] or
+        if request.method == 'POST' and formupdateuser.validate() and (formupdateuser.Username.data != account['Username'] or
                                          formupdateuser.NRIC.data != decryptedNRIC or formupdateuser.DOB.data !=
                                          account['Date_of_Birth'] or
                                          formupdateuser.Gender.data != account[
