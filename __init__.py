@@ -136,6 +136,11 @@ def googlelog():
 @app.route("/callback")
 def callback():
     flow.fetch_token(authorization_response=request.url)
+    print("=================")
+    print(session)
+    print("=================")
+    print(request.args)
+    print("=================")
     if not session["state"] == request.args["state"]:
         return render_template('error500.html')  # State does not match!
 
