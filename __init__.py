@@ -572,7 +572,7 @@ images = UploadSet('images', IMAGES)
 configure_uploads(app, images)
 
 ### hong ji recapcha ##
-app.config['SECRET_KEY'] = 'cairocoders-ednalan'
+
 
 
 def is_human(captcha_response):
