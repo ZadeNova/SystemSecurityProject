@@ -1988,8 +1988,8 @@ def ViewDashboard():
             AvgLoginFailuresUsers = round(EventLoginFailCount/NumberOfUsers,2)
             AvgEventCountUser = round(sum([ EventCount[x] for x in EventCount])/NumberOfUsers,2)
 
-            AvgEvents24hr = round((eventcount24hr['EVENTCOUNT24HR ']/NumberOfUsers),2)
-            AvgEvent1hr = round((eventcount1hr['EVENTCOUNT1HR ']/NumberOfUsers),2)
+            AvgEvents24hr = round((eventcount24hr['EVENTCOUNT24HR']/NumberOfUsers),2)
+            AvgEvent1hr = round((eventcount1hr['EVENTCOUNT1HR']/NumberOfUsers),2)
             AvgAttempt1hr = round((attemptcount1hr['AttemptCount1hr']/NumberOfUsers),2)
 
             AvgAttempt24hr = round((attemptcount24hr["AttemptCount24hr"]/NumberOfUsers),2)
