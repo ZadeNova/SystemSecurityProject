@@ -182,7 +182,7 @@ form .button{
   <img src="{{url_for('static', filename='fairmont-singapore-asian-market-cafe.jpg')}}"  width="500" height="600" />
   <body>
     <div class="container">
-      <header>Enter your Otp</header>
+      <header>Account SMS Verification</header>
          <p>
               {% with messages = get_flashed_messages() %}
               {% if messages  %}
@@ -194,24 +194,25 @@ form .button{
           {% endif %}
           {% endwith %}
           </p>
-      <form method="POST" action="/twofasmscheck">
+      <form method="POST">
         <div class="input-field">
-          <input type="text" class='input' name="otp"  required pattern="[0-9]{6}">
-          <label>6 Digit OTP</label>
+          <input type="text" class='input' name="otp" pattern="[0-9]{6}" required>
+          <label>Enter The OTP</label>
         </div>
-    </div>
+
 
 
 <div class="button">
           <div class="inner">
 </div>
 
-<button type='submit'>CONTINUE</button>
+<button type='submit'>Authenticate User</button>
         </div>
 </form>
 <div class="auth">
 
 <div class="links">
 </div>
-    </body>
+
+  </body>
 </html>

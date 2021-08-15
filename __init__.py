@@ -1,3 +1,4 @@
+import copy
 import datetime
 from datetime import timedelta
 import json
@@ -491,6 +492,50 @@ def chatbot():
 #    )
 #
 #    return str(chatbot.get_response(userText))
+#@app.route('/chatbot')
+#def chatbot():
+#    return render_template('chatbot.html')
+
+#@app.route("/get")
+#def get_bot_response():
+#    userText = request.args.get('msg')
+#    print(userText)
+#    chatbot = ChatBot(
+#        'CoronaBot',
+#        storage_adapter='chatterbot.storage.SQLStorageAdapter',
+#        logic_adapters=[
+#            'chatterbot.logic.MathematicalEvaluation',
+#            'chatterbot.logic.TimeLogicAdapter',
+#            'chatterbot.logic.BestMatch',
+#            {
+#                'import_path': 'chatterbot.logic.BestMatch',
+#                'default_response': 'I am sorry, but I do not understand. I am still learning.',
+#                'maximum_similarity_threshold': 0.90
+#            }
+#        ],
+#        database_uri='sqlite:///database.sqlite3'
+#    )
+#
+#    # Training With Own Questions
+#
+#    trainer = ListTrainer(chatbot)
+#
+#    training_data_quesans = open('training_data/ques_ans.txt').read().splitlines()
+#    training_data_personal = open('training_data/personal_ques.txt').read().splitlines()
+#
+#    training_data = training_data_quesans + training_data_personal
+#
+#    trainer.train(training_data)
+#
+#    # Training With Corpus
+#
+#    trainer_corpus = ChatterBotCorpusTrainer(chatbot)
+#
+#    trainer_corpus.train(
+#        'chatterbot.corpus.english'
+#    )
+#
+#    return str(chatbot.get_response(userText))
 
 
 # Flask-Mail and app.config stuff
@@ -518,7 +563,7 @@ try:
         'MYSQL_PASSWORD'] = '48b8b0c9'  # change this line to our own sql password , thank you vry not much xd
     app.config['MYSQL_DB'] = 'heroku_6230660f02e0b5c'
 except:
-    print("MYSQL root is not found?")
+    print("MYSQL root is not found!")
 
 
 mysql = MySQL(app)
@@ -1882,6 +1927,9 @@ def ViewDashboard():
             AvgEvent1hr = round((eventcount1hr['Counter1hour']/NumberOfUsers),2)
 
 
+
+
+
             # User Events
 
             # User attempted log ins per user
@@ -1895,6 +1943,31 @@ def ViewDashboard():
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
+
+
+def get_location(ip_address):
+    try:
+        response = requests.get("http://ip-api.com/json/{}".format(ip_address))
+        js = response.json()
+        country = js
+
+
+        return country['country']
+    except Exception as e:
+        return "Unknown"
+
+
+def get_countrycode(ip_address):
+    try:
+        response = requests.get("http://ip-api.com/json/{}".format(ip_address))
+        js = response.json()
+        country = js
+
+
+        return country["countryCode"]
+    except Exception as e:
+        return "Unknown"
+
 
 
 @app.route('/AuditLog')
@@ -2116,6 +2189,7 @@ def UserLogsActivity():
 
 
 
+        print(userloginactivity)
 
 
         cursor.execute("""UPDATE accounts SET Security_Level = %s WHERE ID = %s""", [Value_of_security, session['ID']])
@@ -2296,8 +2370,11 @@ def login():
                     if account['password_update_time'] + datetime.timedelta(days=365) <= datetime.datetime.now().replace(microsecond=0):
                         return redirect(url_for('Resetpassword', UUID=account['UUID']))
                     elif account['Account_Status'] == "Pending":
+                        msg = Message("Account Verification Link", recipients=[account['Email']])
+                        msg.html = render_template('account_verification_email.html', UUID=account['UUID'])
+                        mail.send(msg)
                         print("This account is unactivated")
-                        flash("This Account has not been activated. Please go to your email to activate the account.")
+                        flash("Another Verification Email have been re-sent to you. Please Verify Again!")
                     elif account['Account_Status'] == "Banned":
                         print("This account is banned")
                         flash("This Account has been banned")
@@ -2742,18 +2819,56 @@ def create_login_admin():
 def TermsAndConditions():
     return render_template('TermsAndConditions.html')
 
-
+# Jaydon look
 @app.route('/AccountVerification1/<path:UUID>')
 def AccountVerification1(UUID):
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute("UPDATE accounts SET Account_Status = 'Active' WHERE UUID = %(UUID)s", {'UUID': UUID})
-    UUID2 = uuid.uuid4().hex
-    sql3 = "UPDATE accounts SET UUID = %s WHERE UUID = %s "
-    value3 = (UUID2, UUID)
-    cursor.execute(sql3, value3)
-    mysql.connection.commit()
-    flash('Your account have been successfully activated')
-    return redirect(url_for("login"))
+    cursor.execute("SELECT * FROM accounts WHERE UUID = %(UUID)s", {'UUID': UUID})
+    account = cursor.fetchone()
+    key = account['SymmetricKey']
+    fkey = Fernet(key)
+    decryptedPhoneNo_Binary = fkey.decrypt(account['Phone_Number'].encode())
+    decryptedPhoneNo = decryptedPhoneNo_Binary.decode('utf-8')
+    account_sid = 'AC5a5b558f25c2a7131c5004e0a77caecf'
+    auth_token = '6b5bd403487576aaee718625b31a03a8'
+    ### check ur whatapp for the lasted codoe
+    client = Client(account_sid, auth_token)
+
+    otp = randint(111111, 999999)  # email otp
+    session['otp'] = otp
+    message = client.messages.create(
+        messaging_service_sid='MGf72a96edffcf7beadca966887d48878a',
+        body='This is your OTP : ' + str(otp) + ' , please do not share it with other people thanks ',
+        to=decryptedPhoneNo
+    )
+
+    return redirect(url_for('AccountVerification2', UUID=UUID))
+
+
+@app.route('/AccountVerification2/<path:UUID>', methods=['GET', 'POST'])
+def AccountVerification2(UUID):
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute("SELECT * FROM accounts WHERE UUID = %(UUID)s", {'UUID': UUID})
+    account = cursor.fetchone()
+
+    otp = session['otp']
+    if request.method == 'POST' and 'otp' in request.form:
+        user_otp = request.form['otp']
+
+        if otp == int(user_otp):
+            cursor.execute("UPDATE accounts SET Account_Status = 'Active' WHERE UUID = %(UUID)s", {'UUID': account['UUID']})
+            UUID2 = uuid.uuid4().hex
+            sql3 = "UPDATE accounts SET UUID = %s WHERE UUID = %s "
+            value3 = (UUID2, account['UUID'])
+            cursor.execute(sql3, value3)
+            mysql.connection.commit()
+            flash('Your account have been successfully activated')
+            return redirect(url_for('login'))
+        else:
+            flash('Wrong OTP Entered, Please Try Again')
+            return render_template("account_verification_sms.html")
+
+    return render_template("account_verification_sms.html")
 
 
 # End of new stuff
