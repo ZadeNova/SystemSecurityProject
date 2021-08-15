@@ -5665,6 +5665,11 @@ def orderfinalcnyset():
         return render_template('error404.html')
 
 
+@app.route('/error50000000')
+def error505():
+    return render_template('error500.html',session = session), 500
+
+
 @app.errorhandler(500)
 def page_not_found(e):
     print(session)
