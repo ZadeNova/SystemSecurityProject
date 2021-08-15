@@ -2286,16 +2286,18 @@ def ForgottenUsername():
             if is_human(captcha_response):
                 status = ''
                 email = request.form['email']
-                cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-                cursor.execute("SELECT * FROM accounts WHERE Email = %(email)s", {'email': email})
-                account = cursor.fetchone()
-                print(account)
+                try:
+                    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+                    cursor.execute("SELECT * FROM accounts WHERE Email = %(email)s", {'email': email})
+                    account = cursor.fetchone()
+                except:
+                    account = None
                 if account:
                     msg = Message("Forget Username", recipients=[email])
                     Username = account['Username']
                     msg.html = render_template('forgetusernameemail.html', Username=Username)
                     mail.send(msg)
-                    print('sended')
+
                 else:
                     print('It doesnt exit')
                 flash(
@@ -2307,7 +2309,7 @@ def ForgottenUsername():
         else:
             return render_template('ForgetUsername.html', sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
     except:
-        print('error')
+
         return render_template('error404.html')
 
 
@@ -2319,9 +2321,12 @@ def ForgottenPassword():
             if is_human(captcha_response):
                 status = ''
                 email = request.form['email']
-                cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-                cursor.execute("SELECT * FROM accounts WHERE Email = %(email)s", {'email': email})
-                account = cursor.fetchone()
+                try:
+                    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+                    cursor.execute("SELECT * FROM accounts WHERE Email = %(email)s", {'email': email})
+                    account = cursor.fetchone()
+                except:
+                    account = None
                 print(account)
                 if account:
                     msg = Message("Forget Password Link", recipients=[email])
@@ -2378,6 +2383,9 @@ def Resetpassword(UUID):
                     value3 = (UUID2, UUID)
                     cursor.execute(sql3, value3)
                     mysql.connection.commit()
+                    msg = Message("Update of Account", recipients=account['Email'].split())
+                    msg.html = render_template('UpdateEmail.html', counter='1', Ipaddress=request.remote_addr)
+                    mail.send(msg)
                     return redirect(url_for('login'))
             else:
                 flash('Sorry ! Please Check Im not a robot.')
