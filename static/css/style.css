@@ -12,6 +12,16 @@ body {
   position: relative;
   height: 100vh;
 }
+#notfound1 {
+  position: relative;
+  height: 100vh;
+}
+
+#notfound2 {
+  position: relative;
+  height: 100vh;
+}
+
 
 #notfound .notfound {
   position: absolute;
