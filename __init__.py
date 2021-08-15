@@ -180,7 +180,7 @@ def callback():
         session['Email_Vulnerabilities'] = account['Email_Vulnerabilities']
         session['Account_Login_Notification'] = account['Account_Login_Notification']
         session["Attempts_Notification"] = account1['Attempts_Notification']
-        if account['password_update_time'] + datetime.timedelta(days=365) <= datetime.datetime.now().replace(microsecond=0):
+        if account['password_update_time'] + datetime.timedelta(hours=12) <= datetime.datetime.now().replace(microsecond=0):
             return redirect(url_for('Resetpassword', UUID=account['UUID']))
         elif account['Account_Status'] == "Pending":
             print("This account is unactivated")
@@ -2433,7 +2433,7 @@ def login():
                 print(request.headers['X-Forwarded-For'])
                 print("End of print testcode")
                 if bcrypt.checkpw(password.encode(), hashandsalt.encode()):
-                    if account['password_update_time'] + datetime.timedelta(days=365) <= datetime.datetime.now().replace(microsecond=0):
+                    if account['password_update_time'] + datetime.timedelta(hours=12) <= datetime.datetime.now().replace(microsecond=0):
                         return redirect(url_for('Resetpassword', UUID=account['UUID']))
                     elif account['Account_Status'] == "Pending":
                         msg = Message("Account Verification Link", recipients=[account['Email']])
@@ -2447,7 +2447,7 @@ def login():
                     elif account['Account_Status'] == "Disabled":
                         cursor.execute('SELECT * FROM accountattemptedlogins WHERE Account_ID = %(ID)s ORDER BY ID DESC limit 1', {'ID': account['ID']})
                         Time = cursor.fetchone()
-                        if Time['TimeOfActivity'] + datetime.timedelta(seconds=30) <= datetime.datetime.now().replace(microsecond=0):
+                        if Time['TimeOfActivity'] + datetime.timedelta(minutes=30) <= datetime.datetime.now().replace(microsecond=0):
                             sql = "UPDATE accounts SET Attempts = %s WHERE username = %s "
                             value = (0, account['Username'])
                             cursor.execute(sql, value)
@@ -2609,9 +2609,9 @@ def accountlogout():
             cursor.execute("""INSERT INTO account_log_out VALUES (NULL,%s,%s,%s) """,
                            (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.headers['X-Forwarded-For']))
             mysql.connection.commit()
-            sqlcode = """UPDATE account_log_ins INNER JOIN account_log_out ON account_log_ins.Account_ID = 
-            account_log_out.Account_ID SET account_log_ins.Log_Out_ID = account_log_out.Log_Out_ID WHERE 
-            account_log_ins.Account_ID = %s AND account_log_ins.Log_Out_ID IS NULL AND account_log_out.Log_Out_ID = (SELECT max(account_log_out.Log_Out_ID) from account_log_out where account_log_out.Account_ID = %s)"""
+            sqlcode = """UPDATE account_log_ins INNER JOIN account_log_out ON account_log_ins.Account_ID = account_log_out.Account_ID
+                       SET account_log_ins.Log_Out_ID = account_log_out.Log_Out_ID 
+                       WHERE account_log_ins.Account_ID = %s AND account_log_ins.Log_Out_ID IS NULL AND account_log_ins.Log_in_ID =(select max(Log_in_ID))  AND account_log_out.Log_Out_ID = (SELECT max(account_log_out.Log_Out_ID) from account_log_out where account_log_out.Account_ID = %s);"""
             values = (session['ID'], session['ID'])
             cursor.execute(sqlcode, values)
             cursor.execute("""DELETE FROM usersloggedin WHERE Account_ID = %s """, [session['ID']])
