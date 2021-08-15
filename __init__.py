@@ -184,7 +184,7 @@ def callback():
         session['Phone_No'] = decryptedPhoneNo
         session['Email_Vulnerabilities'] = account['Email_Vulnerabilities']
         session['Account_Login_Notification'] = account['Account_Login_Notification']
-        session["Attempts_Notification"] = account['Attempts_Notification']
+        session["Attempts_Notification"] = account1['Attempts_Notification']
         if account['password_update_time'] + datetime.timedelta(hours=12) <= datetime.datetime.now().replace(microsecond=0):
             return redirect(url_for('Resetpassword', UUID=account['UUID']))
         elif account['Account_Status'] == "Pending":
