@@ -142,6 +142,11 @@ def callback():
     print(request.args)
     print("=================")
     if not session["state"] == request.args["state"]:
+        print("=================+")
+        print(session)
+        print("=================+")
+        print(request.args)
+        print("=================+")
         return render_template('error500.html')  # State does not match!
 
     credentials = flow.credentials
@@ -584,7 +589,7 @@ images = UploadSet('images', IMAGES)
 configure_uploads(app, images)
 
 ### hong ji recapcha ##
-
+app.config['SESSION_COOKIE_DOMAIN'] = 'https://flaskprojectsystemsec.herokuapp.com/login'
 
 
 def is_human(captcha_response):
