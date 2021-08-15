@@ -1618,6 +1618,11 @@ def Settings_changepassword():
                     cursor.execute(sql, value)
                     cursor.execute(
                         """INSERT INTO UserUpdateTime VALUES (NULL, %s, %s, %s, %s) """, [session['ID'], 'UpdatePassword', request.headers['X-Forwarded-For'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
+
+                    cursor.execute("""INSERT INTO EventType VALUES (NULL,%s,%s,%s,%s,%s)""", (
+                        session['ID'], session['Username'], "UpdatePassword", request.headers['X-Forwarded-For'],
+                        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+
                     mysql.connection.commit()
                     counter = 1
                     email = Message("Update of Account", recipients=account['Email'].split())
@@ -1915,13 +1920,13 @@ def ViewDashboard():
 
             # New items to be removed if not working
 
-            cursor.execute("""SELECT Count(EventType) FROM eventtype WHERE TimeOfActivity > now() - INTERVAL 1 HOUR;""")
+            cursor.execute("""SELECT Count(EventType) AS EVENTCOUNT1HR FROM eventtype WHERE TimeOfActivity > now() - INTERVAL 1 HOUR;""")
             eventcount1hr = cursor.fetchone()
-            cursor.execute("""SELECT Count(EventType) FROM eventtype WHERE TimeOfActivity > now() - INTERVAL 24 HOUR;""")
+            cursor.execute("""SELECT Count(EventType) AS EVENTCOUNT24HR FROM eventtype WHERE TimeOfActivity > now() - INTERVAL 24 HOUR;""")
             eventcount24hr = cursor.fetchone()
-            cursor.execute("""SELECT Count(EventType) FROM eventtype WHERE TimeOfActivity > now() - interval 1 HOUR and eventtype.EventType = "AttemptedLogin" or eventtype.EventType = "LoginFailure";""")
+            cursor.execute("""SELECT Count(EventType) AS AttemptCount1hr FROM eventtype WHERE TimeOfActivity > now() - interval 1 HOUR and eventtype.EventType = "AttemptedLogin" or eventtype.EventType = "LoginFailure";""")
             attemptcount1hr = cursor.fetchone()
-            cursor.execute("""SELECT Count(EventType) FROM eventtype WHERE TimeOfActivity > now() - interval 24 HOUR and eventtype.EventType = "AttemptedLogin" or eventtype.EventType = "LoginFailure";""")
+            cursor.execute("""SELECT Count(EventType) AS AttemptCount24hr FROM eventtype WHERE TimeOfActivity > now() - interval 24 HOUR and eventtype.EventType = "AttemptedLogin" or eventtype.EventType = "LoginFailure";""")
             attemptcount24hr = cursor.fetchone()
 
 
@@ -1953,21 +1958,6 @@ def ViewDashboard():
 
             print(Countrycount)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             UserEvent,UserAttemptedLoginCount,EventCount,EventLoginFailCount,NumberOfUsers = {},{},{},Attemptedlogincount['TotalAttemptedLogins'],No['Totalusers']
 
             Userlist = list(set([i['Username'] for i in allusers]))
@@ -1998,11 +1988,11 @@ def ViewDashboard():
             AvgLoginFailuresUsers = round(EventLoginFailCount/NumberOfUsers,2)
             AvgEventCountUser = round(sum([ EventCount[x] for x in EventCount])/NumberOfUsers,2)
 
-            AvgEvents24hr = round((eventcount24hr['Counter24hour']/NumberOfUsers),2)
-            AvgEvent1hr = round((eventcount1hr['Counter1hour']/NumberOfUsers),2)
-            AvgAttempt1hr = round((attemptcount1hr['Counter1hourattemptlogin']/NumberOfUsers),2)
+            AvgEvents24hr = round((eventcount24hr['EVENTCOUNT24HR ']/NumberOfUsers),2)
+            AvgEvent1hr = round((eventcount1hr['EVENTCOUNT1HR ']/NumberOfUsers),2)
+            AvgAttempt1hr = round((attemptcount1hr['AttemptCount1hr']/NumberOfUsers),2)
 
-            AvgAttempt24hr = round((attemptcount24hr["Counter24hourattemptlogin"]/NumberOfUsers),2)
+            AvgAttempt24hr = round((attemptcount24hr["AttemptCount24hr"]/NumberOfUsers),2)
 
 
 

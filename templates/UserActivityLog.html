@@ -38,6 +38,16 @@ font-variant: normal;
 text-transform: none;
 }
 
+th{
+  background: 	#808080;
+  color: white;
+  position: sticky;
+  top: 0; /* Don't forget this, required for the stickiness */
+  box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.4);
+}
+
+
+
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -565,7 +575,7 @@ text-transform: none;
                                     <div class = table-responsive">
                                     <table class="table table-hover table-bordered">
                                         <thead class="thread-dark">
-                                            <th id="titletablelol" colspan="6">Your Activity</th>
+                                            <td id="titletablelol" colspan="6">Your Activity</td>
 
                                         </thead>
                                       <thead class="thread-dark">
@@ -584,7 +594,7 @@ text-transform: none;
 
                                         <tr>
 
-                                          <th scope="row">{{ loop.index }}</th>
+                                          <td scope="row">{{ loop.index }}</td>
                                           <td><span class="badge badge-success">Success</span></td>
                                           <td>{{ i['TimeOfActivity'] }}</td>
                                           <td>{{ i['EventType'] }}</td>

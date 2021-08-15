@@ -20,7 +20,13 @@
   width: 1400;
   overflow-y: auto;
 }
-
+th{
+  background: white;
+  color: black;
+  position: sticky;
+  top: 0; /* Don't forget this, required for the stickiness */
+  box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.4);
+}
 
 </style>
 <h1>User management</h1>
@@ -32,7 +38,7 @@
 
 <table class="table table-hover table-bordered table-dark">
     <thead class="thread-dark">
-        <th id="titletablelol" colspan="7">User Accounts</th>
+        <td id="titletablelol" colspan="7">User Accounts</td>
 
     </thead>
   <thead class="thread-dark">
