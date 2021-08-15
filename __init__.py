@@ -141,7 +141,7 @@ def callback():
     print("=================")
     print(request.args)
     print("=================")
-    if not session["state"] == request.args["state"]:
+    if not session["state"].strip() == request.args["state"].strip():
         print("=================+")
         print(session)
         print("=================+")
