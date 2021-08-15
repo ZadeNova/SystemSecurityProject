@@ -2408,12 +2408,12 @@ def login():
             cursor.execute("SELECT * FROM accounts WHERE username = %(username)s", {'username': username})
             # Fetch one record and return result
             account = cursor.fetchone()
-            cursor.execute("SELECT * FROM Authentication_Table WHERE Account_ID = %(ID)s", {'ID': account['ID']})
-            # Fetch one record and return result
-            account1 = cursor.fetchone()
+
 
             if account:
-
+                cursor.execute("SELECT * FROM Authentication_Table WHERE Account_ID = %(ID)s", {'ID': account['ID']})
+                # Fetch one record and return result
+                account1 = cursor.fetchone()
                 key = account['SymmetricKey']
                 fkey = Fernet(key)
                 decryptedaddress_Binary = fkey.decrypt(account['Address'].encode())
