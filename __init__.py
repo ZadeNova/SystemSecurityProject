@@ -179,7 +179,7 @@ def callback():
         session['Phone_No'] = decryptedPhoneNo
         session['Email_Vulnerabilities'] = account['Email_Vulnerabilities']
         session['Account_Login_Notification'] = account['Account_Login_Notification']
-        session["Attempts_Notification"] = account1['Attempts_Notification']
+        session["Attempts_Notification"] = account['Attempts_Notification']
         if account['password_update_time'] + datetime.timedelta(hours=12) <= datetime.datetime.now().replace(microsecond=0):
             return redirect(url_for('Resetpassword', UUID=account['UUID']))
         elif account['Account_Status'] == "Pending":
@@ -313,15 +313,17 @@ def callback():
             account12 = cursor.fetchone()
             session['ID'] = account12['ID']
             session["Username"] = username
-
-
-            mysql.connection.commit()
-            cursor.execute(
-                """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
-                [session['ID']])
-            login_ID = cursor.fetchone()
-            cursor.execute("""INSERT INTO usersloggedin VALUES (NULL,%s,%s)""", (session['ID'], login_ID['Log_in_ID']))
-            mysql.connection.commit()
+            #cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""",
+            #               (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            #                request.headers['X-Forwarded-For']))
+#
+            #mysql.connection.commit()
+            #cursor.execute(
+            #    """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
+            #    [session['ID']])
+            #login_ID = cursor.fetchone()
+            #cursor.execute("""INSERT INTO usersloggedin VALUES (NULL,%s,%s)""", (session['ID'], login_ID['Log_in_ID']))
+            #mysql.connection.commit()
             msg = 'You have successfully registered! '
             print("working")
             print('inserting authentication table')
@@ -1934,18 +1936,16 @@ def ViewDashboard():
 
             cursor.execute("""SELECT * FROM eventtype""")
             Everything = cursor.fetchall()
-            print(Everything)
+
 
             for a in Everything:
                 a['Location'] = get_countrycode(a['IP_Address'])
 
-            print(Everything)
 
-            print(list(Everything))
 
 
             Countrycount = {number["Location"]: 0 for number in Everything}
-            print(Countrycount)
+
 
 
             for numberevent in Countrycount:
@@ -1956,7 +1956,7 @@ def ViewDashboard():
                         plzcount += 1
                 Countrycount[numberevent] = plzcount
 
-            print(Countrycount)
+
 
             UserEvent,UserAttemptedLoginCount,EventCount,EventLoginFailCount,NumberOfUsers = {},{},{},Attemptedlogincount['TotalAttemptedLogins'],No['Totalusers']
 
