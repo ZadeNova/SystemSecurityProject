@@ -210,6 +210,9 @@ def callback():
             account1 = cursor.fetchone()
             cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""",
                            (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.headers['X-Forwarded-For']))
+            cursor.execute("""INSERT INTO EventType VALUES (NULL,%s,%s,%s,%s,%s)""", (
+                session['ID'], session['Username'], "Login", request.headers['X-Forwarded-For'],
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
 
             mysql.connection.commit()
             cursor.execute(
@@ -312,6 +315,9 @@ def callback():
             session["Username"] = username
             cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""",
                            (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.headers['X-Forwarded-For']))
+            cursor.execute("""INSERT INTO EventType VALUES (NULL,%s,%s,%s,%s,%s)""", (
+                session['ID'], session['Username'], "Login", request.headers['X-Forwarded-For'],
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
 
             mysql.connection.commit()
             cursor.execute(
@@ -363,6 +369,9 @@ def callback():
             account1 = cursor.fetchone()
             cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""",
                            (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.headers['X-Forwarded-For']))
+            cursor.execute("""INSERT INTO EventType VALUES (NULL,%s,%s,%s,%s,%s)""", (
+                session['ID'], session['Username'], "Login", request.headers['X-Forwarded-For'],
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
 
             mysql.connection.commit()
             cursor.execute(
@@ -1002,6 +1011,9 @@ def two_fa_email_check():
         mysql.connection.commit()
         cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (
             session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.headers['X-Forwarded-For']))
+        cursor.execute("""INSERT INTO EventType VALUES (NULL,%s,%s,%s,%s,%s)""", (
+            session['ID'], session['Username'], "Login", request.headers['X-Forwarded-For'],
+            datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
         mysql.connection.commit()
         cursor.execute(
             """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
@@ -1081,6 +1093,9 @@ def two_fa_sms_check():
         mysql.connection.commit()
         cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (
             session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.headers['X-Forwarded-For']))
+        cursor.execute("""INSERT INTO EventType VALUES (NULL,%s,%s,%s,%s,%s)""", (
+            session['ID'], session['Username'], "Login", request.headers['X-Forwarded-For'],
+            datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
         mysql.connection.commit()
         cursor.execute(
             """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
@@ -1152,6 +1167,9 @@ def two_fa_backupcode_check():
         mysql.connection.commit()
         cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (
             session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.headers['X-Forwarded-For']))
+        cursor.execute("""INSERT INTO EventType VALUES (NULL,%s,%s,%s,%s,%s)""", (
+            session['ID'], session['Username'], "Login", request.headers['X-Forwarded-For'],
+            datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
         mysql.connection.commit()
         cursor.execute(
             """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
@@ -1213,6 +1231,10 @@ def two_fa_authen_check():
         mysql.connection.commit()
         cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (
             session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.headers['X-Forwarded-For']))
+        cursor.execute("""INSERT INTO EventType VALUES (NULL,%s,%s,%s,%s,%s)""", (
+            session['ID'], session['Username'], "Login", request.headers['X-Forwarded-For'],
+            datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+
         mysql.connection.commit()
         cursor.execute(
             """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
@@ -1398,20 +1420,13 @@ def deleteaccoutcheck():
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
         account = cursor.fetchone()
-        user_int = request.form['user_int']
+        user_int = request.form['otp']
         if user_int == 'I want to delete my account':
-            try:
-                username = account['Username']
-                Account_Status = 'Disable'
-                cursor.execute(
-                    "UPDATE accounts SET Account_Status=%s   WHERE Account_ID=%s ",
-                    (Account_Status, [session['ID']]))
-                mysql.connection.commit()
-                print(cursor.rowcount, "record(s) deleted")
-                session.clear()
-                return redirect(url_for('login'))
-            except:
-                return redirect(url_for('deleteaccountcheck'))
+            cursor.execute("""UPDATE accounts SET Account_Status = 'Deleted' WHERE ID = %s """, [session['ID']])
+            mysql.connection.commit()
+            print(cursor.rowcount, "record(s) deleted")
+            session.clear()
+            return redirect(url_for('login'))
         else:
             msg = 'Wrong input , please follow word by word , including spacing , and capital !'
             flash('I want to delete my account')
@@ -1420,7 +1435,6 @@ def deleteaccoutcheck():
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
-
 
 
 @app.route('/Settings', methods=['GET', 'POST'])
@@ -1545,6 +1559,11 @@ def Changesettings():
                 cursor.execute(
                     """UPDATE UserUpdateTime SET Ip_Address = %s WHERE Account_ID = %s ORDER BY ID DESC Limit 1""",
                     [request.headers['X-Forwarded-For'], session['ID']])
+
+                cursor.execute("""INSERT INTO EventType VALUES (NULL,%s,%s,%s,%s,%s)""", (
+                    session['ID'], session['Username'], "Update", request.headers['X-Forwarded-For'],
+                    datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+
                 mysql.connection.commit()
                 account1 = cursor.fetchone()
                 counter = str(counter)
@@ -1919,24 +1938,31 @@ def ViewDashboard():
 
             Auditlist,Countrycount,plzcount = [],{},0
 
-            counterloca = 0
+            cursor.execute("""SELECT * FROM eventtype""")
+            Everything = cursor.fetchall()
+            print(Everything)
 
-            for i in AuditInfo:
-                i['Location'] = get_countrycode(i['IP_Address'])
+            for a in Everything:
+                a['Location'] = get_countrycode(a['IP_Address'])
 
-                Auditlist.append(i)
+            print(Everything)
 
-            Countrycount = {number["Location"]: 0 for number in Auditlist}
+            print(list(Everything))
+            print(';;;')
 
+            Countrycount = {number["Location"]: 0 for number in Everything}
+            print(Countrycount)
+            plzcount = 0
 
             for numberevent in Countrycount:
-                plzcount = 0
-                for count in Auditlist:
+
+                for count in Everything:
 
                     if numberevent == count['Location']:
                         plzcount += 1
                 Countrycount[numberevent] = plzcount
 
+            print(Countrycount)
 
 
 
@@ -1955,14 +1981,11 @@ def ViewDashboard():
 
             UserEvent,UserAttemptedLoginCount,EventCount,EventLoginFailCount,NumberOfUsers = {},{},{},Attemptedlogincount['TotalAttemptedLogins'],No['Totalusers']
 
-
-
-
             Userlist = list(set([i['Username'] for i in allusers]))
 
             for user in Userlist:
                 counter = 0
-                for i in AuditInfo:
+                for i in Everything:
                     if user == i['Username'] and (
                             i['EventType'] == "AttemptedLogin" or i['EventType'] == 'LoginFailure'):
                         counter += 1
@@ -1970,7 +1993,7 @@ def ViewDashboard():
 
             for user in Userlist:
                 Eventcounter = 0
-                for i in AuditInfo:
+                for i in Everything:
                     if user == i['Username']:
                         Eventcounter += 1
 
@@ -2066,14 +2089,15 @@ def Audit():
 
                 allaccounts = cursor.fetchall()
                 print(allaccounts)
-                cursor.execute("""SELECT * FROM accounts""")
-                accountlevel = cursor.fetchall()
+                cursor.execute("""SELECT * FROM eventtype""")
+                allevents = cursor.fetchall()
+
+                print(allaccounts)
                 Auditlist = []
-                for lol in allaccounts:
+                for lol in allevents:
                     lol['Location'] = get_location(lol['IP_Address'])
                     print(lol)
                     Auditlist.append(lol)
-                print(Auditlist)
                 return render_template('AuditLog.html', account=account, role=account['role'],
                                        allaccounts=allaccounts, Auditlist=Auditlist)  # labels = labels,values = values)
 
@@ -2513,6 +2537,11 @@ def login():
                             cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (
                                 session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                 request.headers['X-Forwarded-For']))
+
+                            cursor.execute("""INSERT INTO EventType VALUES (NULL,%s,%s,%s,%s,%s)""", (
+                                session['ID'], session['Username'], "Login", request.headers['X-Forwarded-For'],
+                                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+
                             mysql.connection.commit()
                             cursor.execute(
                                 """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
@@ -2558,6 +2587,11 @@ def login():
                             now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                             cursor.execute("""INSERT INTO accountattemptedlogins VALUES (NULL,%s,%s,%s,%s)""",
                                            [Original['ID'], Attempts, request.headers['X-Forwarded-For'], now])
+
+                            cursor.execute("""INSERT INTO EventType VALUES (NULL,%s,%s,%s,%s,%s)""", (
+                                Original['ID'], Username, "AttemptedLogin", request.headers['X-Forwarded-For'],
+                                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+
                             mysql.connection.commit()
                             sql2 = "UPDATE accounts SET Attempts = %s WHERE username = %s "
                             value2 = (Attempts, Username)
@@ -2574,6 +2608,9 @@ def login():
                             Attempts += 1
                             now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                             cursor.execute("""INSERT INTO accountattemptedlogins VALUES (NULL,%s,%s,%s,%s)""", [Original['ID'], Attempts, request.headers['X-Forwarded-For'], now])
+                            cursor.execute("""INSERT INTO EventType VALUES (NULL,%s,%s,%s,%s,%s)""", (
+                                Original['ID'], Username, "LoginFailure", request.headers['X-Forwarded-For'],
+                                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
                             mysql.connection.commit()
                             sql2 = "UPDATE accounts SET Attempts = %s WHERE username = %s "
                             value2 = (Attempts, Username)
@@ -2592,6 +2629,9 @@ def login():
                             value2 = (Attempts, Username)
                             cursor.execute(sql2, value2)
                             cursor.execute("""INSERT INTO accountattemptedlogins VALUES (NULL,%s,%s,%s,%s)""",[Original['ID'],Attempts,request.headers['X-Forwarded-For'],datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
+                            cursor.execute("""INSERT INTO EventType VALUES (NULL,%s,%s,%s,%s,%s)""", (
+                                Original['ID'], Username, "LoginFailure", request.headers['X-Forwarded-For'],
+                                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
                             mysql.connection.commit()
                     return render_template('login.html', msg=msg, sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
             else:
@@ -2617,6 +2657,11 @@ def accountlogout():
             cursor.execute("""INSERT INTO UserLogin VALUES (NULL,%s,%s) """, (session['ID'], "Logout"))
             cursor.execute("""INSERT INTO account_log_out VALUES (NULL,%s,%s,%s) """,
                            (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.headers['X-Forwarded-For']))
+
+            cursor.execute("""INSERT INTO EventType VALUES (NULL,%s,%s,%s,%s,%s)""", (
+                session['ID'], session['Username'], "Logout", request.headers['X-Forwarded-For'],
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+
             mysql.connection.commit()
             sqlcode = """UPDATE account_log_ins INNER JOIN account_log_out ON account_log_ins.Account_ID = account_log_out.Account_ID
                        SET account_log_ins.Log_Out_ID = account_log_out.Log_Out_ID 
