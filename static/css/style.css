@@ -23,7 +23,10 @@ body {
 }
 
 
-#notfound .notfound {
+
+
+
+#notfound.notfound,#notfound1.notfound,#notfound2 .notfound {
   position: absolute;
   left: 50%;
   top: 50%;
