@@ -10,6 +10,8 @@
 {% block navbar %}{% endblock %}
 
 {% block content %}
+
+    {% if session['loggedin'] == True and session['role'] == 'Admin'  %}
     <div id="notfound">
       <div class="notfound">
          <div class="notfound-404">
@@ -17,9 +19,33 @@
          </div>
          <h2>500 - Internal Server Error</h2>
          <p>ERROR 505</p>
-         <a href="/ActivityLogUser">Go To Homepage</a>
+         <a href="/managerprofile">Go To Homepage</a>
       </div>
    </div>
+    {% elif session['loggedin'] == True and session['role'] == 'Guest'%}
+    <div id="notfound2">
+      <div class="notfound2">
+         <div class="notfound2-404">
+            <h1>Oops!</h1>
+         </div>
+         <h2>500 - Internal Server Error</h2>
+         <p>ERROR 505</p>
+         <a href="/userprofile">Go To Homepage</a>
+      </div>
+   </div>
+
+    {% else %}
+    <div id="notfound1">
+          <div class="notfound1">
+             <div class="notfound1-404">
+                <h1>Oops!</h1>
+             </div>
+             <h2>500 - Internal Server Error</h2>
+             <p>ERROR 505</p>
+             <a href="/">Go To Login</a>
+          </div>
+       </div>
+
 {% endblock %}
 
 {% block scripts %}{% endblock %}
