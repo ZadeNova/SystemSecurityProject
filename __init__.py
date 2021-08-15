@@ -313,11 +313,7 @@ def callback():
             account12 = cursor.fetchone()
             session['ID'] = account12['ID']
             session["Username"] = username
-            cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""",
-                           (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.headers['X-Forwarded-For']))
-            cursor.execute("""INSERT INTO EventType VALUES (NULL,%s,%s,%s,%s,%s)""", (
-                session['ID'], session['Username'], "Login", request.headers['X-Forwarded-For'],
-                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+
 
             mysql.connection.commit()
             cursor.execute(
@@ -1825,19 +1821,7 @@ def ViewDashboard():
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
             account = cursor.fetchone()
-            cursor.execute("""SELECT DISTINCT Acc.ID , Acc.Username , ALI.Account_Log_In_Time AS TimeOfActivity ,ALI.Log_In_IP_Address AS IP_Address , UL.LoginType AS EventType FROM account_log_ins ALI INNER JOIN accounts AS Acc ON Acc.ID = ALI.Account_ID
-                            INNER JOIN userlogin AS UL ON UL.Account_ID = ALI.Account_ID WHERE UL.LoginType = 'Login'
-                            UNION SELECT * FROM (SELECT Distinct ACO.Account_ID,ACC.Username,ACO.Log_Out_Time,ACO.Log_Out_IP_Address,UL.LoginType FROM account_log_out ACO 
-                            INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
-                            INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout') AS TABLE2 
-                            UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID) AS TABLE3
-                            UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"AttemptedLogin" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID 
-                            WHERE Attempted_Log_Ins < 3  ) AS TABLE4
-                            UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"LoginFailure" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID 
-                            WHERE Attempted_Log_Ins >= 3  ) AS TABLE5
-                            ORDER BY TimeOfActivity;""")
 
-            AuditInfo = cursor.fetchall()
             cursor.execute("""SELECT * FROM accounts""")
             allusers = cursor.fetchall()
             cursor.execute("""Select COUNT(Attempted_Log_Ins) AS TotalAttemptedLogins from accountattemptedlogins;""")
@@ -1846,94 +1830,99 @@ def ViewDashboard():
 
 
             No = cursor.fetchone()
-            cursor.execute("""SELECT COUNT(ID) as Counter1hour FROM (
-                            SELECT DISTINCT Acc.ID , Acc.Username , ALI.Account_Log_In_Time AS TimeOfActivity ,ALI.Log_In_IP_Address AS IP_Address , UL.LoginType AS EventType FROM account_log_ins ALI INNER JOIN accounts AS Acc ON Acc.ID = ALI.Account_ID
-                            INNER JOIN userlogin AS UL ON UL.Account_ID = ALI.Account_ID WHERE UL.LoginType = 'Login'
-                            UNION SELECT * FROM (SELECT Distinct ACO.Account_ID,ACC.Username,ACO.Log_Out_Time,ACO.Log_Out_IP_Address,UL.LoginType FROM account_log_out ACO 
-                            INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
-                            INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout') AS TABLE2 
-                            UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID) AS TABLE3
-                            UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"AttemptedLogin" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID 
-                            WHERE Attempted_Log_Ins < 3  ) AS TABLE4
-                            UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"LoginFailure" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID 
-                            WHERE Attempted_Log_Ins >= 3  ) AS TABLE5
-                            ORDER BY TimeOfActivity) AS CombinedTable WHERE TimeOfActivity > now() - interval 1 HOUR;""")
+            #cursor.execute("""SELECT COUNT(ID) as Counter1hour FROM (
+            #                SELECT DISTINCT Acc.ID , Acc.Username , ALI.Account_Log_In_Time AS TimeOfActivity ,ALI.Log_In_IP_Address AS IP_Address , UL.LoginType AS EventType FROM account_log_ins ALI INNER JOIN accounts AS Acc ON Acc.ID = ALI.Account_ID
+            #                INNER JOIN userlogin AS UL ON UL.Account_ID = ALI.Account_ID WHERE UL.LoginType = 'Login'
+            #                UNION SELECT * FROM (SELECT Distinct ACO.Account_ID,ACC.Username,ACO.Log_Out_Time,ACO.Log_Out_IP_Address,UL.LoginType FROM account_log_out ACO
+            #                INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
+            #                INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout') AS TABLE2
+            #                UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID) AS TABLE3
+            #                UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"AttemptedLogin" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID
+            #                WHERE Attempted_Log_Ins < 3  ) AS TABLE4
+            #                UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"LoginFailure" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID
+            #                WHERE Attempted_Log_Ins >= 3  ) AS TABLE5
+            #                ORDER BY TimeOfActivity) AS CombinedTable WHERE TimeOfActivity > now() - interval 1 HOUR;""")
+            #eventcount1hr = cursor.fetchone()
+            #cursor.execute("""SELECT COUNT(ID) as Counter24hour FROM (
+            #                SELECT DISTINCT Acc.ID , Acc.Username , ALI.Account_Log_In_Time AS TimeOfActivity ,ALI.Log_In_IP_Address AS IP_Address , UL.LoginType AS EventType FROM account_log_ins ALI INNER JOIN accounts AS Acc ON Acc.ID = ALI.Account_ID
+            #                INNER JOIN userlogin AS UL ON UL.Account_ID = ALI.Account_ID WHERE UL.LoginType = 'Login'
+            #                UNION SELECT * FROM (SELECT Distinct ACO.Account_ID,ACC.Username,ACO.Log_Out_Time,ACO.Log_Out_IP_Address,UL.LoginType FROM account_log_out ACO
+            #                INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
+            #                INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout') AS TABLE2
+            #                UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID) AS TABLE3
+            #                UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"AttemptedLogin" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID
+            #                WHERE Attempted_Log_Ins < 3  ) AS TABLE4
+            #                UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"LoginFailure" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID
+            #                WHERE Attempted_Log_Ins >= 3  ) AS TABLE5
+            #                ORDER BY TimeOfActivity) AS CombinedTable WHERE TimeOfActivity > now() - interval 24 HOUR;""")
+            #eventcount24hr = cursor.fetchone()
+
+
+
+           #cursor.execute("""SELECT COUNT(ID) as Counter1hourattemptlogin FROM (
+
+           #                    SELECT DISTINCT Acc.ID , Acc.Username , ALI.Account_Log_In_Time AS TimeOfActivity ,ALI.Log_In_IP_Address AS IP_Address , UL.LoginType AS EventType FROM account_log_ins ALI INNER JOIN accounts AS Acc ON Acc.ID = ALI.Account_ID
+
+           #                    INNER JOIN userlogin AS UL ON UL.Account_ID = ALI.Account_ID WHERE UL.LoginType = 'Login'
+
+           #                    UNION SELECT * FROM (SELECT Distinct ACO.Account_ID,ACC.Username,ACO.Log_Out_Time,ACO.Log_Out_IP_Address,UL.LoginType FROM account_log_out ACO
+
+           #                    INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
+
+           #                    INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout') AS TABLE2
+
+           #                    UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID) AS TABLE3
+
+           #                    UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"AttemptedLogin" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID
+
+           #                    WHERE Attempted_Log_Ins < 3  ) AS TABLE4
+
+           #                    UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"LoginFailure" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID
+
+           #                    WHERE Attempted_Log_Ins >= 3  ) AS TABLE5
+
+           #                    ORDER BY TimeOfActivity) AS CombinedTable WHERE TimeOfActivity > now() - interval 1 HOUR and CombinedTable.EventType = "AttemptedLogin" or CombinedTable.EventType = "LoginFailure";""")
+
+
+
+            #attemptcount1hr = cursor.fetchone()
+
+            #cursor.execute("""SELECT COUNT(ID) as Counter24hourattemptlogin FROM (
+#
+            #                                SELECT DISTINCT Acc.ID , Acc.Username , ALI.Account_Log_In_Time AS TimeOfActivity ,ALI.Log_In_IP_Address AS IP_Address , UL.LoginType AS EventType FROM account_log_ins ALI INNER JOIN accounts AS Acc ON Acc.ID = ALI.Account_ID
+#
+            #                                INNER JOIN userlogin AS UL ON UL.Account_ID = ALI.Account_ID WHERE UL.LoginType = 'Login'
+#
+            #                                UNION SELECT * FROM (SELECT Distinct ACO.Account_ID,ACC.Username,ACO.Log_Out_Time,ACO.Log_Out_IP_Address,UL.LoginType FROM account_log_out ACO
+#
+            #                                INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
+#
+            #                                INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout') AS TABLE2
+#
+            #                                UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID) AS TABLE3
+#
+            #                                UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"AttemptedLogin" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID
+#
+            #                                WHERE Attempted_Log_Ins < 3  ) AS TABLE4
+#
+            #                                UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"LoginFailure" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID
+#
+            #                                WHERE Attempted_Log_Ins >= 3  ) AS TABLE5
+#
+            #                                ORDER BY TimeOfActivity) AS CombinedTable WHERE TimeOfActivity > now() - interval 24 HOUR and CombinedTable.EventType = "AttemptedLogin" or CombinedTable.EventType = "LoginFailure";""")
+
+            #attemptcount24hr = cursor.fetchone()
+
+            # New items to be removed if not working
+
+            cursor.execute("""SELECT Count(EventType) FROM eventtype WHERE TimeOfActivity > now() - INTERVAL 1 HOUR;""")
             eventcount1hr = cursor.fetchone()
-            cursor.execute("""SELECT COUNT(ID) as Counter24hour FROM (
-                            SELECT DISTINCT Acc.ID , Acc.Username , ALI.Account_Log_In_Time AS TimeOfActivity ,ALI.Log_In_IP_Address AS IP_Address , UL.LoginType AS EventType FROM account_log_ins ALI INNER JOIN accounts AS Acc ON Acc.ID = ALI.Account_ID
-                            INNER JOIN userlogin AS UL ON UL.Account_ID = ALI.Account_ID WHERE UL.LoginType = 'Login'
-                            UNION SELECT * FROM (SELECT Distinct ACO.Account_ID,ACC.Username,ACO.Log_Out_Time,ACO.Log_Out_IP_Address,UL.LoginType FROM account_log_out ACO 
-                            INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
-                            INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout') AS TABLE2 
-                            UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID) AS TABLE3
-                            UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"AttemptedLogin" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID 
-                            WHERE Attempted_Log_Ins < 3  ) AS TABLE4
-                            UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"LoginFailure" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID 
-                            WHERE Attempted_Log_Ins >= 3  ) AS TABLE5
-                            ORDER BY TimeOfActivity) AS CombinedTable WHERE TimeOfActivity > now() - interval 24 HOUR;""")
+            cursor.execute("""SELECT Count(EventType) FROM eventtype WHERE TimeOfActivity > now() - INTERVAL 24 HOUR;""")
             eventcount24hr = cursor.fetchone()
-
-
-
-            cursor.execute("""SELECT COUNT(ID) as Counter1hourattemptlogin FROM (
-
-                                SELECT DISTINCT Acc.ID , Acc.Username , ALI.Account_Log_In_Time AS TimeOfActivity ,ALI.Log_In_IP_Address AS IP_Address , UL.LoginType AS EventType FROM account_log_ins ALI INNER JOIN accounts AS Acc ON Acc.ID = ALI.Account_ID
-
-                                INNER JOIN userlogin AS UL ON UL.Account_ID = ALI.Account_ID WHERE UL.LoginType = 'Login'
-
-                                UNION SELECT * FROM (SELECT Distinct ACO.Account_ID,ACC.Username,ACO.Log_Out_Time,ACO.Log_Out_IP_Address,UL.LoginType FROM account_log_out ACO 
-
-                                INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
-
-                                INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout') AS TABLE2 
-
-                                UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID) AS TABLE3
-
-                                UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"AttemptedLogin" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID 
-
-                                WHERE Attempted_Log_Ins < 3  ) AS TABLE4
-
-                                UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"LoginFailure" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID 
-
-                                WHERE Attempted_Log_Ins >= 3  ) AS TABLE5
-
-                                ORDER BY TimeOfActivity) AS CombinedTable WHERE TimeOfActivity > now() - interval 1 HOUR and CombinedTable.EventType = "AttemptedLogin" or CombinedTable.EventType = "LoginFailure";""")
-
-
-
+            cursor.execute("""SELECT Count(EventType) FROM eventtype WHERE TimeOfActivity > now() - interval 1 HOUR and eventtype.EventType = "AttemptedLogin" or eventtype.EventType = "LoginFailure";""")
             attemptcount1hr = cursor.fetchone()
-
-            cursor.execute("""SELECT COUNT(ID) as Counter24hourattemptlogin FROM (
-
-                                            SELECT DISTINCT Acc.ID , Acc.Username , ALI.Account_Log_In_Time AS TimeOfActivity ,ALI.Log_In_IP_Address AS IP_Address , UL.LoginType AS EventType FROM account_log_ins ALI INNER JOIN accounts AS Acc ON Acc.ID = ALI.Account_ID
-
-                                            INNER JOIN userlogin AS UL ON UL.Account_ID = ALI.Account_ID WHERE UL.LoginType = 'Login'
-
-                                            UNION SELECT * FROM (SELECT Distinct ACO.Account_ID,ACC.Username,ACO.Log_Out_Time,ACO.Log_Out_IP_Address,UL.LoginType FROM account_log_out ACO 
-
-                                            INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
-
-                                            INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout') AS TABLE2 
-
-                                            UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID) AS TABLE3
-
-                                            UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"AttemptedLogin" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID 
-
-                                            WHERE Attempted_Log_Ins < 3  ) AS TABLE4
-
-                                            UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"LoginFailure" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID 
-
-                                            WHERE Attempted_Log_Ins >= 3  ) AS TABLE5
-
-                                            ORDER BY TimeOfActivity) AS CombinedTable WHERE TimeOfActivity > now() - interval 24 HOUR and CombinedTable.EventType = "AttemptedLogin" or CombinedTable.EventType = "LoginFailure";""")
-
-
-
+            cursor.execute("""SELECT Count(EventType) FROM eventtype WHERE TimeOfActivity > now() - interval 24 HOUR and eventtype.EventType = "AttemptedLogin" or eventtype.EventType = "LoginFailure";""")
             attemptcount24hr = cursor.fetchone()
-
-
-
-
 
 
             Auditlist,Countrycount,plzcount = [],{},0
@@ -2075,26 +2064,26 @@ def Audit():
                 account = cursor.fetchone()
                 cursor.execute("""SELECT * FROM accounts""")
 
-                cursor.execute("""SELECT DISTINCT Acc.ID , Acc.Username , ALI.Account_Log_In_Time AS TimeOfActivity ,ALI.Log_In_IP_Address AS IP_Address , UL.LoginType AS EventType FROM account_log_ins ALI INNER JOIN accounts AS Acc ON Acc.ID = ALI.Account_ID
-                                    INNER JOIN userlogin AS UL ON UL.Account_ID = ALI.Account_ID WHERE UL.LoginType = 'Login'
-                                    UNION SELECT * FROM (SELECT Distinct ACO.Account_ID,ACC.Username,ACO.Log_Out_Time,ACO.Log_Out_IP_Address,UL.LoginType FROM account_log_out ACO 
-                                    INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
-                                    INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout') AS TABLE2 
-                                    UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID) AS TABLE3
-                                    UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"AttemptedLogin" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID 
-                                    WHERE Attempted_Log_Ins < 3  ) AS TABLE4
-                                    UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"LoginFailure" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID 
-                                    WHERE Attempted_Log_Ins >= 3  ) AS TABLE5
-                                    ORDER BY TimeOfActivity DESC; """)
+                #cursor.execute("""SELECT DISTINCT Acc.ID , Acc.Username , ALI.Account_Log_In_Time AS TimeOfActivity ,ALI.Log_In_IP_Address AS IP_Address , UL.LoginType AS EventType FROM account_log_ins ALI INNER JOIN accounts AS Acc ON Acc.ID = ALI.Account_ID
+                #                    INNER JOIN userlogin AS UL ON UL.Account_ID = ALI.Account_ID WHERE UL.LoginType = 'Login'
+                #                    UNION SELECT * FROM (SELECT Distinct ACO.Account_ID,ACC.Username,ACO.Log_Out_Time,ACO.Log_Out_IP_Address,UL.LoginType FROM account_log_out ACO
+                #                    INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
+                #                    INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout') AS TABLE2
+                #                    UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID) AS TABLE3
+                #                    UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"AttemptedLogin" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID
+                #                    WHERE Attempted_Log_Ins < 3  ) AS TABLE4
+                #                    UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"LoginFailure" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID
+                #                    WHERE Attempted_Log_Ins >= 3  ) AS TABLE5
+                #                    ORDER BY TimeOfActivity DESC; """)
+#
+                #allaccounts = cursor.fetchall()
 
-                allaccounts = cursor.fetchall()
-                print(allaccounts)
                 cursor.execute("""SELECT * FROM eventtype""")
-                allevents = cursor.fetchall()
+                allaccounts = cursor.fetchall()
 
-                print(allaccounts)
+
                 Auditlist = []
-                for lol in allevents:
+                for lol in allaccounts:
                     lol['Location'] = get_location(lol['IP_Address'])
                     print(lol)
                     Auditlist.append(lol)
@@ -2630,7 +2619,7 @@ def login():
                             cursor.execute(sql2, value2)
                             cursor.execute("""INSERT INTO accountattemptedlogins VALUES (NULL,%s,%s,%s,%s)""",[Original['ID'],Attempts,request.headers['X-Forwarded-For'],datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
                             cursor.execute("""INSERT INTO EventType VALUES (NULL,%s,%s,%s,%s,%s)""", (
-                                Original['ID'], Username, "LoginFailure", request.headers['X-Forwarded-For'],
+                                Original['ID'], Username, "AttemptedLogin", request.headers['X-Forwarded-For'],
                                 datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
                             mysql.connection.commit()
                     return render_template('login.html', msg=msg, sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
