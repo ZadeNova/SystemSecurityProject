@@ -2272,7 +2272,7 @@ def UserLogsActivity():
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
-
+# End of zade stuff (not everything is mine sadly)
 
 @app.route('/Cantsignin', methods=['GET', 'POST'])
 def Cantsignin():
@@ -2458,7 +2458,7 @@ def login():
                         Time = cursor.fetchone()
                         if Time['TimeOfActivity'] + datetime.timedelta(minutes=30) <= datetime.datetime.now().replace(microsecond=0):
                             sql = "UPDATE accounts SET Attempts = %s WHERE username = %s "
-                            value = (0, account['Username'])
+                            value = (1, account['Username'])
                             cursor.execute(sql, value)
                             cursor.execute("UPDATE accounts SET Account_Status = 'Active' WHERE username = %(username)s", {'username': account['Username']})
                             mysql.connection.commit()
