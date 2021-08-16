@@ -6,12 +6,12 @@ from wtforms.fields.html5 import DateField
 class UpdateUserForm(Form):
 
 
-    Username = StringField('Username:', [validators.Length(min=1, max=150), validators.DataRequired()])
-    NRIC=StringField('NRIC: ',[validators.DataRequired()])
-    DOB = DateField("Date of Birth", format='%Y-%m-%d',validators=[DataRequired('Select a date')])
+    Username = StringField('Username:', [validators.DataRequired(),validators.Regexp("^[A-Za-z][A-Za-z0-9]{4,19}$", message='Username can only consist of alphabets and numbers and must be between 5 to 20 characters')])
+    NRIC=StringField('NRIC: ',[validators.DataRequired(),validators.Regexp(regex="^[ST][0-9]{7}[A-Z]$", message='Must start with a S or T and end with any letter between A-Z')])
+    DOB = DateField("Date of Birth", format='%Y-%m-%d',validators=[DataRequired('Select a date'),validators.DataRequired()])
     Gender = RadioField('Gender', choices=[('Male', 'Male'), ('Female', 'Female'),("Other","Other")], default='')
-    Phone_Number = StringField('Phone Number:', [validators.DataRequired(),validators.Regexp(regex='\d{4}[-.\s]?\d{4}$',message='phone number can only have 8 digit !'),validators.Regexp(regex='[0-9]',message='Only numeric number')])
-    Email=StringField('Email Address: ',[validators.DataRequired()])
+    Phone_Number = StringField('Phone Number:',[validators.DataRequired(), validators.Regexp(regex='^[8-9][0-9]{7}$', message='Phone Number can only have 8 digits and must begin with a 8 or 9!'), validators.Regexp(regex='[0-9]', message='Only numeric number')])
+    Email=StringField('Email Address: ',validators=[validators.DataRequired(),validators.Regexp(regex='^[A-Za-z0-9.]+@[GMAIL.gmail.HOTMAIL.hotmail.YAHOO.yahoo]+\.[com]{2,}$',message='Only allow letter/number/./ @ gmail/hotmail/yahoo.com only etc test@gmail.com ')])
     Security_Questions_1 = SelectField('Security Questions:', [validators.DataRequired()],
                            choices=[('', 'Question 1 (Select One)'), ('Where were you when you had your first kiss? ', 'Where were you when you had your first kiss?'),
                                     ('What was your childhood nickname?', 'What was your childhood nickname?'),
@@ -41,7 +41,6 @@ class UpdateUserForm(Form):
                                                 ('In what city does your nearest sibling live?',
                                                  'In what city does your nearest sibling live?')], default='')
     Answers_2 = StringField('Question 2 Answer: ', [validators.DataRequired()])
-    Address=TextAreaField('Address:',[validators.DataRequired()])
+    Address=TextAreaField('Address:',[validators.DataRequired(), validators.Regexp(regex='^[^@!$%^&*()<>{}\"/\'\[\]\|?+=_]+$', message='Enter only alphabets and numbers, do not enter special characters/symbols!')])
 
     role=StringField('Role',default='Guest',render_kw = {'readonly':True})
-

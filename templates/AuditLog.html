@@ -22,12 +22,18 @@
     }
         div.ex3 {
 
-  height: 300px;
+  height: 500px;
   width: 1400;
   overflow-y: auto;
 }
 
-
+th{
+  background: white;
+  color: black;
+  position: sticky;
+  top: 0; /* Don't forget this, required for the stickiness */
+  box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.4);
+}
 
 </style>
 <h1>Event Audit log</h1>
@@ -38,7 +44,7 @@
 <br>
 <table class="table table-hover table-bordered table-dark">
     <thead class="thread-dark">
-        <th id="titletablelol" colspan="6">All User Activity Log</th>
+        <td id="titletablelol" colspan="6">All User Activity Log</td>
 
     </thead>
   <thead class="thread-dark">
@@ -55,7 +61,7 @@
   <tbody id="myTable">
     {% for i in Auditlist %}
     <tr>
-      <th scope="row">{{ i['ID'] }}</th>
+      <td scope="row">{{ i['Account_ID'] }}</td>
       <td>{{ i['Username'] }}</td>
       {% if i['EventType'] == 'AttemptedLogin'%}
 

@@ -11,7 +11,6 @@ import logging
 
 from twilio.rest import Client
 
-# help
 
 from google.auth._default import default, load_credentials_from_file
 import bcrypt
@@ -519,11 +518,11 @@ mail = Mail(app)
 
 # Database connection MYSQL
 try:
-    app.config['MYSQL_HOST'] = 'us-cdbr-east-04.cleardb.com'
-    app.config['MYSQL_USER'] = 'b5353b83482c7f'
+    app.config['MYSQL_HOST'] = ''
+    app.config['MYSQL_USER'] = 'putsqlusername here'
     app.config[
-        'MYSQL_PASSWORD'] = '48b8b0c9'  # change this line to our own sql password , thank you vry not much xd
-    app.config['MYSQL_DB'] = 'heroku_6230660f02e0b5c'
+        'MYSQL_PASSWORD'] = 'fuck'  # change this line to our own sql password , thank you vry not much xd
+    app.config['MYSQL_DB'] = 'put ur schema'
 except:
     print("MYSQL root is not found!")
 

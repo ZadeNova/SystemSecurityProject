@@ -12,8 +12,37 @@ body {
   position: relative;
   height: 100vh;
 }
+#notfound1 {
+  position: relative;
+  height: 100vh;
+}
+
+#notfound2 {
+  position: relative;
+  height: 100vh;
+}
+
+
 
 #notfound .notfound {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  -webkit-transform: translate(-50%, -50%);
+      -ms-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+}
+
+#notfound1 .notfound {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  -webkit-transform: translate(-50%, -50%);
+      -ms-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+}
+
+#notfound2 .notfound {
   position: absolute;
   left: 50%;
   top: 50%;

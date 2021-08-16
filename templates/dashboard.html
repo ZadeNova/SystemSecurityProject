@@ -164,7 +164,7 @@
                                 <!-- Card Header - Dropdown -->
                                 <div
                                     class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Events by location</h6>
+                                    <h6 class="m-0 font-weight-bold text-primary">Events by Location</h6>
                                     <div class="dropdown no-arrow">
                                         <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
                                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -234,6 +234,15 @@
 
                                 </div>
                                 <div class="card-body">
+
+
+                                    <h4 class="small font-weight-bold">Average Attempt login failure per user (1hr)<span
+                                            class="float-right">{{ AvgAttempt1hr }}</span></h4>
+                                    <h4 class="small font-weight-bold">Average Attempt login failure per user (24hr)<span
+                                            class="float-right">{{ AvgAttempt24hr }}</span></h4>
+
+
+
                                     <h4 class="small font-weight-bold">Average Attempt login failure per user<span
                                             class="float-right">{{ AvgLoginFailuresUsers }}</span></h4>
 
@@ -373,7 +382,6 @@
         var javadict = {{ UserAttemptedLoginCount | safe }}
         var eventdict = {{ EventCount | safe }}
         var Countrycounter = {{ Countrycount | safe }}
-
 
 
 
@@ -517,6 +525,7 @@ var eventlocationarea = new Chart(eventarea, {
     cutoutPercentage: 80,
   },
 });
+
 
 
 

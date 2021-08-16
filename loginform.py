@@ -24,7 +24,7 @@ class CreateLoginUserForm(Form):
     ])
 
     Phone_Number = StringField('Phone Number:', [validators.DataRequired(), validators.Regexp(regex='^[8-9][0-9]{7}$', message='Phone Number can only have 8 digits and must begin with a 8 or 9!'), validators.Regexp(regex='[0-9]', message='Only numeric number')])
-    Email = EmailField('Email Address: ', [validators.DataRequired(), validators.Email()])
+    Email = EmailField('Email Address: ', [validators.DataRequired(),validators.Regexp(regex='^[A-Za-z0-9.]+@[GMAIL.gmail.HOTMAIL.hotmail.YAHOO.yahoo]+\.[com]{2,}$' , message='Only allow letter/number/./ @ gmail/hotmail/yahoo.com only etc test@gmail.com '), validators.Email()])
     Security_Questions_1 = SelectField('Security Questions:', [validators.DataRequired()],
                            choices=[('', 'Question 1 (Select One)'), ('Where were you when you had your first kiss? ', 'Where were you when you had your first kiss?'),
                                     ('What was your childhood nickname?', 'What was your childhood nickname?'),

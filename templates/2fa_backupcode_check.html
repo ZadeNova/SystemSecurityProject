@@ -196,7 +196,7 @@ form .button{
           </p>
       <form method="POST" action="/twofabackupcodecheck">
         <div class="input-field">
-          <input type="text" class='input' name="backupcode" required>
+          <input type="text" class='input' name="backupcode" required pattern="[A-Z0-9]{8}">
           <label>Code</label>
         </div>
 
