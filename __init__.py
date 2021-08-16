@@ -11,6 +11,7 @@ import logging
 
 from twilio.rest import Client
 
+# help
 
 from google.auth._default import default, load_credentials_from_file
 import bcrypt
@@ -179,7 +180,7 @@ def callback():
         session['Email_Vulnerabilities'] = account['Email_Vulnerabilities']
         session['Account_Login_Notification'] = account['Account_Login_Notification']
         session["Attempts_Notification"] = account1['Attempts_Notification']
-        if account['password_update_time'] + datetime.timedelta(days=365) <= datetime.datetime.now().replace(microsecond=0):
+        if account['password_update_time'] + datetime.timedelta(hours=12) <= datetime.datetime.now().replace(microsecond=0):
             return redirect(url_for('Resetpassword', UUID=account['UUID']))
         elif account['Account_Status'] == "Pending":
             print("This account is unactivated")
@@ -209,6 +210,9 @@ def callback():
             account1 = cursor.fetchone()
             cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""",
                            (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.headers['X-Forwarded-For']))
+            cursor.execute("""INSERT INTO EventType VALUES (NULL,%s,%s,%s,%s,%s)""", (
+                session['ID'], session['Username'], "Login", request.headers['X-Forwarded-For'],
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
 
             mysql.connection.commit()
             cursor.execute(
@@ -309,16 +313,17 @@ def callback():
             account12 = cursor.fetchone()
             session['ID'] = account12['ID']
             session["Username"] = username
-            cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""",
-                           (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),request.headers['X-Forwarded-For']))
-
-            mysql.connection.commit()
-            cursor.execute(
-                """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
-                [session['ID']])
-            login_ID = cursor.fetchone()
-            cursor.execute("""INSERT INTO usersloggedin VALUES (NULL,%s,%s)""", (session['ID'], login_ID['Log_in_ID']))
-            mysql.connection.commit()
+            #cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""",
+            #               (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            #                request.headers['X-Forwarded-For']))
+#
+            #mysql.connection.commit()
+            #cursor.execute(
+            #    """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
+            #    [session['ID']])
+            #login_ID = cursor.fetchone()
+            #cursor.execute("""INSERT INTO usersloggedin VALUES (NULL,%s,%s)""", (session['ID'], login_ID['Log_in_ID']))
+            #mysql.connection.commit()
             msg = 'You have successfully registered! '
             print("working")
             print('inserting authentication table')
@@ -362,6 +367,9 @@ def callback():
             account1 = cursor.fetchone()
             cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""",
                            (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.headers['X-Forwarded-For']))
+            cursor.execute("""INSERT INTO EventType VALUES (NULL,%s,%s,%s,%s,%s)""", (
+                session['ID'], session['Username'], "Login", request.headers['X-Forwarded-For'],
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
 
             mysql.connection.commit()
             cursor.execute(
@@ -526,7 +534,7 @@ images = UploadSet('images', IMAGES)
 configure_uploads(app, images)
 
 ### hong ji recapcha ##
-app.config['SECRET_KEY'] = 'cairocoders-ednalan'
+
 
 
 def is_human(captcha_response):
@@ -659,7 +667,7 @@ def SmsOtpCheck():
             #if phn == session['username']+'phn':
                 #return redirect(url_for('Forcephn'))
 
-            otp = randint(000000, 999999)  # email otp
+            otp = randint(111111, 999999)  # email otp
             session['otp'] = otp
 
             k12 = datetime.datetime.now() + timedelta(seconds=60)
@@ -767,7 +775,7 @@ def EmailOtpCheck():
         cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
         account = cursor.fetchone()
         cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
-        otp = randint(000000, 999999)  # email otp
+        otp = randint(111111, 999999)  # email otp
         session['otp'] = otp
         k12 = datetime.datetime.now() + timedelta(seconds=60)
         session['otp_create_time'] = k12.strftime("%X")
@@ -924,7 +932,7 @@ def two_fa_email():
     if request.method == 'POST':
         cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
         account1 = cursor.fetchone()
-        otp = randint(000000, 999999)  # email otp
+        otp = randint(111111, 999999)  # email otp
         session['otp'] = otp
         k12 = datetime.datetime.now() + timedelta(seconds=60)
         session['otp_create_time'] = k12.strftime("%X")
@@ -956,6 +964,9 @@ def two_fa_email_check():
         mysql.connection.commit()
         cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (
             session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.headers['X-Forwarded-For']))
+        cursor.execute("""INSERT INTO EventType VALUES (NULL,%s,%s,%s,%s,%s)""", (
+            session['ID'], session['Username'], "Login", request.headers['X-Forwarded-For'],
+            datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
         mysql.connection.commit()
         cursor.execute(
             """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
@@ -997,7 +1008,7 @@ def two_fa_sms():
     if request.method == 'POST':
         cursor.execute('SELECT * FROM authentication_table WHERE Account_ID = %s', [session['ID']])
         account1 = cursor.fetchone()
-        otp = randint(000000, 999999)  # email otp
+        otp = randint(111111, 999999)  # email otp
         session['otp'] = otp
         k12 = datetime.datetime.now() + timedelta(seconds=60)
         session['otp_create_time'] = k12.strftime("%X")
@@ -1013,7 +1024,7 @@ def two_fa_sms():
                 to=phn
             )
             print(message.sid)
-            return render_template('2fa_email_check.html', account=account, role=account['role'])
+            return render_template('2fa_sms_check.html', account=account, role=account['role'])
         else:
             flash('You havent active this function yet choose other 2 factor authentication method', 'danger')
             return redirect(url_for("two_fa_sms"))
@@ -1035,6 +1046,9 @@ def two_fa_sms_check():
         mysql.connection.commit()
         cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (
             session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.headers['X-Forwarded-For']))
+        cursor.execute("""INSERT INTO EventType VALUES (NULL,%s,%s,%s,%s,%s)""", (
+            session['ID'], session['Username'], "Login", request.headers['X-Forwarded-For'],
+            datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
         mysql.connection.commit()
         cursor.execute(
             """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
@@ -1106,6 +1120,9 @@ def two_fa_backupcode_check():
         mysql.connection.commit()
         cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (
             session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.headers['X-Forwarded-For']))
+        cursor.execute("""INSERT INTO EventType VALUES (NULL,%s,%s,%s,%s,%s)""", (
+            session['ID'], session['Username'], "Login", request.headers['X-Forwarded-For'],
+            datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
         mysql.connection.commit()
         cursor.execute(
             """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
@@ -1167,6 +1184,10 @@ def two_fa_authen_check():
         mysql.connection.commit()
         cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (
             session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.headers['X-Forwarded-For']))
+        cursor.execute("""INSERT INTO EventType VALUES (NULL,%s,%s,%s,%s,%s)""", (
+            session['ID'], session['Username'], "Login", request.headers['X-Forwarded-For'],
+            datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+
         mysql.connection.commit()
         cursor.execute(
             """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
@@ -1328,7 +1349,7 @@ def Userprofile():
 #    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 #    cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
 #    account = cursor.fetchone()
-#    ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+#    ip = request.environ.get('HTTP_X_REAL_IP', request.headers['X-Forwarded-For'])
 #    data = ipapi.location(ip=ip, output='json')
 #    return render_template('ipaddresscheck.html',data=data,account=account,role=account['role'])
 
@@ -1352,20 +1373,13 @@ def deleteaccoutcheck():
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
         account = cursor.fetchone()
-        user_int = request.form['user_int']
+        user_int = request.form['otp']
         if user_int == 'I want to delete my account':
-            try:
-                username = account['Username']
-                Account_Status = 'Disable'
-                cursor.execute(
-                    "UPDATE accounts SET Account_Status=%s   WHERE Account_ID=%s ",
-                    (Account_Status, [session['ID']]))
-                mysql.connection.commit()
-                print(cursor.rowcount, "record(s) deleted")
-                session.clear()
-                return redirect(url_for('login'))
-            except:
-                return redirect(url_for('deleteaccountcheck'))
+            cursor.execute("""UPDATE accounts SET Account_Status = 'Deleted' WHERE ID = %s """, [session['ID']])
+            mysql.connection.commit()
+            print(cursor.rowcount, "record(s) deleted")
+            session.clear()
+            return redirect(url_for('login'))
         else:
             msg = 'Wrong input , please follow word by word , including spacing , and capital !'
             flash('I want to delete my account')
@@ -1374,7 +1388,6 @@ def deleteaccoutcheck():
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
-
 
 
 @app.route('/Settings', methods=['GET', 'POST'])
@@ -1397,7 +1410,7 @@ def Changesettings():
         decryptedaddress = decryptedaddress_Binary.decode('utf8')
         decryptedNRIC = decryptedNRIC_Binary.decode('utf-8')
         decryptedPhoneNo = decryptedPhoneNo_Binary.decode('utf-8')
-        if request.method == 'POST' and (formupdateuser.Username.data != account['Username'] or
+        if request.method == 'POST' and formupdateuser.validate() and (formupdateuser.Username.data != account['Username'] or
                                          formupdateuser.NRIC.data != decryptedNRIC or formupdateuser.DOB.data !=
                                          account['Date_of_Birth'] or
                                          formupdateuser.Gender.data != account[
@@ -1499,6 +1512,11 @@ def Changesettings():
                 cursor.execute(
                     """UPDATE UserUpdateTime SET Ip_Address = %s WHERE Account_ID = %s ORDER BY ID DESC Limit 1""",
                     [request.headers['X-Forwarded-For'], session['ID']])
+
+                cursor.execute("""INSERT INTO EventType VALUES (NULL,%s,%s,%s,%s,%s)""", (
+                    session['ID'], session['Username'], "Update", request.headers['X-Forwarded-For'],
+                    datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+
                 mysql.connection.commit()
                 account1 = cursor.fetchone()
                 counter = str(counter)
@@ -1557,6 +1575,11 @@ def Settings_changepassword():
                     cursor.execute(sql, value)
                     cursor.execute(
                         """INSERT INTO UserUpdateTime VALUES (NULL, %s, %s, %s, %s) """, [session['ID'], 'UpdatePassword', request.headers['X-Forwarded-For'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
+
+                    cursor.execute("""INSERT INTO EventType VALUES (NULL,%s,%s,%s,%s,%s)""", (
+                        session['ID'], session['Username'], "UpdatePassword", request.headers['X-Forwarded-For'],
+                        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+
                     mysql.connection.commit()
                     counter = 1
                     email = Message("Update of Account", recipients=account['Email'].split())
@@ -1635,18 +1658,26 @@ def Managerprofile():
 # Edit this - Zadesqlstuff
 
 def get_location(ip_address):
-    if session['2fa_status'] == 'Pass' or session['2fa_status'] == 'Nil':
+    try:
+        response = requests.get("http://ip-api.com/json/{}".format(ip_address))
+        js = response.json()
+        country = js
 
-        try:
-            response = requests.get("http://ip-api.com/json/{}".format(ip_address))
-            js = response.json()
-            country = js
-            return country
-        except Exception as e:
-            return "Unknown"
-    else:
-        flash('Please complete your 2FA !', 'danger')
-        return redirect(url_for("two_fa"))
+
+        return country['country']
+    except Exception as e:
+        return "Unknown"
+
+def get_countrycode(ip_address):
+    try:
+        response = requests.get("http://ip-api.com/json/{}".format(ip_address))
+        js = response.json()
+        country = js
+
+
+        return country["countryCode"]
+    except Exception as e:
+        return "Unknown"
 
 
 @app.route('/EmailLoginNotification', methods=['GET', 'POST'])
@@ -1752,19 +1783,7 @@ def ViewDashboard():
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute('SELECT * FROM accounts WHERE id = %s', [session['ID']])
             account = cursor.fetchone()
-            cursor.execute("""SELECT DISTINCT Acc.ID , Acc.Username , ALI.Account_Log_In_Time AS TimeOfActivity ,ALI.Log_In_IP_Address AS IP_Address , UL.LoginType AS EventType FROM account_log_ins ALI INNER JOIN accounts AS Acc ON Acc.ID = ALI.Account_ID
-                            INNER JOIN userlogin AS UL ON UL.Account_ID = ALI.Account_ID WHERE UL.LoginType = 'Login'
-                            UNION SELECT * FROM (SELECT Distinct ACO.Account_ID,ACC.Username,ACO.Log_Out_Time,ACO.Log_Out_IP_Address,UL.LoginType FROM account_log_out ACO 
-                            INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
-                            INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout') AS TABLE2 
-                            UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID) AS TABLE3
-                            UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"AttemptedLogin" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID 
-                            WHERE Attempted_Log_Ins < 3  ) AS TABLE4
-                            UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"LoginFailure" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID 
-                            WHERE Attempted_Log_Ins >= 3  ) AS TABLE5
-                            ORDER BY TimeOfActivity;""")
 
-            AuditInfo = cursor.fetchall()
             cursor.execute("""SELECT * FROM accounts""")
             allusers = cursor.fetchall()
             cursor.execute("""Select COUNT(Attempted_Log_Ins) AS TotalAttemptedLogins from accountattemptedlogins;""")
@@ -1773,82 +1792,134 @@ def ViewDashboard():
 
 
             No = cursor.fetchone()
-            cursor.execute("""SELECT COUNT(ID) as Counter1hour FROM (
-                            SELECT DISTINCT Acc.ID , Acc.Username , ALI.Account_Log_In_Time AS TimeOfActivity ,ALI.Log_In_IP_Address AS IP_Address , UL.LoginType AS EventType FROM account_log_ins ALI INNER JOIN accounts AS Acc ON Acc.ID = ALI.Account_ID
-                            INNER JOIN userlogin AS UL ON UL.Account_ID = ALI.Account_ID WHERE UL.LoginType = 'Login'
-                            UNION SELECT * FROM (SELECT Distinct ACO.Account_ID,ACC.Username,ACO.Log_Out_Time,ACO.Log_Out_IP_Address,UL.LoginType FROM account_log_out ACO 
-                            INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
-                            INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout') AS TABLE2 
-                            UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID) AS TABLE3
-                            UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"AttemptedLogin" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID 
-                            WHERE Attempted_Log_Ins < 3  ) AS TABLE4
-                            UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"LoginFailure" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID 
-                            WHERE Attempted_Log_Ins >= 3  ) AS TABLE5
-                            ORDER BY TimeOfActivity) AS CombinedTable WHERE TimeOfActivity > now() - interval 1 HOUR;""")
+            #cursor.execute("""SELECT COUNT(ID) as Counter1hour FROM (
+            #                SELECT DISTINCT Acc.ID , Acc.Username , ALI.Account_Log_In_Time AS TimeOfActivity ,ALI.Log_In_IP_Address AS IP_Address , UL.LoginType AS EventType FROM account_log_ins ALI INNER JOIN accounts AS Acc ON Acc.ID = ALI.Account_ID
+            #                INNER JOIN userlogin AS UL ON UL.Account_ID = ALI.Account_ID WHERE UL.LoginType = 'Login'
+            #                UNION SELECT * FROM (SELECT Distinct ACO.Account_ID,ACC.Username,ACO.Log_Out_Time,ACO.Log_Out_IP_Address,UL.LoginType FROM account_log_out ACO
+            #                INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
+            #                INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout') AS TABLE2
+            #                UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID) AS TABLE3
+            #                UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"AttemptedLogin" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID
+            #                WHERE Attempted_Log_Ins < 3  ) AS TABLE4
+            #                UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"LoginFailure" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID
+            #                WHERE Attempted_Log_Ins >= 3  ) AS TABLE5
+            #                ORDER BY TimeOfActivity) AS CombinedTable WHERE TimeOfActivity > now() - interval 1 HOUR;""")
+            #eventcount1hr = cursor.fetchone()
+            #cursor.execute("""SELECT COUNT(ID) as Counter24hour FROM (
+            #                SELECT DISTINCT Acc.ID , Acc.Username , ALI.Account_Log_In_Time AS TimeOfActivity ,ALI.Log_In_IP_Address AS IP_Address , UL.LoginType AS EventType FROM account_log_ins ALI INNER JOIN accounts AS Acc ON Acc.ID = ALI.Account_ID
+            #                INNER JOIN userlogin AS UL ON UL.Account_ID = ALI.Account_ID WHERE UL.LoginType = 'Login'
+            #                UNION SELECT * FROM (SELECT Distinct ACO.Account_ID,ACC.Username,ACO.Log_Out_Time,ACO.Log_Out_IP_Address,UL.LoginType FROM account_log_out ACO
+            #                INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
+            #                INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout') AS TABLE2
+            #                UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID) AS TABLE3
+            #                UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"AttemptedLogin" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID
+            #                WHERE Attempted_Log_Ins < 3  ) AS TABLE4
+            #                UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"LoginFailure" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID
+            #                WHERE Attempted_Log_Ins >= 3  ) AS TABLE5
+            #                ORDER BY TimeOfActivity) AS CombinedTable WHERE TimeOfActivity > now() - interval 24 HOUR;""")
+            #eventcount24hr = cursor.fetchone()
+
+
+
+           #cursor.execute("""SELECT COUNT(ID) as Counter1hourattemptlogin FROM (
+
+           #                    SELECT DISTINCT Acc.ID , Acc.Username , ALI.Account_Log_In_Time AS TimeOfActivity ,ALI.Log_In_IP_Address AS IP_Address , UL.LoginType AS EventType FROM account_log_ins ALI INNER JOIN accounts AS Acc ON Acc.ID = ALI.Account_ID
+
+           #                    INNER JOIN userlogin AS UL ON UL.Account_ID = ALI.Account_ID WHERE UL.LoginType = 'Login'
+
+           #                    UNION SELECT * FROM (SELECT Distinct ACO.Account_ID,ACC.Username,ACO.Log_Out_Time,ACO.Log_Out_IP_Address,UL.LoginType FROM account_log_out ACO
+
+           #                    INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
+
+           #                    INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout') AS TABLE2
+
+           #                    UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID) AS TABLE3
+
+           #                    UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"AttemptedLogin" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID
+
+           #                    WHERE Attempted_Log_Ins < 3  ) AS TABLE4
+
+           #                    UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"LoginFailure" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID
+
+           #                    WHERE Attempted_Log_Ins >= 3  ) AS TABLE5
+
+           #                    ORDER BY TimeOfActivity) AS CombinedTable WHERE TimeOfActivity > now() - interval 1 HOUR and CombinedTable.EventType = "AttemptedLogin" or CombinedTable.EventType = "LoginFailure";""")
+
+
+
+            #attemptcount1hr = cursor.fetchone()
+
+            #cursor.execute("""SELECT COUNT(ID) as Counter24hourattemptlogin FROM (
+#
+            #                                SELECT DISTINCT Acc.ID , Acc.Username , ALI.Account_Log_In_Time AS TimeOfActivity ,ALI.Log_In_IP_Address AS IP_Address , UL.LoginType AS EventType FROM account_log_ins ALI INNER JOIN accounts AS Acc ON Acc.ID = ALI.Account_ID
+#
+            #                                INNER JOIN userlogin AS UL ON UL.Account_ID = ALI.Account_ID WHERE UL.LoginType = 'Login'
+#
+            #                                UNION SELECT * FROM (SELECT Distinct ACO.Account_ID,ACC.Username,ACO.Log_Out_Time,ACO.Log_Out_IP_Address,UL.LoginType FROM account_log_out ACO
+#
+            #                                INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
+#
+            #                                INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout') AS TABLE2
+#
+            #                                UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID) AS TABLE3
+#
+            #                                UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"AttemptedLogin" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID
+#
+            #                                WHERE Attempted_Log_Ins < 3  ) AS TABLE4
+#
+            #                                UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"LoginFailure" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID
+#
+            #                                WHERE Attempted_Log_Ins >= 3  ) AS TABLE5
+#
+            #                                ORDER BY TimeOfActivity) AS CombinedTable WHERE TimeOfActivity > now() - interval 24 HOUR and CombinedTable.EventType = "AttemptedLogin" or CombinedTable.EventType = "LoginFailure";""")
+
+            #attemptcount24hr = cursor.fetchone()
+
+            # New items to be removed if not working
+
+            cursor.execute("""SELECT Count(EventType) AS EVENTCOUNT1HR FROM eventtype WHERE TimeOfActivity > now() - INTERVAL 1 HOUR;""")
             eventcount1hr = cursor.fetchone()
-            cursor.execute("""SELECT COUNT(ID) as Counter24hour FROM (
-                            SELECT DISTINCT Acc.ID , Acc.Username , ALI.Account_Log_In_Time AS TimeOfActivity ,ALI.Log_In_IP_Address AS IP_Address , UL.LoginType AS EventType FROM account_log_ins ALI INNER JOIN accounts AS Acc ON Acc.ID = ALI.Account_ID
-                            INNER JOIN userlogin AS UL ON UL.Account_ID = ALI.Account_ID WHERE UL.LoginType = 'Login'
-                            UNION SELECT * FROM (SELECT Distinct ACO.Account_ID,ACC.Username,ACO.Log_Out_Time,ACO.Log_Out_IP_Address,UL.LoginType FROM account_log_out ACO 
-                            INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
-                            INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout') AS TABLE2 
-                            UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID) AS TABLE3
-                            UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"AttemptedLogin" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID 
-                            WHERE Attempted_Log_Ins < 3  ) AS TABLE4
-                            UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"LoginFailure" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID 
-                            WHERE Attempted_Log_Ins >= 3  ) AS TABLE5
-                            ORDER BY TimeOfActivity) AS CombinedTable WHERE TimeOfActivity > now() - interval 24 HOUR;""")
+            cursor.execute("""SELECT Count(EventType) AS EVENTCOUNT24HR FROM eventtype WHERE TimeOfActivity > now() - INTERVAL 24 HOUR;""")
             eventcount24hr = cursor.fetchone()
-            Auditlist = []
-            Countrycount = {}
-            counterloca = 0
-            print(AuditInfo)
-            for i in AuditInfo:
+            cursor.execute("""SELECT Count(EventType) AS AttemptCount1hr FROM eventtype WHERE TimeOfActivity > now() - interval 1 HOUR and eventtype.EventType = "AttemptedLogin" or eventtype.EventType = "LoginFailure";""")
+            attemptcount1hr = cursor.fetchone()
+            cursor.execute("""SELECT Count(EventType) AS AttemptCount24hr FROM eventtype WHERE TimeOfActivity > now() - interval 24 HOUR and eventtype.EventType = "AttemptedLogin" or eventtype.EventType = "LoginFailure";""")
+            attemptcount24hr = cursor.fetchone()
 
-                i['Location'] = get_countrycode(i['IP_Address'])
 
-                Auditlist.append(i)
-            for number in Auditlist:
-                Countrycount[number["Location"]] = 0
-            plzcount = 0
+            Auditlist,Countrycount,plzcount = [],{},0
+
+            cursor.execute("""SELECT * FROM eventtype""")
+            Everything = cursor.fetchall()
+
+
+            for a in Everything:
+                a['Location'] = get_countrycode(a['IP_Address'])
+
+
+
+
+            Countrycount = {number["Location"]: 0 for number in Everything}
+
+
 
             for numberevent in Countrycount:
-
-                for count in Auditlist:
-
+                plzcount = 0
+                for count in Everything:
 
                     if numberevent == count['Location']:
                         plzcount += 1
                 Countrycount[numberevent] = plzcount
 
-            print(Countrycount)
 
 
+            UserEvent,UserAttemptedLoginCount,EventCount,EventLoginFailCount,NumberOfUsers = {},{},{},Attemptedlogincount['TotalAttemptedLogins'],No['Totalusers']
 
-
-
-
-
-
-
-
-            Userlist = []
-            UserEvent = {}
-            UserAttemptedLoginCount = {}
-            EventCount = {}
-            EventLoginFailCount = Attemptedlogincount['TotalAttemptedLogins']
-            NumberOfUsers = No['Totalusers']
-
-
-            print(AuditInfo)
-
-            for i in allusers:
-                print(i)
-                Userlist.append(i['Username'])
+            Userlist = list(set([i['Username'] for i in allusers]))
 
             for user in Userlist:
                 counter = 0
-                for i in AuditInfo:
+                for i in Everything:
                     if user == i['Username'] and (
                             i['EventType'] == "AttemptedLogin" or i['EventType'] == 'LoginFailure'):
                         counter += 1
@@ -1856,25 +1927,27 @@ def ViewDashboard():
 
             for user in Userlist:
                 Eventcounter = 0
-                for i in AuditInfo:
+                for i in Everything:
                     if user == i['Username']:
                         Eventcounter += 1
 
                 EventCount[user] = Eventcounter
 
-            Userlist = list(set(Userlist))
 
-            print(Userlist)
-            print(EventCount)
+
+
             # Statistics
             # Calculate average attempt login failure per user
             # All attempted and login failure / Total Logins.
             # Add up everything then divide by total users.
             AvgLoginFailuresUsers = round(EventLoginFailCount/NumberOfUsers,2)
             AvgEventCountUser = round(sum([ EventCount[x] for x in EventCount])/NumberOfUsers,2)
-            print(AvgLoginFailuresUsers)
-            AvgEvents24hr = round((eventcount24hr['Counter24hour']/NumberOfUsers),2)
-            AvgEvent1hr = round((eventcount1hr['Counter1hour']/NumberOfUsers),2)
+
+            AvgEvents24hr = round((eventcount24hr['EVENTCOUNT24HR']/NumberOfUsers),2)
+            AvgEvent1hr = round((eventcount1hr['EVENTCOUNT1HR']/NumberOfUsers),2)
+            AvgAttempt1hr = round((attemptcount1hr['AttemptCount1hr']/NumberOfUsers),2)
+
+            AvgAttempt24hr = round((attemptcount24hr["AttemptCount24hr"]/NumberOfUsers),2)
 
 
 
@@ -1887,7 +1960,7 @@ def ViewDashboard():
             return render_template('dashboard.html', account=account, UserAttemptedLoginCount=UserAttemptedLoginCount,
                                    EventCount=EventCount, EventLoginFailCount=EventLoginFailCount
                                    ,AvgLoginFailuresUsers = AvgLoginFailuresUsers ,
-                                   AvgEventCountUser = AvgEventCountUser ,sess=session,AvgEvent1hr = AvgEvent1hr, AvgEvents24hr = AvgEvents24hr , Countrycount = Countrycount)
+                                   AvgEventCountUser = AvgEventCountUser ,sess=session,AvgEvent1hr = AvgEvent1hr, AvgEvents24hr = AvgEvents24hr,Countrycount = Countrycount , AvgAttempt1hr = AvgAttempt1hr ,AvgAttempt24hr = AvgAttempt24hr)
         else:
             return redirect(url_for('Userprofile'))
     else:
@@ -1936,28 +2009,37 @@ def Audit():
                 account = cursor.fetchone()
                 cursor.execute("""SELECT * FROM accounts""")
 
-                cursor.execute("""SELECT DISTINCT Acc.ID , Acc.Username , ALI.Account_Log_In_Time AS TimeOfActivity ,ALI.Log_In_IP_Address AS IP_Address , UL.LoginType AS EventType FROM account_log_ins ALI INNER JOIN accounts AS Acc ON Acc.ID = ALI.Account_ID
-                                    INNER JOIN userlogin AS UL ON UL.Account_ID = ALI.Account_ID WHERE UL.LoginType = 'Login'
-                                    UNION SELECT * FROM (SELECT Distinct ACO.Account_ID,ACC.Username,ACO.Log_Out_Time,ACO.Log_Out_IP_Address,UL.LoginType FROM account_log_out ACO 
-                                    INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
-                                    INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout') AS TABLE2 
-                                    UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID) AS TABLE3
-                                    UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"AttemptedLogin" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID 
-                                    WHERE Attempted_Log_Ins < 3  ) AS TABLE4
-                                    UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"LoginFailure" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID 
-                                    WHERE Attempted_Log_Ins >= 3  ) AS TABLE5
-                                    ORDER BY TimeOfActivity DESC; """)
+                #cursor.execute("""SELECT DISTINCT Acc.ID , Acc.Username , ALI.Account_Log_In_Time AS TimeOfActivity ,ALI.Log_In_IP_Address AS IP_Address , UL.LoginType AS EventType FROM account_log_ins ALI INNER JOIN accounts AS Acc ON Acc.ID = ALI.Account_ID
+                #                    INNER JOIN userlogin AS UL ON UL.Account_ID = ALI.Account_ID WHERE UL.LoginType = 'Login'
+                #                    UNION SELECT * FROM (SELECT Distinct ACO.Account_ID,ACC.Username,ACO.Log_Out_Time,ACO.Log_Out_IP_Address,UL.LoginType FROM account_log_out ACO
+                #                    INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
+                #                    INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout') AS TABLE2
+                #                    UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID) AS TABLE3
+                #                    UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"AttemptedLogin" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID
+                #                    WHERE Attempted_Log_Ins < 3  ) AS TABLE4
+                #                    UNION SELECT * FROM (SELECT Account_ID,Acco.Username,TimeOfActivity,Ip_Address,"LoginFailure" FROM accountattemptedlogins AS AAL INNER JOIN accounts Acco ON Acco.ID = AAL.Account_ID
+                #                    WHERE Attempted_Log_Ins >= 3  ) AS TABLE5
+                #                    ORDER BY TimeOfActivity DESC; """)
+#
+                #allaccounts = cursor.fetchall()
 
+                cursor.execute("""SELECT * FROM eventtype ORDER BY TimeOfActivity DESC;""")
                 allaccounts = cursor.fetchall()
-                print(allaccounts)
+
+
                 Auditlist = []
                 for lol in allaccounts:
                     lol['Location'] = get_location(lol['IP_Address'])
                     print(lol)
                     Auditlist.append(lol)
-                print(Auditlist)
                 return render_template('AuditLog.html', account=account, role=account['role'],
-                                       allaccounts=allaccounts , Auditlist = Auditlist)  # labels = labels,values = values)
+                                       allaccounts=allaccounts, Auditlist=Auditlist)  # labels = labels,values = values)
+
+
+
+
+
+
             else:
                 return redirect(url_for('Userprofile'))
         else:
@@ -1974,6 +2056,7 @@ def UnBanAccount(ID):
     print("UnBan Account Function")
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute("""UPDATE accounts SET Account_Status = 'Active' WHERE ID = %s """, [ID])
+    cursor.execute("""UPDATE accounts SET Attempts = 0 WHERE ID = %s """, [ID])
     mysql.connection.commit()
     return redirect(url_for('ManageAccount'))
 
@@ -2075,7 +2158,7 @@ def UserLogsActivity():
                             INNER JOIN accounts AS ACC ON ACC.ID = ACO.Account_ID
                             INNER JOIN userlogin AS UL ON UL.Account_ID = ACO.Account_ID WHERE UL.LoginType = 'Logout' AND ACC.Username = %s) AS TABLE2 
                             UNION SELECT * FROM (SELECT Account_ID,accounts.Username,Date_and_Time,Ip_Address,UpdatedEvent FROM userupdatetime UUT INNER JOIN accounts ON accounts.ID = UUT.Account_ID WHERE accounts.Username = %s) AS TABLE3
-                            ORDER BY TimeOfActivity;               """,
+                            ORDER BY TimeOfActivity DESC;               """,
                        [session['Username'], session['Username'], session['Username']])
 
         userloginactivity = cursor.fetchall()
@@ -2120,6 +2203,17 @@ def UserLogsActivity():
         print(Value_of_security)
 
         print(EmailLoginNotif,AttemptedLoginNotification,counter)
+        userlistactivity = []
+        # New Line of Code for ip address
+        for lol in userloginactivity:
+            lol["Location"]  = get_location(lol["IP_Address"] )
+            userlistactivity.append(lol)
+
+        passwordupdatetime = account["password_update_time"]
+
+
+
+
         print(userloginactivity)
 
 
@@ -2130,13 +2224,13 @@ def UserLogsActivity():
         return render_template('UserActivityLog.html', account=account, role=account['role'],
                                userloginactivity=userloginactivity , Value_of_security = Value_of_security ,
                                EmailLoginNotif = EmailLoginNotif , AttemptedLoginNotification = AttemptedLoginNotification,
-                               Email2FA = Email2FA,Googleauthen = Googleauthen ,BackupCode = BackupCode ,Phone = Phone , counter = counter)
+                               Email2FA = Email2FA,Googleauthen = Googleauthen ,BackupCode = BackupCode ,Phone = Phone , counter = counter,userlistactivity = userlistactivity,password_update_time = passwordupdatetime)
 
 
     else:
         flash('Please complete your 2FA !', 'danger')
         return redirect(url_for("two_fa"))
-
+# End of zade stuff (not everything is mine sadly)
 
 @app.route('/Cantsignin', methods=['GET', 'POST'])
 def Cantsignin():
@@ -2151,16 +2245,18 @@ def ForgottenUsername():
             if is_human(captcha_response):
                 status = ''
                 email = request.form['email']
-                cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-                cursor.execute("SELECT * FROM accounts WHERE Email = %(email)s", {'email': email})
-                account = cursor.fetchone()
-                print(account)
+                try:
+                    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+                    cursor.execute("SELECT * FROM accounts WHERE Email = %(email)s", {'email': email})
+                    account = cursor.fetchone()
+                except:
+                    account = None
                 if account:
                     msg = Message("Forget Username", recipients=[email])
                     Username = account['Username']
                     msg.html = render_template('forgetusernameemail.html', Username=Username)
                     mail.send(msg)
-                    print('sended')
+
                 else:
                     print('It doesnt exit')
                 flash(
@@ -2172,7 +2268,7 @@ def ForgottenUsername():
         else:
             return render_template('ForgetUsername.html', sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
     except:
-        print('error')
+
         return render_template('error404.html')
 
 
@@ -2184,9 +2280,12 @@ def ForgottenPassword():
             if is_human(captcha_response):
                 status = ''
                 email = request.form['email']
-                cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-                cursor.execute("SELECT * FROM accounts WHERE Email = %(email)s", {'email': email})
-                account = cursor.fetchone()
+                try:
+                    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+                    cursor.execute("SELECT * FROM accounts WHERE Email = %(email)s", {'email': email})
+                    account = cursor.fetchone()
+                except:
+                    account = None
                 print(account)
                 if account:
                     msg = Message("Forget Password Link", recipients=[email])
@@ -2243,6 +2342,9 @@ def Resetpassword(UUID):
                     value3 = (UUID2, UUID)
                     cursor.execute(sql3, value3)
                     mysql.connection.commit()
+                    msg = Message("Update of Account", recipients=account['Email'].split())
+                    msg.html = render_template('UpdateEmail.html', counter='1', Ipaddress=request.remote_addr)
+                    mail.send(msg)
                     return redirect(url_for('login'))
             else:
                 flash('Sorry ! Please Check Im not a robot.')
@@ -2254,6 +2356,9 @@ def Resetpassword(UUID):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+
+
+
     captcha_response = request.form.get('g-recaptcha-response')
     if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
         if is_human(captcha_response):
@@ -2267,12 +2372,12 @@ def login():
             cursor.execute("SELECT * FROM accounts WHERE username = %(username)s", {'username': username})
             # Fetch one record and return result
             account = cursor.fetchone()
-            cursor.execute("SELECT * FROM Authentication_Table WHERE Account_ID = %(ID)s", {'ID': account['ID']})
-            # Fetch one record and return result
-            account1 = cursor.fetchone()
+
 
             if account:
-
+                cursor.execute("SELECT * FROM Authentication_Table WHERE Account_ID = %(ID)s", {'ID': account['ID']})
+                # Fetch one record and return result
+                account1 = cursor.fetchone()
                 key = account['SymmetricKey']
                 fkey = Fernet(key)
                 decryptedaddress_Binary = fkey.decrypt(account['Address'].encode())
@@ -2292,7 +2397,7 @@ def login():
                 print(request.headers['X-Forwarded-For'])
                 print("End of print testcode")
                 if bcrypt.checkpw(password.encode(), hashandsalt.encode()):
-                    if account['password_update_time'] + datetime.timedelta(days=365) <= datetime.datetime.now().replace(microsecond=0):
+                    if account['password_update_time'] + datetime.timedelta(hours=12) <= datetime.datetime.now().replace(microsecond=0):
                         return redirect(url_for('Resetpassword', UUID=account['UUID']))
                     elif account['Account_Status'] == "Pending":
                         msg = Message("Account Verification Link", recipients=[account['Email']])
@@ -2306,9 +2411,9 @@ def login():
                     elif account['Account_Status'] == "Disabled":
                         cursor.execute('SELECT * FROM accountattemptedlogins WHERE Account_ID = %(ID)s ORDER BY ID DESC limit 1', {'ID': account['ID']})
                         Time = cursor.fetchone()
-                        if Time['TimeOfActivity'] + datetime.timedelta(seconds=30) <= datetime.datetime.now().replace(microsecond=0):
+                        if Time['TimeOfActivity'] + datetime.timedelta(minutes=30) <= datetime.datetime.now().replace(microsecond=0):
                             sql = "UPDATE accounts SET Attempts = %s WHERE username = %s "
-                            value = (0, account['Username'])
+                            value = (1, account['Username'])
                             cursor.execute(sql, value)
                             cursor.execute("UPDATE accounts SET Account_Status = 'Active' WHERE username = %(username)s", {'username': account['Username']})
                             mysql.connection.commit()
@@ -2363,6 +2468,11 @@ def login():
                             cursor.execute("""INSERT INTO account_log_ins VALUES (NULL,%s,%s,%s,NULL)""", (
                                 session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                 request.headers['X-Forwarded-For']))
+
+                            cursor.execute("""INSERT INTO EventType VALUES (NULL,%s,%s,%s,%s,%s)""", (
+                                session['ID'], session['Username'], "Login", request.headers['X-Forwarded-For'],
+                                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+
                             mysql.connection.commit()
                             cursor.execute(
                                 """SELECT Log_in_ID FROM account_log_ins WHERE Account_ID = %s AND Account_Log_In_Time = (SELECT MAX(Account_Log_In_Time) FROM account_log_ins )""",
@@ -2408,6 +2518,11 @@ def login():
                             now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                             cursor.execute("""INSERT INTO accountattemptedlogins VALUES (NULL,%s,%s,%s,%s)""",
                                            [Original['ID'], Attempts, request.headers['X-Forwarded-For'], now])
+
+                            cursor.execute("""INSERT INTO EventType VALUES (NULL,%s,%s,%s,%s,%s)""", (
+                                Original['ID'], Username, "AttemptedLogin", request.headers['X-Forwarded-For'],
+                                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+
                             mysql.connection.commit()
                             sql2 = "UPDATE accounts SET Attempts = %s WHERE username = %s "
                             value2 = (Attempts, Username)
@@ -2424,6 +2539,9 @@ def login():
                             Attempts += 1
                             now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                             cursor.execute("""INSERT INTO accountattemptedlogins VALUES (NULL,%s,%s,%s,%s)""", [Original['ID'], Attempts, request.headers['X-Forwarded-For'], now])
+                            cursor.execute("""INSERT INTO EventType VALUES (NULL,%s,%s,%s,%s,%s)""", (
+                                Original['ID'], Username, "LoginFailure", request.headers['X-Forwarded-For'],
+                                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
                             mysql.connection.commit()
                             sql2 = "UPDATE accounts SET Attempts = %s WHERE username = %s "
                             value2 = (Attempts, Username)
@@ -2442,6 +2560,9 @@ def login():
                             value2 = (Attempts, Username)
                             cursor.execute(sql2, value2)
                             cursor.execute("""INSERT INTO accountattemptedlogins VALUES (NULL,%s,%s,%s,%s)""",[Original['ID'],Attempts,request.headers['X-Forwarded-For'],datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
+                            cursor.execute("""INSERT INTO EventType VALUES (NULL,%s,%s,%s,%s,%s)""", (
+                                Original['ID'], Username, "AttemptedLogin", request.headers['X-Forwarded-For'],
+                                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
                             mysql.connection.commit()
                     return render_template('login.html', msg=msg, sitekey="6LeQDi8bAAAAAGzw5v4-zRTcdNBbDuFsgeU2jEhb")
             else:
@@ -2458,6 +2579,8 @@ def login():
 
 @app.route('/logout')
 def accountlogout():
+    print(session['state'])
+    print(session)
     try:
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         # cursor.execute("""SELECT * FROM accounts WHERE Username = %(username)s""", {'username': session['Username']})
@@ -2467,10 +2590,15 @@ def accountlogout():
             cursor.execute("""INSERT INTO UserLogin VALUES (NULL,%s,%s) """, (session['ID'], "Logout"))
             cursor.execute("""INSERT INTO account_log_out VALUES (NULL,%s,%s,%s) """,
                            (session['ID'], datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), request.headers['X-Forwarded-For']))
+
+            cursor.execute("""INSERT INTO EventType VALUES (NULL,%s,%s,%s,%s,%s)""", (
+                session['ID'], session['Username'], "Logout", request.headers['X-Forwarded-For'],
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+
             mysql.connection.commit()
-            sqlcode = """UPDATE account_log_ins INNER JOIN account_log_out ON account_log_ins.Account_ID = 
-            account_log_out.Account_ID SET account_log_ins.Log_Out_ID = account_log_out.Log_Out_ID WHERE 
-            account_log_ins.Account_ID = %s AND account_log_ins.Log_Out_ID IS NULL AND account_log_out.Log_Out_ID = (SELECT max(account_log_out.Log_Out_ID) from account_log_out where account_log_out.Account_ID = %s)"""
+            sqlcode = """UPDATE account_log_ins INNER JOIN account_log_out ON account_log_ins.Account_ID = account_log_out.Account_ID
+                       SET account_log_ins.Log_Out_ID = account_log_out.Log_Out_ID 
+                       WHERE account_log_ins.Account_ID = %s AND account_log_ins.Log_Out_ID IS NULL AND account_log_ins.Log_in_ID =(select max(Log_in_ID))  AND account_log_out.Log_Out_ID = (SELECT max(account_log_out.Log_Out_ID) from account_log_out where account_log_out.Account_ID = %s);"""
             values = (session['ID'], session['ID'])
             cursor.execute(sqlcode, values)
             cursor.execute("""DELETE FROM usersloggedin WHERE Account_ID = %s """, [session['ID']])
@@ -2478,7 +2606,6 @@ def accountlogout():
             print(session)
             session.clear()
             print(session)
-
             return redirect(url_for('login'))
         else:
             print("Session cant be used by 2 user")
@@ -2744,7 +2871,7 @@ def create_login_admin():
 def TermsAndConditions():
     return render_template('TermsAndConditions.html')
 
-
+# Jaydon look
 @app.route('/AccountVerification1/<path:UUID>')
 def AccountVerification1(UUID):
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -5524,9 +5651,17 @@ def orderfinalcnyset():
         return render_template('error404.html')
 
 
+@app.route('/error50000000')
+def error505():
+    return render_template('error500.html',session = session), 500
+
+
 @app.errorhandler(500)
 def page_not_found(e):
-    return render_template('error500.html'), 500
+    print(session)
+
+
+    return render_template('error500.html',session = session), 500
 
 
 # @app.errorhandler(404)
