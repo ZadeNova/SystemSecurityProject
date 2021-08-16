@@ -93,7 +93,7 @@ import sys
 import logging
 ## google login end ###
 # Form imports
-
+# Gamestop to the moon
 
 app = Flask(__name__)
 app.logger.addHandler(logging.StreamHandler(sys.stdout))
